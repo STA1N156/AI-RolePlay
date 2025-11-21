@@ -264,7 +264,9 @@
                     </div>
                     
                     <div v-for="(msg, index) in chatHistory" :key="index" :class="['flex w-full', msg.role === 'user' ? 'justify-end' : 'justify-start']">
-                        <div :class="['flex max-w-[95%] md:max-w-[70%] lg:max-w-[60%]', msg.role === 'user' ? 'flex-row-reverse' : 'flex-row']">
+                        <div :class="['flex transition-all duration-300',
+                            containsPreviewableCode(msg.content) ? 'max-w-[98%] md:max-w-[90%] lg:max-w-[90%]' : 'max-w-[98%] md:max-w-[70%] lg:max-w-[60%]',
+                            msg.role === 'user' ? 'flex-row-reverse' : 'flex-row']">
                             <!-- Avatar -->
                             <div class="flex-shrink-0">
                                 <div v-if="msg.role === 'user'" class="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-xs text-white ml-2 shadow-sm">
@@ -875,6 +877,17 @@
     <script>
         const { createApp, ref, reactive, computed, onMounted, watch, nextTick } = Vue;
 
+        // Configure marked to disable indented code blocks
+        // This allows indented HTML (like details/summary) to be rendered as HTML instead of code
+        marked.use({
+            tokenizer: {
+                // Disable the indentation-based code block tokenizer
+                code(src) {
+                    return undefined;
+                }
+            }
+        });
+
         createApp({
             setup() {
                 // --- State ---
@@ -1253,12 +1266,94 @@
                     return result;
                 };
 
+                // Helper to detect if content contains previewable code
+                const containsPreviewableCode = (text) => {
+                    if (!text) return false;
+                    // Check for explicit html/xml language tags
+                    if (/```\s*(html|xml)/i.test(text)) return true;
+                    
+                    // Check for code blocks that look like HTML (start with <)
+                    // We iterate to handle multiple blocks
+                    const codeBlockRegex = /```([\s\S]*?)```/g;
+                    let match;
+                    while ((match = codeBlockRegex.exec(text)) !== null) {
+                        // Remove the first line if it's a language identifier
+                        let content = match[1].trim();
+                        const firstLineBreak = content.indexOf('\n');
+                        if (firstLineBreak > -1) {
+                            const potentialLang = content.substring(0, firstLineBreak).trim();
+                            if (!potentialLang.includes('<') && potentialLang.length < 10) {
+                                // Likely a language tag, skip it
+                                content = content.substring(firstLineBreak).trim();
+                            }
+                        }
+                        
+                        if (content.startsWith('<')) return true;
+                    }
+                    return false;
+                };
+
                 // Markdown Rendering
                 const renderMarkdown = (text) => {
                     if (!text) return '';
                     // Apply regex for display (real-time)
                     const processed = processRegex(text);
-                    return DOMPurify.sanitize(marked.parse(processed));
+                    
+                    // Configure DOMPurify to allow specific tags and attributes for rich text
+                    const cleanConfig = {
+                        ADD_TAGS: ['details', 'summary', 'iframe'],
+                        ADD_ATTR: ['style', 'open', 'srcdoc', 'sandbox', 'frameborder', 'allow', 'allowfullscreen'],
+                        FORBID_TAGS: ['script'], // Explicitly forbid script tags for safety
+                        FORBID_ATTR: ['onmouseover', 'onclick', 'onload'] // Forbid event handlers
+                    };
+                    
+                    let html = DOMPurify.sanitize(marked.parse(processed), cleanConfig);
+
+                    // Auto-render HTML code blocks
+                    try {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        // marked.js adds 'language-html' class to code blocks
+                        // Select all code blocks to check for HTML content
+                        const codeBlocks = doc.querySelectorAll('pre code');
+                        let hasReplacements = false;
+
+                        if (codeBlocks.length > 0) {
+                            codeBlocks.forEach(block => {
+                                const isHtmlType = block.classList.contains('language-html') || block.classList.contains('language-xml');
+                                const content = block.textContent.trim();
+                                // Heuristic: starts with < and has a closing tag or >
+                                const looksLikeHtml = content.startsWith('<') && (content.includes('>') || content.includes('\n'));
+
+                                if (isHtmlType || looksLikeHtml) {
+                                    const rawHtml = block.textContent; // textContent decodes entities
+                                    
+                                    // Create iframe for preview
+                                    const iframe = doc.createElement('iframe');
+                                    // Increased height to 600px as requested
+                                    iframe.className = 'w-full h-[600px] border border-gray-200 rounded-lg bg-white shadow-sm my-2';
+                                    // Allow scripts and forms for interactive demos, but restrict top-navigation
+                                    iframe.sandbox = 'allow-scripts allow-forms allow-popups allow-modals';
+                                    iframe.srcdoc = rawHtml;
+                                    
+                                    // Replace the pre tag with the iframe
+                                    const preTag = block.parentElement;
+                                    if (preTag && preTag.parentNode) {
+                                        preTag.parentNode.replaceChild(iframe, preTag);
+                                        hasReplacements = true;
+                                    }
+                                }
+                            });
+                            
+                            if (hasReplacements) {
+                                return doc.body.innerHTML;
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Error rendering HTML preview:', e);
+                    }
+
+                    return html;
                 };
 
                 // API & Models
@@ -2699,7 +2794,7 @@
                         });
                     },
                     
-                    processRegex,
+                    processRegex, containsPreviewableCode,
                     showRegexEditor, showWorldInfoEditor, editingRegex, editingWorldInfo
                 };
             }
