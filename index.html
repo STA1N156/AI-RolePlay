@@ -286,7 +286,7 @@
                                         msg.role === 'user' ? 'bg-primary-100 text-gray-900 rounded-tr-none shadow-sm border border-primary-200' :
                                         msg.role === 'system' ? 'bg-red-50 text-red-800 rounded-tl-none border border-red-200' :
                                         'bg-white text-gray-800 rounded-tl-none border border-gray-100 shadow-card']">
-                                        <div class="markdown-body" v-html="renderMarkdown(msg.content)"></div>
+                                        <div class="markdown-body" v-html="renderMarkdown(msg.content, msg.role)"></div>
                                     </div>
                                     
                                     <!-- Message Actions -->
@@ -996,6 +996,50 @@
                         <label class="block text-sm font-medium text-gray-600 mb-1">替换内容 (Replacement)</label>
                         <textarea v-model="editingRegex.data.replacement" rows="3" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none font-mono"></textarea>
                     </div>
+                    
+                    <!-- Advanced Options -->
+                    <div class="border-t border-gray-100 pt-4 space-y-3">
+                        <h4 class="text-sm font-bold text-gray-700">高级选项</h4>
+                        
+                        <!-- Placement -->
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">生效位置 (Placement)</label>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" :checked="editingRegex.data.placement && editingRegex.data.placement.includes(1)" @change="togglePlacement(1)" class="rounded text-primary-600 focus:ring-primary-500">
+                                    <span class="text-sm text-gray-700">User (用户)</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" :checked="editingRegex.data.placement && editingRegex.data.placement.includes(2)" @change="togglePlacement(2)" class="rounded text-primary-600 focus:ring-primary-500">
+                                    <span class="text-sm text-gray-700">AI (角色)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Mode -->
+                        <div class="flex space-x-4">
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" v-model="editingRegex.data.markdownOnly" class="rounded text-primary-600 focus:ring-primary-500">
+                                <span class="text-sm text-gray-700">仅 Markdown (显示)</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" v-model="editingRegex.data.promptOnly" class="rounded text-primary-600 focus:ring-primary-500">
+                                <span class="text-sm text-gray-700">仅 Prompt (发送)</span>
+                            </label>
+                        </div>
+
+                        <!-- Depth -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">最小深度 (Min Depth)</label>
+                                <input type="number" v-model.number="editingRegex.data.minDepth" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none" placeholder="无限制">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">最大深度 (Max Depth)</label>
+                                <input type="number" v-model.number="editingRegex.data.maxDepth" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none" placeholder="无限制">
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="p-4 border-t border-gray-100 flex justify-end space-x-3">
                     <button @click="showRegexEditor = false" class="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg transition-colors">取消</button>
@@ -1232,7 +1276,7 @@
                 const settings = reactive({
                     apiUrl: 'https://yunwu.zeabur.app',
                     apiKey: 'sk-7axYRs7NivTFIYTnizpVFI5I5L78kkqnnHq6dqcLvvD043pu',
-                    model: 'gemini-3-pro-preview',
+                    model: 'gemini-3-pro-preview-thinking',
                     contextSize: 800000,
                     maxTokens: 63000,
                     temperature: 1.0,
@@ -1578,42 +1622,66 @@
                 };
 
                 // Regex Processing
-                const processRegex = (text) => {
+                const processRegex = (text, options = {}) => {
                     if (!text) return '';
                     let result = text;
+                    // options: { isDisplay, isPrompt, role, depth }
+                    const { isDisplay = false, isPrompt = false, role = null, depth = 0 } = options;
+
                     regexScripts.value.forEach(script => {
                         // 明确检查 enabled 字段：只有显式设置为 false 才跳过
                         if (script.enabled === false) return;
                         
+                        // Placement Check (1=User, 2=AI)
+                        // 如果 placement 未定义，默认为全部生效 (兼容旧数据)
+                        const placement = script.placement || [1, 2];
+                        if (role === 'user' && !placement.includes(1)) return;
+                        if (role === 'assistant' && !placement.includes(2)) return;
+                        
+                        // Mode Check
+                        if (isDisplay && script.promptOnly) return; // 显示模式下，跳过仅Prompt生效的正则
+                        if (isPrompt && script.markdownOnly) return; // Prompt模式下，跳过仅Markdown生效的正则
+
+                        // Depth Check
+                        if (script.minDepth !== null && script.minDepth !== undefined && depth < script.minDepth) return;
+                        if (script.maxDepth !== null && script.maxDepth !== undefined && depth > script.maxDepth) return;
+
                         try {
                             // 兼容 SillyTavern 字段：findRegex/regex, replaceString/replacement
-                            const regexPattern = script.regex || script.findRegex;
+                            let regexPattern = script.regex || script.findRegex;
+                            let flags = script.flags || script.regexFlags || 'g';
                             const replacement = script.hasOwnProperty('replacement')
                                 ? script.replacement
                                 : (script.replaceString || '');
-                            const flags = script.flags || script.regexFlags || 'g';
                             
-                            if (!regexPattern) {
-                                console.warn(`Regex script "${script.name || 'Unnamed'}" has no pattern, skipping`);
-                                return;
+                            if (!regexPattern) return;
+
+                            // 解析 /pattern/flags 格式
+                            if (regexPattern.startsWith('/') && regexPattern.lastIndexOf('/') > 0) {
+                                const lastSlash = regexPattern.lastIndexOf('/');
+                                const potentialFlags = regexPattern.substring(lastSlash + 1);
+                                // 简单的 flags 验证
+                                if (/^[gimsuy]*$/.test(potentialFlags)) {
+                                    flags = potentialFlags;
+                                    regexPattern = regexPattern.substring(1, lastSlash);
+                                }
                             }
                             
                             const re = new RegExp(regexPattern, flags);
                             result = result.replace(re, replacement);
                         } catch (e) {
                             console.error(`Regex error in script "${script.name || 'Unnamed'}":`, e.message);
-                            console.error('  Pattern:', script.regex || script.findRegex);
-                            console.error('  Flags:', script.flags || script.regexFlags);
                         }
                     });
                     return result;
                 };
 
                 // Markdown Rendering
-                const renderMarkdown = (text) => {
+                const renderMarkdown = (text, role = 'assistant') => {
                     if (!text) return '';
                     // Apply regex for display (real-time)
-                    const processed = processRegex(text);
+                    // 默认 role 为 assistant，因为主要是渲染 AI 回复，但也可能是 user
+                    const processed = processRegex(text, { isDisplay: true, role: role });
                     
                     // Configure DOMPurify to allow specific tags and attributes for rich text
                     const cleanConfig = {
@@ -2091,10 +2159,14 @@
                     // Base Messages
                     let messages = [
                         { role: 'system', content: systemPrompt },
-                        ...chatHistory.value.map(m => ({
-                            role: m.role === 'user' ? 'user' : 'assistant',
-                            content: processRegex(m.content)
-                        }))
+                        ...chatHistory.value.map((m, index) => {
+                            // 计算深度 (从底向上，0开始)
+                            const depth = chatHistory.value.length - 1 - index;
+                            return {
+                                role: m.role === 'user' ? 'user' : 'assistant',
+                                content: processRegex(m.content, { isPrompt: true, role: m.role, depth: depth })
+                            };
+                        })
                     ];
 
                     // Handle @D (At Depth) and other message-level injections
@@ -2372,6 +2444,9 @@
                             regex: '{{user}}',
                             flags: 'gi',
                             replacement: user.name,
+                            placement: [1, 2],
+                            markdownOnly: false,
+                            promptOnly: false,
                             enabled: true
                         });
                     } else {
@@ -2380,7 +2455,24 @@
                         if (script) {
                             script.replacement = user.name;
                             script.enabled = true;
+                            if (!script.placement) script.placement = [1, 2];
                         }
+                    }
+
+                    // Ensure default "Hide Thinking" regex exists
+                    const hideThinkingName = '隐藏正文的thinking';
+                    const hasHideThinking = regexScripts.value.some(r => r.name === hideThinkingName);
+
+                    if (!hasHideThinking) {
+                        regexScripts.value.push({
+                            name: hideThinkingName,
+                            regex: '/(<Thinking>.*?<\\/Thinking>)|(<thinking>.*?<\\/thinking>)|(<think>.*?<\\/think>)/gs',
+                            replacement: '',
+                            placement: [2], // AI Only
+                            markdownOnly: true, // Only hide in display
+                            promptOnly: false,
+                            enabled: true
+                        });
                     }
 
                     currentView.value = 'chat';
@@ -2755,6 +2847,14 @@
                                         // If script has 'disabled' field, use it; otherwise default to enabled
                                         normalized.enabled = script.hasOwnProperty('disabled') ? !script.disabled : true;
                                     }
+
+                                    // New Fields
+                                    if (!normalized.placement) normalized.placement = script.placement || [1, 2];
+                                    if (normalized.markdownOnly === undefined) normalized.markdownOnly = script.markdownOnly || false;
+                                    if (normalized.promptOnly === undefined) normalized.promptOnly = script.promptOnly || false;
+                                    if (normalized.runOnEdit === undefined) normalized.runOnEdit = script.runOnEdit || false;
+                                    if (normalized.minDepth === undefined) normalized.minDepth = script.minDepth || null;
+                                    if (normalized.maxDepth === undefined) normalized.maxDepth = script.maxDepth || null;
                                     
                                     return normalized;
                                 });
@@ -3251,9 +3351,6 @@
                     }
 
                     // 2. Enforce Default Regex (Auto Replace {{user}})
-                    // Note: This is per-character usually, but we also have a global list concept in this app structure?
-                    // Actually, regexScripts is global in this implementation, but copied to character on select.
-                    // Let's check the global list first.
                     const defaultRegexName = 'Auto Replace {{user}}';
                     const existingRegex = regexScripts.value.find(r => r.name === defaultRegexName);
                     
@@ -3263,6 +3360,9 @@
                             regex: '{{user}}',
                             flags: 'gi',
                             replacement: user.name,
+                            placement: [1, 2],
+                            markdownOnly: false,
+                            promptOnly: false,
                             enabled: true
                         });
                         showToast('已恢复默认正则脚本', 'info');
@@ -3270,10 +3370,28 @@
                         // Update replacement to current user name just in case
                         existingRegex.replacement = user.name;
                         existingRegex.enabled = true; // Ensure enabled
+                        if (!existingRegex.placement) existingRegex.placement = [1, 2];
+                    }
+
+                    // 2.1 Enforce Default Regex (Hide Thinking)
+                    const hideThinkingName = '隐藏正文的thinking';
+                    const existingHideThinking = regexScripts.value.find(r => r.name === hideThinkingName);
+
+                    if (!existingHideThinking) {
+                        regexScripts.value.push({
+                            name: hideThinkingName,
+                            regex: '/(<Thinking>.*?<\\/Thinking>)|(<thinking>.*?<\\/thinking>)|(<think>.*?<\\/think>)/gs',
+                            replacement: '',
+                            placement: [2], // AI Only
+                            markdownOnly: true, // Only hide in display
+                            promptOnly: false,
+                            enabled: true
+                        });
+                        showToast('已添加隐藏思考过程正则', 'info');
                     }
 
                     // 3. Enforce Default Model
-                    const defaultModel = 'gemini-3-pro-preview';
+                    const defaultModel = 'gemini-3-pro-preview-thinking';
                     if (settings.model !== defaultModel) {
                         // Only reset if the current model is empty or invalid?
                         // Requirement: "ensure default model... refresh every time".
@@ -3351,6 +3469,9 @@
                                 regex: '{{user}}',
                                 flags: 'gi',
                                 replacement: user.name,
+                                placement: [1, 2],
+                                markdownOnly: false,
+                                promptOnly: false,
                                 enabled: true
                             });
                         } else {
@@ -3358,7 +3479,23 @@
                              if (script) {
                                  script.replacement = user.name;
                                  script.enabled = true;
+                                 if (!script.placement) script.placement = [1, 2];
                              }
+                       }
+
+                       // Ensure Hide Thinking regex
+                       const hideThinkingName = '隐藏正文的thinking';
+                       const hasHideThinking = regexScripts.value.some(r => r.name === hideThinkingName);
+                       if (!hasHideThinking) {
+                           regexScripts.value.push({
+                               name: hideThinkingName,
+                               regex: '/(<Thinking>.*?<\\/Thinking>)|(<thinking>.*?<\\/thinking>)|(<think>.*?<\\/think>)/gs',
+                               replacement: '',
+                               placement: [2],
+                               markdownOnly: true,
+                               promptOnly: false,
+                               enabled: true
+                           });
                        }
 
                        // showToast(`欢迎回来，${user.name}`, 'success'); // Removed per user request
@@ -3385,6 +3522,7 @@
                     toggleMobileMenu: () => showMobileMenu.value = !showMobileMenu.value,
                     fetchModels, selectModel, sendMessage, stopGeneration, clearChat,
                     handleConfirm, handleCancel, // Export handlers
+                    manualSave,
                     copyMessage, deleteMessage, regenerateMessage,
                     createNewCharacter, editCharacter, saveCharacter, deleteCharacter, selectCharacter,
                     handleAvatarUpload, importCharacter, exportCharacter,
@@ -3456,6 +3594,15 @@
                                         if (!s.regex && s.findRegex) s.regex = s.findRegex;
                                         if (!s.replacement && s.replaceString) s.replacement = s.replaceString;
                                         if (!s.flags && s.regexFlags) s.flags = s.regexFlags;
+                                        
+                                        // New Fields
+                                        if (!s.placement) s.placement = [1, 2];
+                                        if (s.markdownOnly === undefined) s.markdownOnly = false;
+                                        if (s.promptOnly === undefined) s.promptOnly = false;
+                                        if (s.runOnEdit === undefined) s.runOnEdit = false;
+                                        if (s.minDepth === undefined) s.minDepth = null;
+                                        if (s.maxDepth === undefined) s.maxDepth = null;
+
                                         return s;
                                     });
                                     
@@ -3474,7 +3621,18 @@
                     },
                     createRegex: () => {
                         editingRegex.id = undefined;
-                        editingRegex.data = { name: 'New Script', regex: '', flags: 'g', replacement: '' };
+                        editingRegex.data = {
+                            name: 'New Script',
+                            regex: '',
+                            flags: 'g',
+                            replacement: '',
+                            placement: [1, 2],
+                            markdownOnly: false,
+                            promptOnly: false,
+                            runOnEdit: false,
+                            minDepth: null,
+                            maxDepth: null
+                        };
                         showRegexEditor.value = true;
                     },
                     editRegex: (index) => {
@@ -3653,7 +3811,16 @@
                     
                     processRegex,
                     showRegexEditor, showWorldInfoEditor, editingRegex, editingWorldInfo,
-                    worldInfoSettings, showWorldInfoSettings
+                    worldInfoSettings, showWorldInfoSettings,
+                    togglePlacement: (val) => {
+                        if (!editingRegex.data.placement) editingRegex.data.placement = [];
+                        const index = editingRegex.data.placement.indexOf(val);
+                        if (index === -1) {
+                            editingRegex.data.placement.push(val);
+                        } else {
+                            editingRegex.data.placement.splice(index, 1);
+                        }
+                    }
                 };
             }
         }).mount('#app');
