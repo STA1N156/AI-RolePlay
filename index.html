@@ -286,7 +286,7 @@
                     </div>
                     
                     <div v-for="(msg, index) in chatHistory" :key="index" :class="['flex w-full', msg.role === 'user' ? 'justify-end' : 'justify-start']">
-                        <div :class="['flex max-w-[95%] md:max-w-[70%] lg:max-w-[60%]', msg.role === 'user' ? 'flex-row-reverse' : 'flex-row']">
+                        <div :class="['flex transition-all duration-300', isWideMessage(msg) ? 'max-w-[98%] md:max-w-[95%] lg:max-w-[90%]' : 'max-w-[95%] md:max-w-[70%] lg:max-w-[60%]', msg.role === 'user' ? 'flex-row-reverse' : 'flex-row']">
                             <!-- Avatar -->
                             <div class="flex-shrink-0">
                                 <div v-if="msg.role === 'user'" class="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-xs text-white ml-2 shadow-sm">
@@ -1615,6 +1615,11 @@
 
                 // --- Methods ---
 
+                const isWideMessage = (msg) => {
+                    if (!msg || !msg.content) return false;
+                    return /```html/i.test(msg.content);
+                };
+
                 // Toast Notification
                 const showToast = (message, type = 'info', duration = 2000) => {
                     const id = Date.now();
@@ -1728,13 +1733,13 @@
                                 // Create iframe for preview
                                 const iframe = doc.createElement('iframe');
                                 // Full width iframe, no margins
-                                iframe.className = 'w-full h-[400px] border-y border-gray-200 bg-white shadow-sm block';
+                                iframe.className = 'w-full h-[600px] border-y border-gray-200 bg-white shadow-sm block';
                                 // Allow scripts and forms for interactive demos, but restrict top-navigation
                                 // Added allow-same-origin to allow communication with parent for triggerSlash
                                 iframe.sandbox = 'allow-scripts allow-forms allow-popups allow-modals allow-same-origin';
                                 
                                 // Inject reset styles and triggerSlash shim
-                                const resetStyle = '<style>body{margin:0 !important;padding:0 !important;overflow-x:hidden;}</style>';
+                                const resetStyle = '<style>html,body{margin:0 !important;padding:0 !important;overflow-x:hidden;width:100% !important;max-width:none !important;} #app, .app, .container, .wrapper, .mobile-view, .page, .layout, .content { max-width: none !important; width: 100% !important; margin: 0 !important; }</style>';
                                 const scriptShim = `
                                     <script>
                                         window.triggerSlash = function(text) {
@@ -3583,6 +3588,7 @@
                     activeRegexCount, activeWorldInfoCount,
                     editingCharacter, editingPreset, toasts, chatContainer, inputBox,
                     lastUserMessageIndex, // Expose to template
+                    isWideMessage,
                     toggleMobileMenu: () => showMobileMenu.value = !showMobileMenu.value,
                     fetchModels, selectModel, sendMessage, stopGeneration, clearChat,
                     handleConfirm, handleCancel, // Export handlers
