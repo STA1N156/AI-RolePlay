@@ -1555,6 +1555,26 @@
                     }
                 }, { deep: true });
 
+                // Auto Image Gen & Stream Linkage
+                const isAutoImageGenEnabled = computed(() => {
+                    const entry = worldInfo.value.find(w => w.comment === '自动生图');
+                    return entry ? entry.enabled : false;
+                });
+
+                watch(isAutoImageGenEnabled, (newVal) => {
+                    if (newVal) {
+                        if (settings.stream) {
+                            settings.stream = false;
+                            showToast('为适配生图，流式输出已关闭', 'info');
+                        }
+                    } else {
+                        if (!settings.stream) {
+                            settings.stream = true;
+                            showToast('自动生图已关闭，流式输出已恢复', 'success');
+                        }
+                    }
+                });
+
                 // Debounce function
                 const debounce = (fn, delay) => {
                     let timeoutId;
@@ -2502,6 +2522,27 @@
                     }
                     // 添加新的到首位
                     regexScripts.value.unshift(imageGenRegexContent);
+
+                    // 1.5 Nai3-小波画图正则
+                    const nai3RegexName = 'Nai画图正则-竖图';
+                    const nai3RegexContent = {
+                        name: nai3RegexName,
+                        regex: '/image###([^>]+)###/g',
+                        replacement: '<div style="width: auto; height: auto; max-width: 100%; border: 8px solid transparent; background-image: linear-gradient(45deg, #FFC9D9, #CCE5FF); position: relative; border-radius: 16px; overflow: hidden; display: flex; justify-content: center; align-items: center; animation: gradientBG 3s ease infinite; box-shadow: 0 4px 15px rgba(204,229,255,0.3);"><div style="background: rgba(255,255,255,0.85); backdrop-filter: blur(5px); width: 100%; height: 100%; position: absolute; top: 0; left: 0;"></div><img src="https://std.loliyc.com/generate?tag=$1&token=STD-yxyLAKX8ekcAwDoSuwMo&model=nai-diffusion-4-full&artist=[[[artist:dishwasher1910]]], {{yd_(orange_maru)}}, [artist:ciloranko], [artist:sho_(sho_lwlw)], [ningen mame], year 2024, vivid, best light and shadow effects, extremely detailed 8k wallpaper, amazing beauty, detailed characters&size=竖图&steps=38&scale=5.5&cfg=0&sampler=k_dpmpp_2m_sde&negative=pixelate&nocache=0&noise_schedule=karras"  alt="生成图片" style="max-width: 100%; height: auto; width: auto; display: block; object-fit: contain; transition: transform 0.3s ease; position: relative; z-index: 1;"></div><style>@keyframes gradientBG {0% {background-image: linear-gradient(45deg, #FFC9D9, #CCE5FF);}50% {background-image: linear-gradient(225deg, #FFC9D9, #CCE5FF);}100% {background-image: linear-gradient(45deg, #FFC9D9, #CCE5FF);}}</style>',
+                        placement: [2],
+                        markdownOnly: true,
+                        promptOnly: false,
+                        enabled: false // Default closed
+                    };
+
+                    const nai3RegexIndex = regexScripts.value.findIndex(r => r.name === nai3RegexName);
+                    if (nai3RegexIndex !== -1) {
+                        // 存在，保留启用状态并更新内容
+                        nai3RegexContent.enabled = regexScripts.value[nai3RegexIndex].enabled;
+                        regexScripts.value.splice(nai3RegexIndex, 1);
+                    }
+                    // 添加新的到首位
+                    regexScripts.value.unshift(nai3RegexContent);
 
                     // 2. 自动生图世界书
                     const autoImageGenWIName = '自动生图';
