@@ -1730,17 +1730,32 @@
                                 // Full width iframe, no margins
                                 iframe.className = 'w-full h-[400px] border-y border-gray-200 bg-white shadow-sm block';
                                 // Allow scripts and forms for interactive demos, but restrict top-navigation
-                                iframe.sandbox = 'allow-scripts allow-forms allow-popups allow-modals';
+                                // Added allow-same-origin to allow communication with parent for triggerSlash
+                                iframe.sandbox = 'allow-scripts allow-forms allow-popups allow-modals allow-same-origin';
                                 
-                                // Inject reset styles
+                                // Inject reset styles and triggerSlash shim
                                 const resetStyle = '<style>body{margin:0 !important;padding:0 !important;overflow-x:hidden;}</style>';
-                                if (rawHtml.includes('<head>')) {
-                                    iframe.srcdoc = rawHtml.replace('<head>', '<head>' + resetStyle);
-                                } else if (rawHtml.includes('<html>')) {
-                                    iframe.srcdoc = rawHtml.replace('<html>', '<html><head>' + resetStyle + '</head>');
+                                const scriptShim = `
+                                    <script>
+                                        window.triggerSlash = function(text) {
+                                            if (window.parent && window.parent.triggerSlash) {
+                                                window.parent.triggerSlash(text);
+                                            } else {
+                                                console.error("SillyTavern's triggerSlash function not found in parent.");
+                                            }
+                                        };
+                                    <\/script>
+                                `;
+                                
+                                let content = rawHtml;
+                                if (content.includes('<head>')) {
+                                    content = content.replace('<head>', '<head>' + resetStyle + scriptShim);
+                                } else if (content.includes('<html>')) {
+                                    content = content.replace('<html>', '<html><head>' + resetStyle + scriptShim + '</head>');
                                 } else {
-                                    iframe.srcdoc = resetStyle + rawHtml;
+                                    content = resetStyle + scriptShim + content;
                                 }
+                                iframe.srcdoc = content;
                                 
                                 // Replace the pre tag with the iframe
                                 const preTag = block.parentElement;
@@ -3215,6 +3230,24 @@
 
                 // Lifecycle
                 onMounted(async () => {
+                    // Expose triggerSlash for character cards
+                    window.triggerSlash = async (text) => {
+                        console.log('triggerSlash called:', text);
+                        if (!text) return;
+                        
+                        if (isGenerating.value) {
+                            showToast('正在生成中，请稍后...', 'warning');
+                            return;
+                        }
+
+                        // Add user message
+                        chatHistory.value.push({ role: 'user', content: text });
+                        await nextTick();
+                        scrollToBottom();
+
+                        await generateResponse();
+                    };
+
                     await loadData();
 
                     // --- Enforce Defaults ---
