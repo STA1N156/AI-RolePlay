@@ -86,6 +86,7 @@
         body {
             background-color: #f9fafb;
             color: #1f2937;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
         }
 
         .markdown-body p { margin-bottom: 0.75em; color: #374151; }
@@ -282,13 +283,16 @@
                                 <!-- Message Bubble -->
                                 <div class="group relative">
                                     <div :class="['px-4 py-3 rounded-2xl shadow-sm text-sm md:text-base leading-relaxed',
-                                        msg.role === 'user' ? 'bg-primary-100 text-gray-900 rounded-tr-none shadow-sm border border-primary-200' : 'bg-white text-gray-800 rounded-tl-none border border-gray-100 shadow-card']">
+                                        msg.role === 'user' ? 'bg-primary-100 text-gray-900 rounded-tr-none shadow-sm border border-primary-200' :
+                                        msg.role === 'system' ? 'bg-red-50 text-red-800 rounded-tl-none border border-red-200' :
+                                        'bg-white text-gray-800 rounded-tl-none border border-gray-100 shadow-card']">
                                         <div class="markdown-body" v-html="renderMarkdown(msg.content)"></div>
                                     </div>
                                     
                                     <!-- Message Actions -->
-                                    <div :class="['absolute -bottom-9 flex items-center space-x-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200', msg.role === 'user' ? 'right-0' : 'left-0']">
-                                        <button v-if="msg.role === 'assistant'" @click="regenerateMessage(index)" class="p-1.5 text-gray-400 hover:text-primary-600 bg-white rounded-full shadow-sm border border-gray-100 hover:bg-gray-50" title="重新生成">
+                                    <div v-if="(msg.role !== 'user') || (index === lastUserMessageIndex)"
+                                         :class="['absolute bottom-0 -mb-8 flex items-center space-x-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200', msg.role === 'user' ? 'right-0' : 'left-0']">
+                                        <button v-if="msg.role === 'assistant' || msg.role === 'system'" @click="regenerateMessage(index)" class="p-1.5 text-gray-400 hover:text-primary-600 bg-white rounded-full shadow-sm border border-gray-100 hover:bg-gray-50" title="重新生成">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                                         </button>
                                         <button @click="copyMessage(msg.content)" class="p-1.5 text-gray-400 hover:text-primary-600 bg-white rounded-full shadow-sm border border-gray-100 hover:bg-gray-50" title="复制">
@@ -307,7 +311,7 @@
                     <div v-if="isGenerating && !isReceiving" class="flex w-full justify-start">
                         <div class="flex max-w-[95%] flex-row">
                             <img :src="currentCharacter.avatar" class="w-8 h-8 rounded-full object-cover mr-2 border border-gray-200 shadow-sm">
-                            <div class="px-4 py-3 rounded-2xl rounded-tl-none bg-white border border-gray-100 shadow-card flex items-center">
+                            <div class="w-16 h-12 rounded-2xl rounded-tl-none bg-white border border-gray-100 shadow-card flex items-center justify-center">
                                 <div class="typing-indicator">
                                     <span></span><span></span><span></span>
                                 </div>
@@ -658,73 +662,180 @@
                         </button>
                     </div>
                 </div>
-                <div class="space-y-4">
-                    <div v-for="(entry, index) in worldInfo" :key="index" class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row gap-4 relative border-l-4" :class="entry.enabled ? 'border-l-primary-500' : 'border-l-gray-300'">
-                        
-                        <!-- Left: Toggle & Expand (Visual only for now) -->
-                        <div class="flex items-start justify-between md:justify-start md:flex-col gap-2">
-                            <label class="relative inline-flex items-center cursor-pointer" title="启用/禁用">
-                                <input type="checkbox" v-model="entry.enabled" class="sr-only peer">
-                                <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-600"></div>
-                            </label>
-                            <button @click="editWorldInfo(index)" class="md:hidden p-1 text-gray-400">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                            </button>
+                <!-- Activation Settings -->
+                <div class="bg-white/70 backdrop-blur-sm p-3 md:p-4 rounded-xl border border-gray-200 shadow-sm mb-4">
+                    <button @click="showWorldInfoSettings = !showWorldInfoSettings" class="w-full flex justify-between items-center font-bold text-gray-700 hover:text-primary-600 transition-colors">
+                        <span class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                            全局世界信息/知识书激活设置
+                        </span>
+                        <svg :class="{'transform rotate-180': !showWorldInfoSettings}" class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div v-show="showWorldInfoSettings" class="mt-4 pt-4 border-t border-gray-100 animate-fade-in">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 text-sm">
+                            <!-- Scan Depth -->
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="font-medium text-gray-600">扫描深度</label>
+                                    <span class="text-primary-600 font-mono bg-primary-50 px-2 py-0.5 rounded">{{ worldInfoSettings.scanDepth }}</span>
+                                </div>
+                                <input type="range" v-model.number="worldInfoSettings.scanDepth" min="0" max="20" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-600">
+                            </div>
+                            <!-- Context Percent -->
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="font-medium text-gray-600">上下文百分比</label>
+                                    <span class="text-primary-600 font-mono bg-primary-50 px-2 py-0.5 rounded">{{ worldInfoSettings.contextPercent }}%</span>
+                                </div>
+                                <input type="range" v-model.number="worldInfoSettings.contextPercent" min="0" max="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-600">
+                            </div>
+                            <!-- Token Budget -->
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="font-medium text-gray-600">Token预算上限</label>
+                                    <span class="text-primary-600 font-mono bg-primary-50 px-2 py-0.5 rounded">{{ worldInfoSettings.tokenBudget }}</span>
+                                </div>
+                                <input type="range" v-model.number="worldInfoSettings.tokenBudget" min="0" max="4096" step="64" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-600">
+                            </div>
+                            <!-- Min Activations -->
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="font-medium text-gray-600">最小激活数</label>
+                                    <span class="text-primary-600 font-mono bg-primary-50 px-2 py-0.5 rounded">{{ worldInfoSettings.minActivations }}</span>
+                                </div>
+                                <input type="range" v-model.number="worldInfoSettings.minActivations" min="0" max="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-600">
+                            </div>
+                            <!-- Max Depth -->
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="font-medium text-gray-600">最大深度</label>
+                                    <span class="text-primary-600 font-mono bg-primary-50 px-2 py-0.5 rounded">{{ worldInfoSettings.maxDepth }}</span>
+                                </div>
+                                <input type="range" v-model.number="worldInfoSettings.maxDepth" min="0" max="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-600">
+                            </div>
+                            <!-- Max Recursion -->
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="font-medium text-gray-600">最大递归深度</label>
+                                    <span class="text-primary-600 font-mono bg-primary-50 px-2 py-0.5 rounded">{{ worldInfoSettings.maxRecursion }}</span>
+                                </div>
+                                <input type="range" v-model.number="worldInfoSettings.maxRecursion" min="0" max="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-600">
+                            </div>
                         </div>
-
-                        <!-- Middle: Controls -->
-                        <div class="flex-1 grid grid-cols-1 gap-3">
-                            <!-- Row 1: Position -->
-                            <div class="flex items-center gap-2">
-                                <span class="text-gray-500 text-sm font-mono">位置:</span>
-                                <select v-model="entry.position" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-1.5">
-                                    <option value="before_char">角色之前</option>
-                                    <option value="after_char">角色之后</option>
-                                    <option value="at_depth">@D [系统]在深度</option>
-                                    <option value="author_note">作者注释</option>
-                                    <option value="global_note">全局注释</option>
+                        <div class="mt-6 pt-4 border-t border-gray-100">
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium text-gray-600 mb-1">插入策略</label>
+                                <select v-model="worldInfoSettings.insertionStrategy" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none text-sm">
+                                    <option value="uniform">均匀排序</option>
+                                    <option value="character_first">角色世界书优先</option>
+                                    <option value="global_first">全局设定优先</option>
                                 </select>
                             </div>
+                            <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                <label class="flex items-center space-x-2 cursor-pointer p-1 rounded hover:bg-gray-100">
+                                    <input type="checkbox" v-model="worldInfoSettings.includeNames" class="rounded text-primary-600 focus:ring-primary-500 h-4 w-4">
+                                    <span class="text-gray-700">包括名称</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer p-1 rounded hover:bg-gray-100">
+                                    <input type="checkbox" v-model="worldInfoSettings.recursiveScan" class="rounded text-primary-600 focus:ring-primary-500 h-4 w-4">
+                                    <span class="text-gray-700">递归扫描</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer p-1 rounded hover:bg-gray-100">
+                                    <input type="checkbox" v-model="worldInfoSettings.caseSensitive" class="rounded text-primary-600 focus:ring-primary-500 h-4 w-4">
+                                    <span class="text-gray-700">区分大小写</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer p-1 rounded hover:bg-gray-100">
+                                    <input type="checkbox" v-model="worldInfoSettings.matchWholeWords" class="rounded text-primary-600 focus:ring-primary-500 h-4 w-4">
+                                    <span class="text-gray-700">匹配整个单词</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer p-1 rounded hover:bg-gray-100">
+                                    <input type="checkbox" v-model="worldInfoSettings.useGroupScoring" class="rounded text-primary-600 focus:ring-primary-500 h-4 w-4">
+                                    <span class="text-gray-700">使用群组评分</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer p-1 rounded hover:bg-gray-100">
+                                    <input type="checkbox" v-model="worldInfoSettings.overflowWarning" class="rounded text-primary-600 focus:ring-primary-500 h-4 w-4">
+                                    <span class="text-gray-700">溢出警报</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                            <!-- Row 2: Stats -->
-                            <div class="grid grid-cols-3 gap-2">
-                                <div>
-                                    <label class="block text-xs text-gray-500 mb-1">深度</label>
-                                    <input type="number" v-model.number="entry.depth" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-1.5" placeholder="4">
-                                </div>
-                                <div>
-                                    <label class="block text-xs text-gray-500 mb-1">顺序</label>
-                                    <input type="number" v-model.number="entry.order" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-1.5" placeholder="0">
-                                </div>
-                                <div>
-                                    <label class="block text-xs text-gray-500 mb-1">触发 %</label>
-                                    <input type="number" v-model.number="entry.probability" min="0" max="100" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-1.5" placeholder="100">
-                                </div>
+                <div class="space-y-4">
+                    <div v-for="(entry, index) in worldInfo" :key="index" class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all flex flex-col gap-2 relative border-l-4" :class="entry.enabled ? 'border-l-primary-500' : 'border-l-gray-300'">
+                        <div class="flex items-center gap-3">
+                            <!-- Toggle -->
+                            <div class="flex-shrink-0">
+                                <label class="relative inline-flex items-center cursor-pointer" title="启用/禁用">
+                                    <input type="checkbox" v-model="entry.enabled" class="sr-only peer">
+                                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-600"></div>
+                                </label>
                             </div>
 
-                            <!-- Row 3: Name/Comment -->
-                            <div class="flex items-center gap-2">
-                                <input type="text" v-model="entry.comment" class="bg-gray-100 border-none text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2 font-medium" placeholder="条目名称/备注...">
-                                <div class="w-4 h-4 rounded-full flex-shrink-0" :class="entry.keys && entry.keys.length > 0 ? 'bg-blue-500' : 'bg-green-500'" :title="entry.keys && entry.keys.length > 0 ? '关键词触发' : '常驻'"></div>
+                            <!-- Name/Comment & Status -->
+                            <div class="flex-1 min-w-0">
+                                <input type="text" v-model="entry.comment" class="bg-transparent border-none text-gray-800 text-base font-bold rounded-lg focus:ring-1 focus:ring-primary-500 block w-full p-1 -ml-1" placeholder="条目名称/备注...">
                             </div>
                             
-                            <!-- Keys Preview -->
-                            <div v-if="entry.keys && entry.keys.length > 0" class="text-xs text-gray-500 truncate">
-                                关键词: {{ entry.keys.join(', ') }}
+                            <!-- Actions -->
+                            <div class="flex items-center space-x-1 flex-shrink-0">
+                                <button @click="editWorldInfo(index)" class="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="编辑详情">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                </button>
+                                <button @click="duplicateWorldInfo(index)" class="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="复制">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                </button>
+                                <button @click="deleteWorldInfo(index)" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="删除">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
                             </div>
                         </div>
 
-                        <!-- Right: Actions -->
-                        <div class="flex md:flex-col items-center justify-end gap-2 border-t md:border-t-0 md:border-l border-gray-100 pt-2 md:pt-0 md:pl-4">
-                            <button @click="editWorldInfo(index)" class="hidden md:block p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="编辑详情">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                            </button>
-                            <button @click="duplicateWorldInfo(index)" class="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="复制">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                            </button>
-                            <button @click="deleteWorldInfo(index)" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="删除">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
+                        <!-- Keywords -->
+                        <div class="pl-12 text-xs text-gray-500 truncate">
+                            <span class="font-semibold">关键词:</span>
+                            <span v-if="entry.keys && entry.keys.length > 0" class="ml-1">{{ entry.keys.join(', ') }}</span>
+                            <span v-else class="ml-1 italic text-green-600">常驻 (无关键词)</span>
+                        </div>
+
+                        <!-- Stats Grid -->
+                        <div class="pl-12 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 mt-2 text-xs">
+                            <div class="flex items-center" title="插入位置">
+                                <svg class="w-3.5 h-3.5 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                                <select v-model="entry.position" class="bg-gray-50 border-none text-gray-700 text-xs rounded-md focus:ring-1 focus:ring-primary-500 block w-full p-1">
+                                    <optgroup label="System Prompt">
+                                       <option value="system_top">System Top (最顶)</option>
+                                       <option value="global_note">Global Note (全局)</option>
+                                       <option value="before_char">Before Character (角色前)</option>
+                                       <option value="after_char">After Character (角色后)</option>
+                                    </optgroup>
+                                    <optgroup label="Author's Note">
+                                       <option value="an_top">AN Top (注释顶)</option>
+                                       <option value="author_note">AN Middle (注释中)</option>
+                                       <option value="an_bottom">AN Bottom (注释底)</option>
+                                    </optgroup>
+                                    <optgroup label="In-Chat">
+                                       <option value="at_depth">@ Depth (按深度)</option>
+                                       <option value="user_top">User Message Top (用户消息顶)</option>
+                                       <option value="assistant_top">AI Message Top (AI消息顶)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="flex items-center" title="深度 (Depth)">
+                                <svg class="w-3.5 h-3.5 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                                <input type="number" v-model.number="entry.depth" class="bg-gray-50 border-none text-gray-700 text-xs rounded-md focus:ring-1 focus:ring-primary-500 block w-full p-1" placeholder="4">
+                            </div>
+                            <div class="flex items-center" title="顺序 (Order)">
+                                <svg class="w-3.5 h-3.5 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9M3 12h9m-9 4h13m0-4l4 4m0 0l-4 4m-4-8l4-4m0 0l4 4"></path></svg>
+                                <input type="number" v-model.number="entry.order" class="bg-gray-50 border-none text-gray-700 text-xs rounded-md focus:ring-1 focus:ring-primary-500 block w-full p-1" placeholder="0">
+                            </div>
+                            <div class="flex items-center" title="触发概率 (%)">
+                                <svg class="w-3.5 h-3.5 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 15.536c-1.171 1.952-3.07 1.952-4.242 0-1.172-1.953-1.172-5.119 0-7.072 1.171-1.952 3.07-1.952 4.242 0 1.172 1.953 1.172 5.119 0 7.072zM12 12h.01"></path></svg>
+                                <div class="flex items-center gap-1 w-full">
+                                    <input type="checkbox" v-model="entry.useProbability" class="rounded text-primary-600 focus:ring-primary-500 h-3 w-3" title="启用概率">
+                                    <input type="number" v-model.number="entry.probability" min="0" max="100" class="bg-gray-50 border-none text-gray-700 text-xs rounded-md focus:ring-1 focus:ring-primary-500 block w-full p-1" placeholder="100" :disabled="entry.useProbability === false">
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -895,31 +1006,47 @@
 
         <!-- World Info Editor Modal -->
         <div v-if="showWorldInfoEditor" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div class="bg-white rounded-xl border border-gray-200 w-full max-w-2xl flex flex-col shadow-2xl">
-                <div class="p-4 border-b border-gray-100">
+            <div class="bg-white rounded-xl border border-gray-200 w-full max-w-3xl flex flex-col shadow-2xl max-h-[90vh]">
+                <div class="p-4 border-b border-gray-100 flex justify-between items-center flex-shrink-0">
                     <h3 class="text-lg font-bold text-gray-800">{{ editingWorldInfo.id !== undefined ? '编辑世界书条目' : '新建世界书条目' }}</h3>
+                     <button @click="showWorldInfoEditor = false" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                 </div>
-                <div class="p-6 space-y-4">
+                <div class="p-6 space-y-4 overflow-y-auto">
                     <!-- Basic Info -->
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-600 mb-1">名称/备注</label>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">名称/备注 (Comment)</label>
                             <input v-model="editingWorldInfo.data.comment" type="text" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-600 mb-1">位置</label>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">插入位置 (Position)</label>
                             <select v-model="editingWorldInfo.data.position" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none">
-                                <option value="before_char">角色之前</option>
-                                <option value="after_char">角色之后</option>
-                                <option value="at_depth">@D [系统]在深度</option>
-                                <option value="author_note">作者注释</option>
-                                <option value="global_note">全局注释</option>
+                               <optgroup label="System Prompt (系统提示词)">
+                                   <option value="system_top">System Top (最顶)</option>
+                                   <option value="global_note">Global Note (全局)</option>
+                                   <option value="before_char">Before Character (角色前)</option>
+                                   <option value="after_char">After Character (角色后)</option>
+                                   <option value="before_examples">Before Examples (示例前)</option>
+                                   <option value="after_examples">After Examples (示例后)</option>
+                               </optgroup>
+                               <optgroup label="Author's Note (作者注释)">
+                                   <option value="an_top">AN Top (注释顶)</option>
+                                   <option value="author_note">AN Middle (注释中)</option>
+                                   <option value="an_bottom">AN Bottom (注释底)</option>
+                               </optgroup>
+                               <optgroup label="In-Chat (对话中)">
+                                   <option value="at_depth">@ Depth (按深度)</option>
+                                   <option value="user_top">User Message Top (用户消息顶)</option>
+                                   <option value="assistant_top">AI Message Top (AI消息顶)</option>
+                               </optgroup>
                             </select>
                         </div>
                     </div>
 
                     <!-- Position & Probability -->
-                    <div class="grid grid-cols-3 gap-4">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">深度 (Depth)</label>
                             <input type="number" v-model.number="editingWorldInfo.data.depth" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none">
@@ -929,14 +1056,24 @@
                             <input type="number" v-model.number="editingWorldInfo.data.order" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none">
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">扫描深度</label>
+                            <input type="number" v-model.number="editingWorldInfo.data.scanDepth" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none" placeholder="默认">
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">触发概率 (%)</label>
-                            <input type="number" v-model.number="editingWorldInfo.data.probability" min="0" max="100" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                            <div class="flex items-center gap-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" v-model="editingWorldInfo.data.useProbability" class="rounded text-primary-600 focus:ring-primary-500">
+                                    <span class="ml-1 text-xs text-gray-500">启用</span>
+                                </label>
+                                <input type="number" v-model.number="editingWorldInfo.data.probability" min="0" max="100" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none" :disabled="editingWorldInfo.data.useProbability === false">
+                            </div>
                         </div>
                     </div>
 
                     <!-- Keys & Matching Strategy -->
-                    <div class="space-y-2 border-t border-gray-100 pt-2">
-                        <h4 class="text-sm font-bold text-gray-700">触发设置</h4>
+                    <div class="space-y-2 border-t border-gray-100 pt-4">
+                        <h4 class="text-base font-bold text-gray-700">触发设置</h4>
                         <div>
                             <label class="block text-sm font-medium text-gray-600 mb-1">主关键词 (逗号分隔)</label>
                             <input :value="editingWorldInfo.data.keys ? editingWorldInfo.data.keys.join(', ') : ''"
@@ -944,39 +1081,39 @@
                                    type="text" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none" placeholder="留空则始终触发 (常驻)">
                         </div>
                         
-                        <div class="flex flex-wrap gap-4 text-sm">
-                            <label class="flex items-center space-x-2 cursor-pointer">
+                        <div class="flex flex-wrap gap-x-4 gap-y-2 text-sm pt-2">
+                            <label class="flex items-center space-x-2 cursor-pointer" title="使用正则表达式匹配关键词">
                                 <input type="checkbox" v-model="editingWorldInfo.data.useRegex" class="rounded text-primary-600 focus:ring-primary-500">
                                 <span>正则匹配</span>
                             </label>
-                            <label class="flex items-center space-x-2 cursor-pointer">
+                            <label class="flex items-center space-x-2 cursor-pointer" title="仅匹配完整单词">
                                 <input type="checkbox" v-model="editingWorldInfo.data.matchWholeWords" class="rounded text-primary-600 focus:ring-primary-500">
                                 <span>全词匹配</span>
                             </label>
-                            <label class="flex items-center space-x-2 cursor-pointer">
+                            <label class="flex items-center space-x-2 cursor-pointer" title="匹配时区分大小写">
                                 <input type="checkbox" v-model="editingWorldInfo.data.caseSensitive" class="rounded text-primary-600 focus:ring-primary-500">
                                 <span>区分大小写</span>
                             </label>
-                            <label class="flex items-center space-x-2 cursor-pointer">
+                            <label class="flex items-center space-x-2 cursor-pointer" title="常驻条目，始终插入，忽略概率">
                                 <input type="checkbox" v-model="editingWorldInfo.data.constant" class="rounded text-primary-600 focus:ring-primary-500">
-                                <span>常驻 (忽略概率)</span>
+                                <span>常驻 (Constant)</span>
                             </label>
                         </div>
                     </div>
 
                     <!-- Advanced Filters -->
-                    <div class="space-y-2 border-t border-gray-100 pt-2">
+                    <div class="space-y-2 border-t border-gray-100 pt-4">
                         <div class="flex justify-between items-center">
-                            <h4 class="text-sm font-bold text-gray-700">高级过滤</h4>
-                            <select v-model.number="editingWorldInfo.data.selectiveLogic" class="text-xs border-gray-300 rounded bg-gray-50">
-                                <option :value="0">AND ANY (且任意)</option>
-                                <option :value="1">AND ALL (且所有)</option>
-                                <option :value="2">NOT ANY (非任意)</option>
-                                <option :value="3">NOT ALL (非所有)</option>
+                            <h4 class="text-base font-bold text-gray-700">高级过滤</h4>
+                            <select v-model.number="editingWorldInfo.data.selectiveLogic" class="text-sm border-gray-300 rounded-lg bg-gray-50 focus:ring-primary-500 focus:border-primary-500">
+                                <option :value="0">AND ANY (主词 & 任一次词)</option>
+                                <option :value="1">AND ALL (主词 & 所有次词)</option>
+                                <option :value="2">NOT ANY (主词 & 无任一次词)</option>
+                                <option :value="3">NOT ALL (主词 & 非所有次词)</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-600 mb-1">次级关键词 (可选)</label>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">次级关键词 (可选, 逗号分隔)</label>
                             <input :value="editingWorldInfo.data.secondary_keys ? editingWorldInfo.data.secondary_keys.join(', ') : ''"
                                    @input="editingWorldInfo.data.secondary_keys = $event.target.value.split(',').map(k => k.trim())"
                                    type="text" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none" placeholder="用于逻辑过滤">
@@ -984,37 +1121,64 @@
                     </div>
 
                     <!-- Timed Effects & Grouping -->
-                    <div class="grid grid-cols-2 gap-4 border-t border-gray-100 pt-2">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-100 pt-4">
                         <div>
-                            <h4 class="text-sm font-bold text-gray-700 mb-2">时效控制 (消息数)</h4>
+                            <h4 class="text-base font-bold text-gray-700 mb-2">时效控制 (消息数)</h4>
                             <div class="grid grid-cols-3 gap-2">
                                 <div>
                                     <label class="block text-xs text-gray-500">持续 (Sticky)</label>
-                                    <input type="number" v-model.number="editingWorldInfo.data.sticky" class="w-full text-sm border-gray-300 rounded bg-gray-50">
+                                    <input type="number" v-model.number="editingWorldInfo.data.sticky" min="0" class="w-full text-sm border-gray-300 rounded-lg bg-gray-50 focus:ring-primary-500 focus:border-primary-500">
                                 </div>
                                 <div>
-                                    <label class="block text-xs text-gray-500">冷却 (Cool)</label>
-                                    <input type="number" v-model.number="editingWorldInfo.data.cooldown" class="w-full text-sm border-gray-300 rounded bg-gray-50">
+                                    <label class="block text-xs text-gray-500">冷却 (Cooldown)</label>
+                                    <input type="number" v-model.number="editingWorldInfo.data.cooldown" min="0" class="w-full text-sm border-gray-300 rounded-lg bg-gray-50 focus:ring-primary-500 focus:border-primary-500">
                                 </div>
                                 <div>
                                     <label class="block text-xs text-gray-500">延迟 (Delay)</label>
-                                    <input type="number" v-model.number="editingWorldInfo.data.delay" class="w-full text-sm border-gray-300 rounded bg-gray-50">
+                                    <input type="number" v-model.number="editingWorldInfo.data.delay" min="0" class="w-full text-sm border-gray-300 rounded-lg bg-gray-50 focus:ring-primary-500 focus:border-primary-500">
                                 </div>
                             </div>
                         </div>
                         <div>
-                            <h4 class="text-sm font-bold text-gray-700 mb-2">分组 (Group)</h4>
-                            <div class="space-y-2">
-                                <input type="text" v-model="editingWorldInfo.data.group" class="w-full text-sm border-gray-300 rounded bg-gray-50" placeholder="组名">
+                            <h4 class="text-base font-bold text-gray-700 mb-2">分组 (Group)</h4>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="text" v-model="editingWorldInfo.data.group" class="w-full text-sm border-gray-300 rounded-lg bg-gray-50 focus:ring-primary-500 focus:border-primary-500" placeholder="组名">
+                                <input type="number" v-model.number="editingWorldInfo.data.groupWeight" class="w-full text-sm border-gray-300 rounded-lg bg-gray-50 focus:ring-primary-500 focus:border-primary-500" placeholder="权重">
+                            </div>
+                            <div class="mt-2">
+                                <label class="flex items-center space-x-2 cursor-pointer" title="在组内冲突时，优先选择Order值最高的条目（忽略权重）">
+                                    <input type="checkbox" v-model="editingWorldInfo.data.preferential" class="rounded text-primary-600 focus:ring-primary-500">
+                                    <span class="text-sm text-gray-600">优先包含 (Prioritized)</span>
+                                </label>
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Recursion -->
+                    <div class="space-y-2 border-t border-gray-100 pt-4">
+                        <h4 class="text-base font-bold text-gray-700">递归设置</h4>
+                        <div class="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+                            <label class="flex items-center space-x-2 cursor-pointer" title="此条目不会被其他条目递归触发">
+                                <input type="checkbox" v-model="editingWorldInfo.data.excludeRecursion" class="rounded text-primary-600 focus:ring-primary-500">
+                                <span>不可被递归</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer" title="此条目触发后，不会再触发其他条目">
+                                <input type="checkbox" v-model="editingWorldInfo.data.preventRecursion" class="rounded text-primary-600 focus:ring-primary-500">
+                                <span>阻止后续递归</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer" title="此条目仅在递归扫描时才会被触发">
+                                <input type="checkbox" v-model="editingWorldInfo.data.delayUntilRecursion" class="rounded text-primary-600 focus:ring-primary-500">
+                                <span>仅在递归时触发</span>
+                            </label>
+                        </div>
+                    </div>
+
                     <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-1">内容</label>
-                        <textarea v-model="editingWorldInfo.data.content" rows="8" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none"></textarea>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">内容 (Content)</label>
+                        <textarea v-model="editingWorldInfo.data.content" rows="8" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none font-mono text-sm"></textarea>
                     </div>
                 </div>
-                <div class="p-4 border-t border-gray-100 flex justify-end space-x-3">
+                <div class="p-4 border-t border-gray-100 flex justify-end space-x-3 flex-shrink-0">
                     <button @click="showWorldInfoEditor = false" class="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg transition-colors">取消</button>
                     <button @click="saveWorldInfo" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors shadow-sm">保存</button>
                 </div>
@@ -1088,6 +1252,23 @@
                 const regexScripts = ref([]);
                 const worldInfo = ref([]);
 
+                const showWorldInfoSettings = ref(false);
+                const worldInfoSettings = reactive({
+                    scanDepth: 2,
+                    contextPercent: 25,
+                    tokenBudget: 0,
+                    minActivations: 0,
+                    maxDepth: 0,
+                    maxRecursion: 0,
+                    insertionStrategy: 'character_first',
+                    includeNames: true,
+                    recursiveScan: true,
+                    caseSensitive: false,
+                    matchWholeWords: true,
+                    useGroupScoring: false,
+                    overflowWarning: false,
+                });
+
                 // Editing States
                 const editingCharacter = reactive({ id: undefined, data: {} });
                 const editingPreset = reactive({ id: undefined, data: {} });
@@ -1147,6 +1328,7 @@
                         await dbSet('silly_tavern_presets', presets.value);
                         await dbSet('silly_tavern_regex', regexScripts.value);
                         await dbSet('silly_tavern_worldinfo', worldInfo.value);
+                        await dbSet('silly_tavern_worldinfo_settings', worldInfoSettings);
                         await dbSet('silly_tavern_user', user);
                         
                         // Save Chat State
@@ -1257,6 +1439,9 @@
                         const savedWI = await dbGet('silly_tavern_worldinfo');
                         if (savedWI) worldInfo.value = savedWI;
 
+                        const savedWISettings = await dbGet('silly_tavern_worldinfo_settings');
+                        if (savedWISettings) Object.assign(worldInfoSettings, savedWISettings);
+
                         const savedUser = await dbGet('silly_tavern_user');
                         if (savedUser) Object.assign(user, savedUser);
                         
@@ -1352,6 +1537,15 @@
                     return availableModels.value
                         .filter(m => m.id.toLowerCase().includes(modelSearchQuery.value.toLowerCase()))
                         .sort((a, b) => a.id.localeCompare(b.id));
+                });
+
+                const lastUserMessageIndex = computed(() => {
+                    for (let i = chatHistory.value.length - 1; i >= 0; i--) {
+                        if (chatHistory.value[i].role === 'user') {
+                            return i;
+                        }
+                    }
+                    return -1;
                 });
 
                 // --- Methods ---
@@ -1490,9 +1684,6 @@
                 const stopGeneration = () => {
                     if (abortController.value) {
                         abortController.value.abort();
-                        abortController.value = null;
-                        isGenerating.value = false;
-                        showToast('生成已中止', 'info');
                     }
                 };
 
@@ -1511,9 +1702,16 @@
                 };
 
                 const scrollToBottom = () => {
-                    if (chatContainer.value) {
-                        chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
-                    }
+                    // Use nextTick to ensure the DOM has been updated before we try to scroll
+                    nextTick(() => {
+                        if (chatContainer.value) {
+                            // The scrollHeight might not be final right after DOM update due to rendering.
+                            // A small timeout gives the browser time to calculate the final layout.
+                            setTimeout(() => {
+                                chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+                            }, 50);
+                        }
+                    });
                 };
 
                 const clearChat = () => {
@@ -1584,39 +1782,257 @@
                     isReceiving.value = false;
                     abortController.value = new AbortController();
                     
-                    // World Info Scanning
-                    const activeWorldInfo = worldInfo.value.filter(e => e.enabled !== false);
-                    const lastMessages = chatHistory.value.slice(-5).map(m => m.content).join('\n').toLowerCase();
-                    
-                    const triggeredWI = activeWorldInfo.filter(entry => {
-                        // Probability Check
-                        if (entry.probability !== undefined && entry.probability < 100) {
-                            if (Math.random() * 100 > entry.probability) return false;
+                    // --- Advanced World Info Processing ---
+
+                    // Helper function to check a single entry against a text block
+                    const checkEntryTrigger = (entry, text, isRecursiveScan = false) => {
+                        // In initial scan, skip entries that are "delayUntilRecursion: true"
+                        if (!isRecursiveScan && entry.delayUntilRecursion === true) return { triggered: false };
+
+                        // Probability Check (do this early)
+                        if (entry.useProbability !== false && entry.probability !== undefined && entry.probability < 100) {
+                            if (Math.random() * 100 > entry.probability) return { triggered: false };
                         }
 
-                        // Key Check
-                        if (!entry.keys || entry.keys.length === 0) return true; // Always enabled
-                        return entry.keys.some(key => lastMessages.includes(key.toLowerCase()));
-                    });
+                        const caseSensitive = entry.caseSensitive ?? worldInfoSettings.caseSensitive;
+                        const matchWholeWords = entry.matchWholeWords ?? worldInfoSettings.matchWholeWords;
+                        const textToScan = caseSensitive ? text : text.toLowerCase();
+                        let primaryMatches = 0;
+                        let secondaryMatches = 0;
 
-                    // Sort by Order
-                    triggeredWI.sort((a, b) => (a.order || 0) - (b.order || 0));
+                        const checkKeys = (keys) => {
+                            let matchCount = 0;
+                            if (!keys || keys.length === 0 || keys.every(k => !k)) return 0;
 
-                    // Group by Position
-                    const wiGroups = {
-                        global_note: [],
-                        before_char: [],
-                        after_char: [],
-                        at_depth: [], // We'll handle this specially
-                        author_note: []
+                            keys.forEach(key => {
+                                if (!key) return;
+                                const finalKey = caseSensitive ? key : key.toLowerCase();
+                                let isMatch = false;
+                                if (entry.useRegex) {
+                                    try {
+                                        const regex = new RegExp(finalKey, caseSensitive ? 'g' : 'gi');
+                                        if (regex.test(textToScan)) isMatch = true;
+                                    } catch (e) { console.warn(`Invalid regex: ${finalKey}`); }
+                                } else if (matchWholeWords) {
+                                    const escapedKey = finalKey.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                                    const regex = new RegExp(`\\b${escapedKey}\\b`, caseSensitive ? 'g' : 'gi');
+                                    if (regex.test(textToScan)) isMatch = true;
+                                } else {
+                                    if (textToScan.includes(finalKey)) isMatch = true;
+                                }
+                                if (isMatch) matchCount++;
+                            });
+                            return matchCount;
+                        };
+
+                        primaryMatches = checkKeys(entry.keys);
+                        if (primaryMatches === 0) return { triggered: false };
+
+                        // Handle Selective Logic (secondary keys)
+                        const secondaryKeys = entry.secondary_keys || [];
+                        if (secondaryKeys.length > 0) {
+                            secondaryMatches = checkKeys(secondaryKeys);
+                            const logic = entry.selectiveLogic || 0; // 0: AND ANY, 1: AND ALL, 2: NOT ANY, 3: NOT ALL
+
+                            if (logic === 0 && secondaryMatches === 0) return { triggered: false }; // AND ANY
+                            if (logic === 1 && secondaryMatches < secondaryKeys.length) return { triggered: false }; // AND ALL
+                            if (logic === 2 && secondaryMatches > 0) return { triggered: false }; // NOT ANY
+                            if (logic === 3 && secondaryMatches === secondaryKeys.length) return { triggered: false }; // NOT ALL
+                        }
+
+                        return { triggered: true, score: primaryMatches + secondaryMatches };
                     };
 
-                    triggeredWI.forEach(entry => {
+                    let triggeredEntries = new Map(); // Use Map to store entries and their scores
+                    const activeWorldInfo = worldInfo.value.filter(e => e.enabled !== false);
+
+                    // 1. Initial Scan (Chat History)
+                    activeWorldInfo.forEach(entry => {
+                        if (entry.constant) {
+                            triggeredEntries.set(entry, { score: Infinity }); // Constants get highest score
+                            return;
+                        }
+
+                        const entryScanDepth = entry.scanDepth ?? worldInfoSettings.scanDepth;
+                        if (entryScanDepth === 0 || !entry.keys || entry.keys.length === 0) return;
+
+                        const scanText = chatHistory.value.slice(-entryScanDepth).map(m => {
+                            if (worldInfoSettings.includeNames) {
+                                const name = m.role === 'user' ? user.name : (m.name || currentCharacter.value.name);
+                                return `\x01${name}: ${m.content}`;
+                            }
+                            return m.content;
+                        }).join('\n');
+
+                        if (entry.keys && entry.keys.length > 0) {
+                            const result = checkEntryTrigger(entry, scanText);
+                            if (result.triggered) {
+                                triggeredEntries.set(entry, { score: result.score });
+                            }
+                        }
+                    });
+                    
+                    // 1.5 Min Activations Scan
+                    if (worldInfoSettings.minActivations > 0 && triggeredEntries.size < worldInfoSettings.minActivations) {
+                        const maxScan = worldInfoSettings.maxDepth > 0 ? worldInfoSettings.maxDepth : chatHistory.value.length;
+                        const alreadyTriggered = new Set(triggeredEntries.keys());
+                        const entriesToCheck = activeWorldInfo.filter(e => !alreadyTriggered.has(e));
+
+                        for (let i = worldInfoSettings.scanDepth; i < maxScan; i++) {
+                            if (triggeredEntries.size >= worldInfoSettings.minActivations) break;
+                            const index = chatHistory.value.length - 1 - i;
+                            if (index < 0) break;
+                            
+                            const msg = chatHistory.value[index];
+                            const singleMsgScanText = worldInfoSettings.includeNames
+                                ? `\x01${msg.role === 'user' ? user.name : (msg.name || currentCharacter.value.name)}: ${msg.content}`
+                                : msg.content;
+
+                            for (const entry of entriesToCheck) {
+                                if (triggeredEntries.has(entry)) continue;
+                                const result = checkEntryTrigger(entry, singleMsgScanText);
+                                if (result.triggered) {
+                                    triggeredEntries.set(entry, { score: result.score });
+                                    if (triggeredEntries.size >= worldInfoSettings.minActivations) break;
+                                }
+                            }
+                        }
+                    }
+
+
+                    // 2. Recursive Scan
+                    if (worldInfoSettings.recursiveScan) {
+                        let newTriggersInPass = new Set(triggeredEntries.keys());
+                        let processedForRecursion = new Set();
+                        let currentDepth = 0;
+
+                        while (newTriggersInPass.size > 0 && (worldInfoSettings.maxRecursion === 0 || currentDepth < worldInfoSettings.maxRecursion)) {
+                            const recursionText = Array.from(newTriggersInPass)
+                                .filter(entry => !entry.preventRecursion)
+                                .map(entry => entry.content).join('\n');
+                            
+                            newTriggersInPass.forEach(e => processedForRecursion.add(e));
+                            newTriggersInPass.clear();
+
+                            activeWorldInfo.forEach(entry => {
+                                if (triggeredEntries.has(entry) || entry.excludeRecursion) return;
+                                
+                                const result = checkEntryTrigger(entry, recursionText, true);
+                                if (result.triggered) {
+                                    newTriggersInPass.add(entry);
+                                    triggeredEntries.set(entry, { score: result.score });
+                                }
+                            });
+                            currentDepth++;
+                        }
+                    }
+
+                    // 3. Group Processing
+                    let finalEntries = Array.from(triggeredEntries.keys());
+                    const groups = {};
+                    finalEntries.forEach(entry => {
+                        if (entry.group) {
+                            if (!groups[entry.group]) groups[entry.group] = [];
+                            groups[entry.group].push(entry);
+                        }
+                    });
+
+                    Object.values(groups).forEach(group => {
+                        if (group.length <= 1) return;
+                        
+                        let candidates = [...group];
+                        // 3.1 Group Scoring
+                        if (worldInfoSettings.useGroupScoring) {
+                            let maxScore = 0;
+                            candidates.forEach(entry => {
+                                const score = triggeredEntries.get(entry).score;
+                                if (score > maxScore) maxScore = score;
+                            });
+                            candidates = candidates.filter(entry => triggeredEntries.get(entry).score === maxScore);
+                        }
+                        
+                        if (candidates.length <= 1) return;
+
+                        let winner = null;
+
+                        // 3.2 Check for Prioritized Inclusion
+                        // If any candidate has preferential enabled, we select based on highest Order
+                        const prioritized = candidates.filter(e => e.preferential);
+                        if (prioritized.length > 0) {
+                            prioritized.sort((a, b) => (b.order || 0) - (a.order || 0));
+                            winner = prioritized[0];
+                        } else {
+                            // 3.3 Select one winner from candidates (weighted random)
+                            let totalWeight = candidates.reduce((sum, entry) => sum + (entry.groupWeight || 100), 0);
+                            let random = Math.random() * totalWeight;
+                            winner = candidates[candidates.length - 1]; // Default to last
+                            for (const entry of candidates) {
+                                random -= (entry.groupWeight || 100);
+                                if (random <= 0) {
+                                    winner = entry;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // Deactivate all others in the original group
+                        group.forEach(entry => {
+                            if (entry !== winner) {
+                                triggeredEntries.delete(entry);
+                            }
+                        });
+                    });
+
+                    finalEntries = Array.from(triggeredEntries.keys());
+
+                    // 4. Token Budgeting
+                    let tokenBudget;
+                    if (worldInfoSettings.tokenBudget > 0) {
+                        tokenBudget = worldInfoSettings.tokenBudget;
+                    } else if (worldInfoSettings.contextPercent > 0) {
+                        tokenBudget = Math.floor((settings.contextSize * worldInfoSettings.contextPercent) / 100);
+                    } else {
+                        tokenBudget = Infinity; // No limit if both are 0
+                    }
+                    let usedTokens = 0;
+                    
+                    // Sort by constant, then order
+                    finalEntries.sort((a, b) => {
+                        if (a.constant && !b.constant) return -1;
+                        if (!a.constant && b.constant) return 1;
+                        // Sort descending by order for budget priority (higher order = more important/inserted later = kept if budget tight?)
+                        // Docs: "Then entries with higher order numbers." implying they are prioritized after constants.
+                        return (b.order || 0) - (a.order || 0);
+                    });
+
+                    const budgetedEntries = [];
+                    for (const entry of finalEntries) {
+                        // Simple token approximation
+                        const entryTokens = Math.ceil((entry.content || '').length / 3);
+                        if (usedTokens + entryTokens <= tokenBudget) {
+                            budgetedEntries.push(entry);
+                            usedTokens += entryTokens;
+                        } else {
+                            if (worldInfoSettings.overflowWarning) {
+                                showToast(`世界书超出预算，条目 "${entry.comment || 'Unnamed'}" 未被插入`, 'info');
+                            }
+                            break; // Stop adding entries
+                        }
+                    }
+
+                    // 5. Group by Position
+                    const wiGroups = {
+                        system_top: [], global_note: [], before_char: [], after_char: [],
+                        before_examples: [], after_examples: [], an_top: [], author_note: [],
+                        an_bottom: [], user_top: [], assistant_top: [], at_depth: []
+                    };
+
+                    budgetedEntries.forEach(entry => {
                         const pos = entry.position || 'at_depth';
-                        if (wiGroups[pos]) {
+                        if (wiGroups.hasOwnProperty(pos)) {
                             wiGroups[pos].push(entry);
                         } else {
-                            wiGroups['at_depth'].push(entry); // Default
+                            wiGroups.at_depth.push(entry);
                         }
                     });
 
@@ -1634,30 +2050,43 @@
                     const joinContent = (entries) => entries.map(e => e.content).join('\n\n');
 
                     // Build System Prompt
-                    let systemPrompt = '';
+                    let systemPromptParts = [];
                     
-                    // 1. Global Notes (Top)
-                    if (wiGroups.global_note.length > 0) systemPrompt += joinContent(wiGroups.global_note) + '\n\n';
+                    // 1. System Top WI
+                    if (wiGroups.system_top.length > 0) systemPromptParts.push(joinContent(wiGroups.system_top));
                     
-                    // 2. Presets
-                    systemPrompt += presetPrompt + '\n\n';
+                    // 2. Global Notes
+                    if (wiGroups.global_note.length > 0) systemPromptParts.push(joinContent(wiGroups.global_note));
                     
-                    // 3. Before Char WI
-                    if (wiGroups.before_char.length > 0) systemPrompt += joinContent(wiGroups.before_char) + '\n\n';
+                    // 3. Presets
+                    if (presetPrompt) systemPromptParts.push(presetPrompt);
                     
-                    // 4. Character
-                    systemPrompt += `[Character]\n${charPrompt}\n\n`;
+                    // 4. Before Char WI
+                    if (wiGroups.before_char.length > 0) systemPromptParts.push(joinContent(wiGroups.before_char));
                     
-                    // 5. After Char WI
-                    if (wiGroups.after_char.length > 0) systemPrompt += joinContent(wiGroups.after_char) + '\n\n';
+                    // 5. Character Definition
+                    let charDefinition = `[Character]\n${charPrompt}`;
+                    if (wiGroups.before_examples.length > 0) charDefinition += '\n\n' + joinContent(wiGroups.before_examples);
+                    if (wiGroups.after_examples.length > 0) charDefinition += '\n\n' + joinContent(wiGroups.after_examples);
+                    systemPromptParts.push(charDefinition);
                     
-                    // 6. User Info
-                    systemPrompt += userPrompt;
+                    // 6. After Char WI
+                    if (wiGroups.after_char.length > 0) systemPromptParts.push(joinContent(wiGroups.after_char));
+                    
+                    // 7. User Info
+                    systemPromptParts.push(userPrompt);
 
-                    // 7. Author's Note (usually at end of system prompt or depth 1)
-                    if (wiGroups.author_note.length > 0) {
-                        systemPrompt += '\n\n[Author\'s Note]\n' + joinContent(wiGroups.author_note);
+                    // 8. Author's Note section
+                    let authorsNoteParts = [];
+                    if (wiGroups.an_top.length > 0) authorsNoteParts.push(joinContent(wiGroups.an_top));
+                    if (wiGroups.author_note.length > 0) authorsNoteParts.push(joinContent(wiGroups.author_note));
+                    if (wiGroups.an_bottom.length > 0) authorsNoteParts.push(joinContent(wiGroups.an_bottom));
+                    
+                    if (authorsNoteParts.length > 0) {
+                        systemPromptParts.push(`[Author's Note]\n${authorsNoteParts.join('\n\n')}`);
                     }
+
+                    const systemPrompt = systemPromptParts.join('\n\n');
 
                     // Base Messages
                     let messages = [
@@ -1668,30 +2097,60 @@
                         }))
                     ];
 
-                    // Handle @D (At Depth) Injection
-                    if (wiGroups.at_depth.length > 0) {
-                        // Sort by depth ascending (0, 1, 2...)
-                        wiGroups.at_depth.sort((a, b) => {
-                            if (a.depth !== b.depth) return a.depth - b.depth;
-                            return (a.order || 0) - (b.order || 0);
-                        });
+                    // Handle @D (At Depth) and other message-level injections
+                    const processMessageInjections = (msgArray) => {
+                        let finalMessages = [...msgArray];
 
-                        wiGroups.at_depth.forEach(entry => {
-                            const depth = entry.depth !== undefined ? entry.depth : 4;
-                            const content = entry.content;
+                        // At Depth
+                        if (wiGroups.at_depth.length > 0) {
+                            wiGroups.at_depth.sort((a, b) => (a.order || 0) - (b.order || 0));
+                            const reversedHistory = [...finalMessages].reverse();
                             
-                            let insertIndex = messages.length - depth;
-                            
-                            // Boundary checks
-                            if (insertIndex < 1) insertIndex = 1; // Don't go before system prompt
-                            if (insertIndex > messages.length) insertIndex = messages.length;
+                            wiGroups.at_depth.forEach(entry => {
+                                const depth = entry.depth !== undefined ? entry.depth : 4;
+                                const content = `[World Info: ${entry.comment || 'Entry'}]\n${entry.content}`;
+                                
+                                // Find the correct insertion point from the end of the array
+                                let countdown = depth;
+                                let targetIndex = -1;
+                                for (let i = 0; i < reversedHistory.length; i++) {
+                                    // We only count user/assistant pairs as "turns" for depth
+                                    if (reversedHistory[i].role === 'user' || reversedHistory[i].role === 'assistant') {
+                                        countdown--;
+                                    }
+                                    if (countdown < 0) {
+                                        targetIndex = reversedHistory.length - 1 - i;
+                                        break;
+                                    }
+                                }
+                                // If depth is larger than history, insert after system prompt
+                                if (targetIndex === -1) targetIndex = 1;
 
-                            messages.splice(insertIndex, 0, {
-                                role: 'system',
-                                content: `[World Info: ${entry.comment || 'Entry'}]\n${content}`
+                                finalMessages.splice(targetIndex, 0, { role: 'system', content });
                             });
-                        });
-                    }
+                        }
+
+                        // User Top
+                        if (wiGroups.user_top.length > 0) {
+                            const content = joinContent(wiGroups.user_top);
+                            const lastUserMessage = finalMessages.slice().reverse().find(m => m.role === 'user');
+                            if (lastUserMessage) {
+                                lastUserMessage.content = `${content}\n\n${lastUserMessage.content}`;
+                            }
+                        }
+
+                        // Assistant Top
+                        if (wiGroups.assistant_top.length > 0) {
+                            const content = joinContent(wiGroups.assistant_top);
+                            // This should be injected into the *next* assistant message,
+                            // so we add it as a system message right before the end.
+                            finalMessages.push({ role: 'system', content: `[Instructions for next message]\n${content}` });
+                        }
+                        
+                        return finalMessages;
+                    };
+
+                    messages = processMessageInjections(messages);
 
                     // --- 优化后的控制台日志 ---
                     console.group('🚀 发送给 AI 的请求详情');
@@ -1775,9 +2234,26 @@
                             }
                         }
                         
+                        if (assistantMessage) {
+                            console.groupCollapsed('📬 AI 响应接收完毕');
+                            console.log('AI返回的完整内容:', assistantMessage.content);
+                            console.groupEnd();
+                        }
+
                     } catch (error) {
                         if (error.name === 'AbortError') {
                             showToast('生成已中止', 'info');
+                            const lastMessage = chatHistory.value[chatHistory.value.length - 1];
+                            if (lastMessage && lastMessage.role === 'assistant' && isReceiving.value) {
+                                if (lastMessage.content.trim() === '') {
+                                    chatHistory.value.pop();
+                                    chatHistory.value.push({ role: 'system', content: '生成已中止' });
+                                } else {
+                                    lastMessage.content += '\n\n*-- 生成已中止 --*';
+                                }
+                            } else {
+                                chatHistory.value.push({ role: 'system', content: '生成已中止' });
+                            }
                         } else {
                             showToast('生成失败: ' + error.message, 'error');
                             chatHistory.value.push({ role: 'system', content: `Error: ${error.message}` });
@@ -1821,21 +2297,26 @@
                 };
 
                 const deleteCharacter = (index) => {
-                    confirmAction('确定要删除这个角色吗？此操作无法撤销。', () => {
-                        const char = characters.value[index];
-                        if (char && char.uuid) {
-                            dbDelete(`silly_tavern_chat_${char.uuid}`);
-                        }
-                        
-                        characters.value.splice(index, 1);
-                        if (currentCharacterIndex.value === index) {
-                            currentCharacterIndex.value = -1;
-                            chatHistory.value = [];
-                        } else if (currentCharacterIndex.value > index) {
-                            currentCharacterIndex.value--;
-                        }
-                        showToast('角色已删除', 'success');
-                    });
+                    confirmAction('确定要删除这个角色吗？此操作无法撤销。', async () => {
+                       try {
+                           const char = characters.value[index];
+                           if (char && char.uuid) {
+                               await dbDelete(`silly_tavern_chat_${char.uuid}`);
+                           }
+                           
+                           characters.value.splice(index, 1);
+                           if (currentCharacterIndex.value === index) {
+                               currentCharacterIndex.value = -1;
+                               chatHistory.value = [];
+                           } else if (currentCharacterIndex.value > index) {
+                               currentCharacterIndex.value--;
+                           }
+                           showToast('角色已删除', 'success');
+                       } catch (err) {
+                           console.error('Failed to delete character or associated data:', err);
+                           showToast('删除角色失败', 'error');
+                       }
+                   });
                 };
 
                 const selectCharacter = async (index) => {
@@ -2011,6 +2492,132 @@
                 };
 
                 // Import/Export Logic
+
+                const normalizeWorldInfoEntry = (entry) => {
+                    // Create a merged object from root and extensions for robust parsing
+                    // FIX: Extensions should override root properties as they usually contain more specific/updated settings
+                    const mergedEntry = { ...entry };
+                    const ext = entry.extensions || {};
+                    Object.keys(ext).forEach(key => {
+                        if (ext[key] !== undefined && ext[key] !== null) {
+                            mergedEntry[key] = ext[key];
+                        }
+                    });
+                    delete mergedEntry.extensions; // Clean up
+
+                    // Helper to safely convert values to boolean
+                    const toBoolean = (value, defaultValue) => {
+                        if (value === undefined || value === null) return defaultValue;
+                        if (typeof value === 'string') {
+                            if (value.toLowerCase() === 'false') return false;
+                            if (value.toLowerCase() === 'true') return true;
+                        }
+                        return !!value;
+                    };
+                    
+                    // Helper to safely convert values to number
+                    const toNumber = (value, defaultValue) => {
+                        if (value === undefined || value === null || value === '') return defaultValue;
+                        const num = Number(value);
+                        return isNaN(num) ? defaultValue : num;
+                    };
+
+                    // Normalize keys (ST uses 'keys' array, but some exports might be comma string)
+                    // Also handle 'key' (singular) which appears in some exports like the example json
+                    let keys = mergedEntry.keys || mergedEntry.key || [];
+                    if (typeof keys === 'string') {
+                        keys = keys.split(',').map(k => k.trim()).filter(Boolean);
+                    } else if (!Array.isArray(keys)) {
+                        keys = [];
+                    }
+
+                    let secondary_keys = mergedEntry.secondary_keys || mergedEntry.keysecondary || [];
+                    if (typeof secondary_keys === 'string') {
+                        secondary_keys = secondary_keys.split(',').map(k => k.trim()).filter(Boolean);
+                    } else if (!Array.isArray(secondary_keys)) {
+                        secondary_keys = [];
+                    }
+
+                    // Map ST position to our internal values with improved logic
+                    let position = 'at_depth'; // Default
+                    const stPos = mergedEntry.position;
+                    const validPositions = ['system_top', 'global_note', 'before_char', 'after_char', 'before_examples', 'after_examples', 'an_top', 'author_note', 'an_bottom', 'at_depth', 'user_top', 'assistant_top'];
+
+                    if (typeof stPos === 'string') {
+                        const lowerPos = stPos.toLowerCase().replace(/ /g, '_');
+                        const foundPos = validPositions.find(p => p === lowerPos);
+                        if (foundPos) {
+                            position = foundPos;
+                        }
+                    } else if (typeof stPos === 'number' || (typeof stPos === 'string' && !isNaN(Number(stPos)) && validPositions.indexOf(stPos) === -1)) {
+                        const numPos = Number(stPos);
+                        // SillyTavern Standard Position Mapping
+                        // 0: Before Char
+                        // 1: After Char
+                        // 2: AN Top
+                        // 3: AN Bottom
+                        // 4: At Depth
+                        const posMap = {
+                            0: 'before_char',
+                            1: 'after_char',
+                            2: 'an_top',
+                            3: 'an_bottom',
+                            4: 'at_depth',
+                        };
+                        position = posMap[numPos] !== undefined ? posMap[numPos] : 'at_depth';
+                    }
+
+                    // Explicitly handle mapped fields to ensure extensions override correctly
+                    // Extensions often use snake_case while we prefer camelCase or vice versa in some legacy
+                    const getValue = (keys, defaultValue) => {
+                        for (const key of keys) {
+                            if (mergedEntry[key] !== undefined && mergedEntry[key] !== null) {
+                                return mergedEntry[key];
+                            }
+                        }
+                        return defaultValue;
+                    };
+
+                    return {
+                        // --- Basic Info ---
+                        comment: getValue(['comment'], ''),
+                        content: getValue(['content'], ''),
+                        enabled: toBoolean(getValue(['enabled'], true), true) && !toBoolean(getValue(['disable', 'disabled'], false), false),
+                        
+                        // --- Keys & Matching ---
+                        keys: keys,
+                        secondary_keys: secondary_keys,
+                        selectiveLogic: toNumber(getValue(['selectiveLogic', 'selective_logic'], 0), 0),
+                        useRegex: toBoolean(getValue(['use_regex', 'useRegex'], false), false),
+                        caseSensitive: toBoolean(getValue(['case_sensitive', 'caseSensitive'], false), false),
+                        matchWholeWords: toBoolean(getValue(['match_whole_words', 'matchWholeWords'], true), true),
+                        constant: toBoolean(getValue(['constant'], false), false),
+
+                        // --- Position & Order ---
+                        position: position,
+                        order: toNumber(getValue(['insertion_order', 'order'], 0), 0),
+                        depth: toNumber(getValue(['depth'], 4), 4),
+                        scanDepth: toNumber(getValue(['scan_depth', 'scanDepth'], null), null),
+                        probability: toNumber(getValue(['probability'], 100), 100),
+                        useProbability: toBoolean(getValue(['useProbability', 'use_probability'], true), true),
+
+                        // --- Grouping ---
+                        group: getValue(['group'], ''),
+                        groupWeight: toNumber(getValue(['group_weight', 'groupWeight'], 100), 100),
+                        preferential: toBoolean(getValue(['preferential', 'preferential_inclusion'], false), false),
+                        
+                        // --- Timed Effects ---
+                        sticky: toNumber(getValue(['sticky'], 0), 0),
+                        cooldown: toNumber(getValue(['cooldown'], 0), 0),
+                        delay: toNumber(getValue(['delay'], 0), 0),
+                        
+                        // --- Recursion ---
+                        excludeRecursion: toBoolean(getValue(['exclude_recursion', 'excludeRecursion'], false), false),
+                        preventRecursion: toBoolean(getValue(['prevent_recursion', 'preventRecursion'], false), false),
+                        delayUntilRecursion: toBoolean(getValue(['delay_until_recursion', 'delayUntilRecursion'], false), false),
+                    };
+                };
+
                 const importCharacter = (event) => {
                     const file = event.target.files[0];
                     if (!file) return;
@@ -2088,6 +2695,9 @@
                             if (characterBook) {
                                 if (Array.isArray(characterBook.entries)) {
                                     entries = characterBook.entries;
+                                } else if (typeof characterBook.entries === 'object' && characterBook.entries !== null) {
+                                    // Handle object-based entries from some exports (like the user's file)
+                                    entries = Object.values(characterBook.entries);
                                 } else if (Array.isArray(characterBook)) {
                                     // Legacy array format
                                     entries = characterBook;
@@ -2095,36 +2705,8 @@
                             }
 
                             if (entries.length > 0) {
-                                char.worldInfo = entries.map(entry => {
-                                    // Normalize keys (ST uses 'keys' array, but some exports might be comma string)
-                                    let normalizedKeys = entry.keys;
-                                    if (typeof normalizedKeys === 'string') {
-                                        normalizedKeys = normalizedKeys.split(',').map(k => k.trim()).filter(k => k);
-                                    } else if (!Array.isArray(normalizedKeys)) {
-                                        normalizedKeys = [];
-                                    }
-                                    
-                                    // Preserve ALL original fields and only normalize if needed
-                                    const normalized = {
-                                        ...entry, // Keep all original ST fields
-                                    };
-                                    
-                                    // Only set keys if we normalized it
-                                    if (normalizedKeys !== entry.keys) {
-                                        normalized.keys = normalizedKeys;
-                                    }
-                                    
-                                    // Ensure basic required fields exist with defaults
-                                    if (!normalized.hasOwnProperty('enabled')) {
-                                        normalized.enabled = entry.enabled !== false;
-                                    }
-                                    if (!normalized.content) {
-                                        normalized.content = entry.content || '';
-                                    }
-                                    
-                                    return normalized;
-                                });
-                                console.log(`Imported ${char.worldInfo.length} World Info entries.`);
+                                char.worldInfo = entries.map(normalizeWorldInfoEntry);
+                                console.log(`Imported and normalized ${char.worldInfo.length} World Info entries.`);
                             }
 
                             // --- Process Regex Scripts ---
@@ -2799,6 +3381,7 @@
                     user, settings, characters, currentCharacter, chatHistory, presets, regexScripts, worldInfo,
                     activeRegexCount, activeWorldInfoCount,
                     editingCharacter, editingPreset, toasts, chatContainer, inputBox,
+                    lastUserMessageIndex, // Expose to template
                     toggleMobileMenu: () => showMobileMenu.value = !showMobileMenu.value,
                     fetchModels, selectModel, sendMessage, stopGeneration, clearChat,
                     handleConfirm, handleCancel, // Export handlers
@@ -2944,43 +3527,15 @@
                                 if (Array.isArray(data)) {
                                     entries = data;
                                 } else if (data.entries) {
-                                    entries = data.entries;
+                                    if (Array.isArray(data.entries)) {
+                                        entries = data.entries;
+                                    } else if (typeof data.entries === 'object' && data.entries !== null) {
+                                        // Handle object-based entries from some exports
+                                        entries = Object.values(data.entries);
+                                    }
                                 }
                                 if (entries.length > 0) {
-                                    // Normalize entries
-                                    const normalizedEntries = entries.map(e => {
-                                        // Handle keys normalization
-                                        let keys = e.keys || [];
-                                        if (typeof keys === 'string') keys = keys.split(',').map(k => k.trim());
-                                        
-                                        let secondary_keys = e.secondary_keys || [];
-                                        if (typeof secondary_keys === 'string') secondary_keys = secondary_keys.split(',').map(k => k.trim());
-
-                                        return {
-                                            ...e,
-                                            enabled: e.enabled !== false,
-                                            keys: keys,
-                                            secondary_keys: secondary_keys,
-                                            content: e.content || '',
-                                            position: e.position || 'at_depth',
-                                            depth: e.depth !== undefined ? e.depth : 4,
-                                            order: e.order !== undefined ? e.order : 100,
-                                            probability: e.probability !== undefined ? e.probability : 100,
-                                            comment: e.comment || e.name || '',
-                                            
-                                            useRegex: e.useRegex || false,
-                                            matchWholeWords: e.matchWholeWords !== undefined ? e.matchWholeWords : true,
-                                            caseSensitive: e.caseSensitive || false,
-                                            scanDepth: e.scanDepth !== undefined ? e.scanDepth : 2,
-                                            selectiveLogic: e.selectiveLogic || 0,
-                                            group: e.group || '',
-                                            sticky: e.sticky || 0,
-                                            cooldown: e.cooldown || 0,
-                                            delay: e.delay || 0,
-                                            constant: e.constant || false
-                                        };
-                                    });
-                                    
+                                    const normalizedEntries = entries.map(normalizeWorldInfoEntry);
                                     worldInfo.value = [...worldInfo.value, ...normalizedEntries];
                                     if (currentCharacterIndex.value !== -1) {
                                         characters.value[currentCharacterIndex.value].worldInfo = JSON.parse(JSON.stringify(worldInfo.value));
@@ -3013,7 +3568,8 @@
                             caseSensitive: false,
                             scanDepth: 2,
                             probability: 100,
-                            
+                            useProbability: true,
+
                             // Advanced Filters
                             secondary_keys: [],
                             selectiveLogic: 0, // 0: AND ANY, 1: AND ALL, 2: NOT ANY, 3: NOT ALL
@@ -3021,6 +3577,7 @@
                             // Grouping
                             group: '',
                             groupWeight: 100,
+                            preferential: false,
                             
                             // Timed Effects
                             sticky: 0,
@@ -3052,6 +3609,7 @@
                         if (data.depth === undefined) data.depth = 4;
                         if (data.order === undefined) data.order = 100;
                         if (data.probability === undefined) data.probability = 100;
+                        if (data.useProbability === undefined) data.useProbability = true;
                         if (!data.comment) data.comment = '';
                         
                         // New fields defaults
@@ -3062,6 +3620,7 @@
                         if (!data.secondary_keys) data.secondary_keys = [];
                         if (data.selectiveLogic === undefined) data.selectiveLogic = 0;
                         if (!data.group) data.group = '';
+                        if (data.preferential === undefined) data.preferential = false;
                         if (data.sticky === undefined) data.sticky = 0;
                         if (data.cooldown === undefined) data.cooldown = 0;
                         if (data.delay === undefined) data.delay = 0;
@@ -3093,7 +3652,8 @@
                     },
                     
                     processRegex,
-                    showRegexEditor, showWorldInfoEditor, editingRegex, editingWorldInfo
+                    showRegexEditor, showWorldInfoEditor, editingRegex, editingWorldInfo,
+                    worldInfoSettings, showWorldInfoSettings
                 };
             }
         }).mount('#app');
