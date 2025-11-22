@@ -89,18 +89,39 @@
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
         }
 
-        .markdown-body p { margin-bottom: 0.75em; color: #374151; }
-        .markdown-body p:last-child { margin-bottom: 0; } /* Remove bottom margin from last paragraph */
-        .markdown-body ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 0.75em; color: #374151; }
-        .markdown-body ul:last-child { margin-bottom: 0; }
-        .markdown-body ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 0.75em; color: #374151; }
-        .markdown-body ol:last-child { margin-bottom: 0; }
+        /* Markdown Body Layout Reset for Full-width Content */
+        .markdown-body {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Default padding for text elements */
+        .markdown-body > * {
+            padding-left: 1rem;
+            padding-right: 1rem;
+            margin-bottom: 0.75em;
+        }
+
+        /* Top/Bottom padding simulation */
+        .markdown-body > *:first-child { padding-top: 0.75rem; }
+        .markdown-body > *:last-child { padding-bottom: 0.75rem; margin-bottom: 0; }
+
+        /* Full-width elements (iframe) */
+        .markdown-body > iframe {
+            width: 100%;
+            padding: 0 !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            max-width: none;
+        }
+
+        .markdown-body p { color: #374151; }
+        .markdown-body ul { list-style-type: disc; margin-left: 1.5em; color: #374151; }
+        .markdown-body ol { list-style-type: decimal; margin-left: 1.5em; color: #374151; }
         .markdown-body code { background-color: #f3f4f6; padding: 0.2em 0.4em; border-radius: 0.25em; font-family: monospace; color: #ef4444; }
-        .markdown-body pre { background-color: #f3f4f6; padding: 1em; border-radius: 0.5em; overflow-x: auto; margin-bottom: 0.75em; border: 1px solid #e5e7eb; }
-        .markdown-body pre:last-child { margin-bottom: 0; }
+        .markdown-body pre { background-color: #f3f4f6; padding: 1em; border-radius: 0.5em; overflow-x: auto; border: 1px solid #e5e7eb; margin-left: 1rem; margin-right: 1rem; }
         .markdown-body pre code { background-color: transparent; padding: 0; color: #1f2937; }
-        .markdown-body blockquote { border-left: 4px solid #e5e7eb; padding-left: 1em; color: #6b7280; margin-bottom: 0.75em; }
-        .markdown-body blockquote:last-child { margin-bottom: 0; }
+        .markdown-body blockquote { border-left: 4px solid #e5e7eb; padding-left: 1em; color: #6b7280; margin-left: 1rem; margin-right: 1rem; }
 
         .glass-panel {
             background: rgba(255, 255, 255, 0.8);
@@ -282,7 +303,7 @@
                                 </div>
                                 <!-- Message Bubble -->
                                 <div class="group relative">
-                                    <div :class="['px-4 py-3 rounded-2xl shadow-sm text-sm md:text-base leading-relaxed',
+                                    <div :class="['p-0 rounded-2xl shadow-sm text-sm md:text-base leading-relaxed overflow-hidden',
                                         msg.role === 'user' ? 'bg-primary-100 text-gray-900 rounded-tr-none shadow-sm border border-primary-200' :
                                         msg.role === 'system' ? 'bg-red-50 text-red-800 rounded-tl-none border border-red-200' :
                                         'bg-white text-gray-800 rounded-tl-none border border-gray-100 shadow-card']">
@@ -1706,10 +1727,20 @@
                                 
                                 // Create iframe for preview
                                 const iframe = doc.createElement('iframe');
-                                iframe.className = 'w-full h-[400px] border border-gray-200 rounded-lg bg-white shadow-sm my-2';
+                                // Full width iframe, no margins
+                                iframe.className = 'w-full h-[400px] border-y border-gray-200 bg-white shadow-sm block';
                                 // Allow scripts and forms for interactive demos, but restrict top-navigation
                                 iframe.sandbox = 'allow-scripts allow-forms allow-popups allow-modals';
-                                iframe.srcdoc = rawHtml;
+                                
+                                // Inject reset styles
+                                const resetStyle = '<style>body{margin:0 !important;padding:0 !important;overflow-x:hidden;}</style>';
+                                if (rawHtml.includes('<head>')) {
+                                    iframe.srcdoc = rawHtml.replace('<head>', '<head>' + resetStyle);
+                                } else if (rawHtml.includes('<html>')) {
+                                    iframe.srcdoc = rawHtml.replace('<html>', '<html><head>' + resetStyle + '</head>');
+                                } else {
+                                    iframe.srcdoc = resetStyle + rawHtml;
+                                }
                                 
                                 // Replace the pre tag with the iframe
                                 const preTag = block.parentElement;
