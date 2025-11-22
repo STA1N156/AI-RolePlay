@@ -264,9 +264,7 @@
                     </div>
                     
                     <div v-for="(msg, index) in chatHistory" :key="index" :class="['flex w-full', msg.role === 'user' ? 'justify-end' : 'justify-start']">
-                        <div :class="['flex transition-all duration-300',
-                            containsPreviewableCode(msg.content) ? 'max-w-[98%] md:max-w-[90%] lg:max-w-[90%]' : 'max-w-[98%] md:max-w-[70%] lg:max-w-[60%]',
-                            msg.role === 'user' ? 'flex-row-reverse' : 'flex-row']">
+                        <div :class="['flex max-w-[95%] md:max-w-[70%] lg:max-w-[60%]', msg.role === 'user' ? 'flex-row-reverse' : 'flex-row']">
                             <!-- Avatar -->
                             <div class="flex-shrink-0">
                                 <div v-if="msg.role === 'user'" class="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-xs text-white ml-2 shadow-sm">
@@ -661,24 +659,72 @@
                     </div>
                 </div>
                 <div class="space-y-4">
-                    <div v-for="(entry, index) in worldInfo" :key="index" class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all flex justify-between items-center">
-                        <div class="flex-1 min-w-0 mr-4">
-                            <h3 v-if="entry.keys && entry.keys.length > 0" class="font-bold text-gray-800 truncate">{{ entry.keys.join(', ') }}</h3>
-                            <h3 v-else class="font-bold text-gray-400 italic truncate">始终触发 (Always Enabled)</h3>
-                        </div>
-                        <div class="flex items-center space-x-4 flex-shrink-0">
-                            <label class="relative inline-flex items-center cursor-pointer">
+                    <div v-for="(entry, index) in worldInfo" :key="index" class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row gap-4 relative border-l-4" :class="entry.enabled ? 'border-l-primary-500' : 'border-l-gray-300'">
+                        
+                        <!-- Left: Toggle & Expand (Visual only for now) -->
+                        <div class="flex items-start justify-between md:justify-start md:flex-col gap-2">
+                            <label class="relative inline-flex items-center cursor-pointer" title="启用/禁用">
                                 <input type="checkbox" v-model="entry.enabled" class="sr-only peer">
-                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                                <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-600"></div>
                             </label>
-                            <div class="flex space-x-1 border-l border-gray-200 pl-4">
-                                <button @click="editWorldInfo(index)" class="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="编辑">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                </button>
-                                <button @click="deleteWorldInfo(index)" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="删除">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                </button>
+                            <button @click="editWorldInfo(index)" class="md:hidden p-1 text-gray-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </button>
+                        </div>
+
+                        <!-- Middle: Controls -->
+                        <div class="flex-1 grid grid-cols-1 gap-3">
+                            <!-- Row 1: Position -->
+                            <div class="flex items-center gap-2">
+                                <span class="text-gray-500 text-sm font-mono">位置:</span>
+                                <select v-model="entry.position" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-1.5">
+                                    <option value="before_char">角色之前</option>
+                                    <option value="after_char">角色之后</option>
+                                    <option value="at_depth">@D [系统]在深度</option>
+                                    <option value="author_note">作者注释</option>
+                                    <option value="global_note">全局注释</option>
+                                </select>
                             </div>
+
+                            <!-- Row 2: Stats -->
+                            <div class="grid grid-cols-3 gap-2">
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">深度</label>
+                                    <input type="number" v-model.number="entry.depth" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-1.5" placeholder="4">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">顺序</label>
+                                    <input type="number" v-model.number="entry.order" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-1.5" placeholder="0">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">触发 %</label>
+                                    <input type="number" v-model.number="entry.probability" min="0" max="100" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-1.5" placeholder="100">
+                                </div>
+                            </div>
+
+                            <!-- Row 3: Name/Comment -->
+                            <div class="flex items-center gap-2">
+                                <input type="text" v-model="entry.comment" class="bg-gray-100 border-none text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2 font-medium" placeholder="条目名称/备注...">
+                                <div class="w-4 h-4 rounded-full flex-shrink-0" :class="entry.keys && entry.keys.length > 0 ? 'bg-blue-500' : 'bg-green-500'" :title="entry.keys && entry.keys.length > 0 ? '关键词触发' : '常驻'"></div>
+                            </div>
+                            
+                            <!-- Keys Preview -->
+                            <div v-if="entry.keys && entry.keys.length > 0" class="text-xs text-gray-500 truncate">
+                                关键词: {{ entry.keys.join(', ') }}
+                            </div>
+                        </div>
+
+                        <!-- Right: Actions -->
+                        <div class="flex md:flex-col items-center justify-end gap-2 border-t md:border-t-0 md:border-l border-gray-100 pt-2 md:pt-0 md:pl-4">
+                            <button @click="editWorldInfo(index)" class="hidden md:block p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="编辑详情">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                            </button>
+                            <button @click="duplicateWorldInfo(index)" class="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="复制">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            </button>
+                            <button @click="deleteWorldInfo(index)" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="删除">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -854,11 +900,114 @@
                     <h3 class="text-lg font-bold text-gray-800">{{ editingWorldInfo.id !== undefined ? '编辑世界书条目' : '新建世界书条目' }}</h3>
                 </div>
                 <div class="p-6 space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-1">触发关键词 (逗号分隔)</label>
-                        <input :value="editingWorldInfo.data.keys ? editingWorldInfo.data.keys.join(', ') : ''"
-                               @input="editingWorldInfo.data.keys = $event.target.value.split(',').map(k => k.trim())"
-                               type="text" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                    <!-- Basic Info -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">名称/备注</label>
+                            <input v-model="editingWorldInfo.data.comment" type="text" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">位置</label>
+                            <select v-model="editingWorldInfo.data.position" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                                <option value="before_char">角色之前</option>
+                                <option value="after_char">角色之后</option>
+                                <option value="at_depth">@D [系统]在深度</option>
+                                <option value="author_note">作者注释</option>
+                                <option value="global_note">全局注释</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Position & Probability -->
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">深度 (Depth)</label>
+                            <input type="number" v-model.number="editingWorldInfo.data.depth" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">顺序 (Order)</label>
+                            <input type="number" v-model.number="editingWorldInfo.data.order" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">触发概率 (%)</label>
+                            <input type="number" v-model.number="editingWorldInfo.data.probability" min="0" max="100" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Keys & Matching Strategy -->
+                    <div class="space-y-2 border-t border-gray-100 pt-2">
+                        <h4 class="text-sm font-bold text-gray-700">触发设置</h4>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">主关键词 (逗号分隔)</label>
+                            <input :value="editingWorldInfo.data.keys ? editingWorldInfo.data.keys.join(', ') : ''"
+                                   @input="editingWorldInfo.data.keys = $event.target.value.split(',').map(k => k.trim())"
+                                   type="text" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none" placeholder="留空则始终触发 (常驻)">
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-4 text-sm">
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" v-model="editingWorldInfo.data.useRegex" class="rounded text-primary-600 focus:ring-primary-500">
+                                <span>正则匹配</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" v-model="editingWorldInfo.data.matchWholeWords" class="rounded text-primary-600 focus:ring-primary-500">
+                                <span>全词匹配</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" v-model="editingWorldInfo.data.caseSensitive" class="rounded text-primary-600 focus:ring-primary-500">
+                                <span>区分大小写</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" v-model="editingWorldInfo.data.constant" class="rounded text-primary-600 focus:ring-primary-500">
+                                <span>常驻 (忽略概率)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Filters -->
+                    <div class="space-y-2 border-t border-gray-100 pt-2">
+                        <div class="flex justify-between items-center">
+                            <h4 class="text-sm font-bold text-gray-700">高级过滤</h4>
+                            <select v-model.number="editingWorldInfo.data.selectiveLogic" class="text-xs border-gray-300 rounded bg-gray-50">
+                                <option :value="0">AND ANY (且任意)</option>
+                                <option :value="1">AND ALL (且所有)</option>
+                                <option :value="2">NOT ANY (非任意)</option>
+                                <option :value="3">NOT ALL (非所有)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">次级关键词 (可选)</label>
+                            <input :value="editingWorldInfo.data.secondary_keys ? editingWorldInfo.data.secondary_keys.join(', ') : ''"
+                                   @input="editingWorldInfo.data.secondary_keys = $event.target.value.split(',').map(k => k.trim())"
+                                   type="text" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none" placeholder="用于逻辑过滤">
+                        </div>
+                    </div>
+
+                    <!-- Timed Effects & Grouping -->
+                    <div class="grid grid-cols-2 gap-4 border-t border-gray-100 pt-2">
+                        <div>
+                            <h4 class="text-sm font-bold text-gray-700 mb-2">时效控制 (消息数)</h4>
+                            <div class="grid grid-cols-3 gap-2">
+                                <div>
+                                    <label class="block text-xs text-gray-500">持续 (Sticky)</label>
+                                    <input type="number" v-model.number="editingWorldInfo.data.sticky" class="w-full text-sm border-gray-300 rounded bg-gray-50">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-500">冷却 (Cool)</label>
+                                    <input type="number" v-model.number="editingWorldInfo.data.cooldown" class="w-full text-sm border-gray-300 rounded bg-gray-50">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-500">延迟 (Delay)</label>
+                                    <input type="number" v-model.number="editingWorldInfo.data.delay" class="w-full text-sm border-gray-300 rounded bg-gray-50">
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-gray-700 mb-2">分组 (Group)</h4>
+                            <div class="space-y-2">
+                                <input type="text" v-model="editingWorldInfo.data.group" class="w-full text-sm border-gray-300 rounded bg-gray-50" placeholder="组名">
+                            </div>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">内容</label>
@@ -1266,33 +1415,6 @@
                     return result;
                 };
 
-                // Helper to detect if content contains previewable code
-                const containsPreviewableCode = (text) => {
-                    if (!text) return false;
-                    // Check for explicit html/xml language tags
-                    if (/```\s*(html|xml)/i.test(text)) return true;
-                    
-                    // Check for code blocks that look like HTML (start with <)
-                    // We iterate to handle multiple blocks
-                    const codeBlockRegex = /```([\s\S]*?)```/g;
-                    let match;
-                    while ((match = codeBlockRegex.exec(text)) !== null) {
-                        // Remove the first line if it's a language identifier
-                        let content = match[1].trim();
-                        const firstLineBreak = content.indexOf('\n');
-                        if (firstLineBreak > -1) {
-                            const potentialLang = content.substring(0, firstLineBreak).trim();
-                            if (!potentialLang.includes('<') && potentialLang.length < 10) {
-                                // Likely a language tag, skip it
-                                content = content.substring(firstLineBreak).trim();
-                            }
-                        }
-                        
-                        if (content.startsWith('<')) return true;
-                    }
-                    return false;
-                };
-
                 // Markdown Rendering
                 const renderMarkdown = (text) => {
                     if (!text) return '';
@@ -1314,40 +1436,26 @@
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(html, 'text/html');
                         // marked.js adds 'language-html' class to code blocks
-                        // Select all code blocks to check for HTML content
-                        const codeBlocks = doc.querySelectorAll('pre code');
-                        let hasReplacements = false;
+                        const codeBlocks = doc.querySelectorAll('pre code.language-html');
 
                         if (codeBlocks.length > 0) {
                             codeBlocks.forEach(block => {
-                                const isHtmlType = block.classList.contains('language-html') || block.classList.contains('language-xml');
-                                const content = block.textContent.trim();
-                                // Heuristic: starts with < and has a closing tag or >
-                                const looksLikeHtml = content.startsWith('<') && (content.includes('>') || content.includes('\n'));
-
-                                if (isHtmlType || looksLikeHtml) {
-                                    const rawHtml = block.textContent; // textContent decodes entities
-                                    
-                                    // Create iframe for preview
-                                    const iframe = doc.createElement('iframe');
-                                    // Increased height to 600px as requested
-                                    iframe.className = 'w-full h-[600px] border border-gray-200 rounded-lg bg-white shadow-sm my-2';
-                                    // Allow scripts and forms for interactive demos, but restrict top-navigation
-                                    iframe.sandbox = 'allow-scripts allow-forms allow-popups allow-modals';
-                                    iframe.srcdoc = rawHtml;
-                                    
-                                    // Replace the pre tag with the iframe
-                                    const preTag = block.parentElement;
-                                    if (preTag && preTag.parentNode) {
-                                        preTag.parentNode.replaceChild(iframe, preTag);
-                                        hasReplacements = true;
-                                    }
+                                const rawHtml = block.textContent; // textContent decodes entities
+                                
+                                // Create iframe for preview
+                                const iframe = doc.createElement('iframe');
+                                iframe.className = 'w-full h-[400px] border border-gray-200 rounded-lg bg-white shadow-sm my-2';
+                                // Allow scripts and forms for interactive demos, but restrict top-navigation
+                                iframe.sandbox = 'allow-scripts allow-forms allow-popups allow-modals';
+                                iframe.srcdoc = rawHtml;
+                                
+                                // Replace the pre tag with the iframe
+                                const preTag = block.parentElement;
+                                if (preTag && preTag.parentNode) {
+                                    preTag.parentNode.replaceChild(iframe, preTag);
                                 }
                             });
-                            
-                            if (hasReplacements) {
-                                return doc.body.innerHTML;
-                            }
+                            return doc.body.innerHTML;
                         }
                     } catch (e) {
                         console.error('Error rendering HTML preview:', e);
@@ -1476,18 +1584,43 @@
                     isReceiving.value = false;
                     abortController.value = new AbortController();
                     
-                    // World Info Scanning (based on last few messages)
+                    // World Info Scanning
                     const activeWorldInfo = worldInfo.value.filter(e => e.enabled !== false);
                     const lastMessages = chatHistory.value.slice(-5).map(m => m.content).join('\n').toLowerCase();
                     
                     const triggeredWI = activeWorldInfo.filter(entry => {
-                        if (!entry.keys || entry.keys.length === 0) return true;
+                        // Probability Check
+                        if (entry.probability !== undefined && entry.probability < 100) {
+                            if (Math.random() * 100 > entry.probability) return false;
+                        }
+
+                        // Key Check
+                        if (!entry.keys || entry.keys.length === 0) return true; // Always enabled
                         return entry.keys.some(key => lastMessages.includes(key.toLowerCase()));
                     });
-                    
-                    const wiContent = triggeredWI.map(e => e.content).join('\n\n');
 
-                    // Construct Prompt
+                    // Sort by Order
+                    triggeredWI.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+                    // Group by Position
+                    const wiGroups = {
+                        global_note: [],
+                        before_char: [],
+                        after_char: [],
+                        at_depth: [], // We'll handle this specially
+                        author_note: []
+                    };
+
+                    triggeredWI.forEach(entry => {
+                        const pos = entry.position || 'at_depth';
+                        if (wiGroups[pos]) {
+                            wiGroups[pos].push(entry);
+                        } else {
+                            wiGroups['at_depth'].push(entry); // Default
+                        }
+                    });
+
+                    // Construct Prompt Parts
                     const presetPrompt = presets.value
                         .filter(p => p.enabled)
                         .map(p => p.content)
@@ -1497,15 +1630,68 @@
                     
                     const userPrompt = `[User Info]\nName: ${user.name}\nDescription: ${user.description || ''}`;
 
-                    const systemPrompt = `${presetPrompt}\n\n[World Info]\n${wiContent}\n\n[Character]\n${charPrompt}\n\n${userPrompt}`;
+                    // Helper to join content
+                    const joinContent = (entries) => entries.map(e => e.content).join('\n\n');
 
-                    const messages = [
+                    // Build System Prompt
+                    let systemPrompt = '';
+                    
+                    // 1. Global Notes (Top)
+                    if (wiGroups.global_note.length > 0) systemPrompt += joinContent(wiGroups.global_note) + '\n\n';
+                    
+                    // 2. Presets
+                    systemPrompt += presetPrompt + '\n\n';
+                    
+                    // 3. Before Char WI
+                    if (wiGroups.before_char.length > 0) systemPrompt += joinContent(wiGroups.before_char) + '\n\n';
+                    
+                    // 4. Character
+                    systemPrompt += `[Character]\n${charPrompt}\n\n`;
+                    
+                    // 5. After Char WI
+                    if (wiGroups.after_char.length > 0) systemPrompt += joinContent(wiGroups.after_char) + '\n\n';
+                    
+                    // 6. User Info
+                    systemPrompt += userPrompt;
+
+                    // 7. Author's Note (usually at end of system prompt or depth 1)
+                    if (wiGroups.author_note.length > 0) {
+                        systemPrompt += '\n\n[Author\'s Note]\n' + joinContent(wiGroups.author_note);
+                    }
+
+                    // Base Messages
+                    let messages = [
                         { role: 'system', content: systemPrompt },
                         ...chatHistory.value.map(m => ({
                             role: m.role === 'user' ? 'user' : 'assistant',
                             content: processRegex(m.content)
                         }))
                     ];
+
+                    // Handle @D (At Depth) Injection
+                    if (wiGroups.at_depth.length > 0) {
+                        // Sort by depth ascending (0, 1, 2...)
+                        wiGroups.at_depth.sort((a, b) => {
+                            if (a.depth !== b.depth) return a.depth - b.depth;
+                            return (a.order || 0) - (b.order || 0);
+                        });
+
+                        wiGroups.at_depth.forEach(entry => {
+                            const depth = entry.depth !== undefined ? entry.depth : 4;
+                            const content = entry.content;
+                            
+                            let insertIndex = messages.length - depth;
+                            
+                            // Boundary checks
+                            if (insertIndex < 1) insertIndex = 1; // Don't go before system prompt
+                            if (insertIndex > messages.length) insertIndex = messages.length;
+
+                            messages.splice(insertIndex, 0, {
+                                role: 'system',
+                                content: `[World Info: ${entry.comment || 'Entry'}]\n${content}`
+                            });
+                        });
+                    }
 
                     // --- 优化后的控制台日志 ---
                     console.group('🚀 发送给 AI 的请求详情');
@@ -2125,7 +2311,18 @@
                         system_prompt: '',
                         post_history_instructions: '',
                         alternate_greetings: [],
-                        character_book: char.worldInfo ? { entries: char.worldInfo } : undefined,
+                        character_book: char.worldInfo ? {
+                            entries: char.worldInfo.map(e => {
+                                // Map internal fields back to ST format if needed
+                                // Currently our internal structure is a superset, so direct mapping is mostly fine.
+                                // Just ensure keys are arrays if they were split.
+                                return {
+                                    ...e,
+                                    keys: Array.isArray(e.keys) ? e.keys : [],
+                                    secondary_keys: Array.isArray(e.secondary_keys) ? e.secondary_keys : []
+                                };
+                            })
+                        } : undefined,
                         tags: [],
                         creator: '',
                         character_version: '',
@@ -2750,7 +2947,41 @@
                                     entries = data.entries;
                                 }
                                 if (entries.length > 0) {
-                                    worldInfo.value = [...worldInfo.value, ...entries];
+                                    // Normalize entries
+                                    const normalizedEntries = entries.map(e => {
+                                        // Handle keys normalization
+                                        let keys = e.keys || [];
+                                        if (typeof keys === 'string') keys = keys.split(',').map(k => k.trim());
+                                        
+                                        let secondary_keys = e.secondary_keys || [];
+                                        if (typeof secondary_keys === 'string') secondary_keys = secondary_keys.split(',').map(k => k.trim());
+
+                                        return {
+                                            ...e,
+                                            enabled: e.enabled !== false,
+                                            keys: keys,
+                                            secondary_keys: secondary_keys,
+                                            content: e.content || '',
+                                            position: e.position || 'at_depth',
+                                            depth: e.depth !== undefined ? e.depth : 4,
+                                            order: e.order !== undefined ? e.order : 100,
+                                            probability: e.probability !== undefined ? e.probability : 100,
+                                            comment: e.comment || e.name || '',
+                                            
+                                            useRegex: e.useRegex || false,
+                                            matchWholeWords: e.matchWholeWords !== undefined ? e.matchWholeWords : true,
+                                            caseSensitive: e.caseSensitive || false,
+                                            scanDepth: e.scanDepth !== undefined ? e.scanDepth : 2,
+                                            selectiveLogic: e.selectiveLogic || 0,
+                                            group: e.group || '',
+                                            sticky: e.sticky || 0,
+                                            cooldown: e.cooldown || 0,
+                                            delay: e.delay || 0,
+                                            constant: e.constant || false
+                                        };
+                                    });
+                                    
+                                    worldInfo.value = [...worldInfo.value, ...normalizedEntries];
                                     if (currentCharacterIndex.value !== -1) {
                                         characters.value[currentCharacterIndex.value].worldInfo = JSON.parse(JSON.stringify(worldInfo.value));
                                     }
@@ -2764,12 +2995,79 @@
                     },
                     createWorldInfo: () => {
                         editingWorldInfo.id = undefined;
-                        editingWorldInfo.data = { keys: [], content: '', enabled: true };
+                        editingWorldInfo.data = {
+                            // Basic
+                            comment: '',
+                            keys: [],
+                            content: '',
+                            enabled: true,
+                            
+                            // Position & Order
+                            position: 'at_depth',
+                            depth: 4,
+                            order: 100,
+                            
+                            // Matching Strategy
+                            useRegex: false,
+                            matchWholeWords: true,
+                            caseSensitive: false,
+                            scanDepth: 2,
+                            probability: 100,
+                            
+                            // Advanced Filters
+                            secondary_keys: [],
+                            selectiveLogic: 0, // 0: AND ANY, 1: AND ALL, 2: NOT ANY, 3: NOT ALL
+                            
+                            // Grouping
+                            group: '',
+                            groupWeight: 100,
+                            
+                            // Timed Effects
+                            sticky: 0,
+                            cooldown: 0,
+                            delay: 0,
+                            
+                            // Recursion
+                            prevent_recursion: false,
+                            delay_until_recursion: false,
+                            
+                            constant: false
+                        };
                         showWorldInfoEditor.value = true;
+                    },
+                    duplicateWorldInfo: (index) => {
+                        const entry = JSON.parse(JSON.stringify(worldInfo.value[index]));
+                        entry.comment = (entry.comment || '') + ' (Copy)';
+                        worldInfo.value.splice(index + 1, 0, entry);
+                        if (currentCharacterIndex.value !== -1) {
+                            characters.value[currentCharacterIndex.value].worldInfo = JSON.parse(JSON.stringify(worldInfo.value));
+                        }
+                        showToast('条目已复制', 'success');
                     },
                     editWorldInfo: (index) => {
                         editingWorldInfo.id = index;
-                        editingWorldInfo.data = JSON.parse(JSON.stringify(worldInfo.value[index]));
+                        const data = JSON.parse(JSON.stringify(worldInfo.value[index]));
+                        // Ensure defaults
+                        if (!data.position) data.position = 'at_depth';
+                        if (data.depth === undefined) data.depth = 4;
+                        if (data.order === undefined) data.order = 100;
+                        if (data.probability === undefined) data.probability = 100;
+                        if (!data.comment) data.comment = '';
+                        
+                        // New fields defaults
+                        if (data.useRegex === undefined) data.useRegex = false;
+                        if (data.matchWholeWords === undefined) data.matchWholeWords = true;
+                        if (data.caseSensitive === undefined) data.caseSensitive = false;
+                        if (data.scanDepth === undefined) data.scanDepth = 2;
+                        if (!data.secondary_keys) data.secondary_keys = [];
+                        if (data.selectiveLogic === undefined) data.selectiveLogic = 0;
+                        if (!data.group) data.group = '';
+                        if (data.sticky === undefined) data.sticky = 0;
+                        if (data.cooldown === undefined) data.cooldown = 0;
+                        if (data.delay === undefined) data.delay = 0;
+                        if (data.constant === undefined) data.constant = false;
+
+                        editingWorldInfo.data = data;
                         showWorldInfoEditor.value = true;
                     },
                     saveWorldInfo: () => {
@@ -2794,7 +3092,7 @@
                         });
                     },
                     
-                    processRegex, containsPreviewableCode,
+                    processRegex,
                     showRegexEditor, showWorldInfoEditor, editingRegex, editingWorldInfo
                 };
             }
