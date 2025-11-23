@@ -1752,15 +1752,20 @@
                     const createIframe = (rawHtml) => {
                         const iframe = document.createElement('iframe');
                         iframe.className = 'w-full border-y border-gray-200 bg-white shadow-sm block transition-all duration-300';
-                        iframe.style.height = '500px';
+                        // Remove fixed height, use a small initial height to prevent layout jumping if possible
+                        // height will be auto-adjusted by the script below
+                        iframe.style.height = 'auto';
                         iframe.sandbox = 'allow-scripts allow-forms allow-popups allow-modals allow-same-origin';
                         
+                        // External fallback resize (in case internal script fails or is blocked)
                         iframe.onload = function() {
                             try {
                                 setTimeout(() => {
                                     if (this.contentWindow && this.contentWindow.document) {
-                                        const height = Math.max(500, this.contentWindow.document.documentElement.scrollHeight);
-                                        this.style.height = height + 'px';
+                                        const doc = this.contentWindow.document;
+                                        // Calculate precise height without minimum limit
+                                        const height = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight);
+                                        this.style.height = (height + 10) + 'px'; // Add small buffer
                                     }
                                 }, 100);
                             } catch (e) {
@@ -1768,7 +1773,7 @@
                             }
                         };
 
-                        const resetStyle = '<style>body{margin:0 !important;padding:0 !important;overflow-x:hidden;width:100% !important;} .container{max-width:100% !important; width:100% !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important;}</style>';
+                        const resetStyle = '<style>body{margin:0 !important;padding:0 !important;overflow-x:hidden;width:100% !important;display:inline-block;} .container{max-width:100% !important; width:100% !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important;}</style>';
                         const scriptShim = `
                             <script>
                                 window.triggerSlash = function(text) {
@@ -1778,6 +1783,45 @@
                                         console.error("SillyTavern's triggerSlash function not found in parent.");
                                     }
                                 };
+
+                                // Robust Auto-Resize Logic
+                                function updateHeight() {
+                                    if (window.frameElement) {
+                                        const body = document.body;
+                                        const html = document.documentElement;
+                                        
+                                        // Get the maximum of various height properties to ensure we cover everything
+                                        const height = Math.max(
+                                            body.scrollHeight, body.offsetHeight,
+                                            html.scrollHeight, html.offsetHeight
+                                        );
+                                        
+                                        // Set height with a small buffer to prevent scrollbars
+                                        if (height > 0) {
+                                            window.frameElement.style.height = (height + 10) + 'px';
+                                        }
+                                    }
+                                }
+
+                                // Listen for load and resize
+                                window.addEventListener('load', updateHeight);
+                                window.addEventListener('resize', updateHeight);
+                                
+                                // Use ResizeObserver for dynamic content changes (e.g. animations, images loading)
+                                if (window.ResizeObserver) {
+                                    new ResizeObserver(() => {
+                                        // Debounce slightly to prevent flicker
+                                        requestAnimationFrame(updateHeight);
+                                    }).observe(document.body);
+                                } else {
+                                    // Fallback polling for older browsers
+                                    setInterval(updateHeight, 500);
+                                }
+                                
+                                // Initial trigger
+                                if (document.readyState === 'complete') {
+                                    updateHeight();
+                                }
                             <\/script>
                         `;
                         
