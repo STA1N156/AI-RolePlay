@@ -208,7 +208,7 @@
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans h-screen overflow-hidden selection:bg-primary-200 selection:text-primary-900">
-    <div id="app" class="h-full flex flex-col md:flex-row relative">
+    <div id="app" class="h-[100dvh] flex flex-col md:flex-row relative transition-[height] duration-100 ease-out">
         
         <!-- Toast Notification Container -->
         <div class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none items-center">
@@ -4045,6 +4045,28 @@ ${rawHtml}
 
                     if (settings.autoFetchModels) {
                         fetchModels();
+                    }
+
+                    // --- Mobile Keyboard Adaptation (VisualViewport) ---
+                    if (window.visualViewport) {
+                        const handleVisualViewportResize = () => {
+                            const appElement = document.getElementById('app');
+                            if (appElement) {
+                                // Set height to visual viewport height to prevent content being pushed up or hidden
+                                appElement.style.height = `${window.visualViewport.height}px`;
+                                
+                                // Optional: Scroll to bottom if keyboard opens
+                                if (window.visualViewport.height < window.innerHeight) {
+                                    scrollToBottom();
+                                }
+                            }
+                        };
+
+                        window.visualViewport.addEventListener('resize', handleVisualViewportResize);
+                        window.visualViewport.addEventListener('scroll', handleVisualViewportResize);
+                        
+                        // Initial call
+                        handleVisualViewportResize();
                     }
                 });
 
