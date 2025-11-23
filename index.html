@@ -1790,11 +1790,33 @@
                                     if (!window.frameElement) return;
                                     
                                     const body = document.body;
-                                    // Use scrollHeight which includes all content
-                                    const newHeight = body.scrollHeight;
+                                    const html = document.documentElement;
+
+                                    // Method 1: Standard scrollHeight
+                                    const h1 = body.scrollHeight;
+                                    const h2 = html.scrollHeight;
+
+                                    // Method 2: Traversal of children (handles absolute/fixed/floated elements that might not expand body)
+                                    let maxBottom = 0;
+                                    // We only check direct children for performance, assuming they wrap the content
+                                    for (let i = 0; i < body.children.length; i++) {
+                                        const child = body.children[i];
+                                        // Skip script tags or hidden elements if necessary, but bounding rect usually handles hidden well (0 height)
+                                        const rect = child.getBoundingClientRect();
+                                        // Include vertical margins if possible, though getBoundingClientRect is usually enough for visual bottom
+                                        const bottom = rect.bottom + window.scrollY; // Add scrollY in case we are scrolled (though iframe usually isn't)
+                                        if (bottom > maxBottom) maxBottom = bottom;
+                                    }
+
+                                    // Use the largest valid height found
+                                    // maxBottom is crucial for absolute positioning
+                                    // h1/h2 is crucial for standard flow
+                                    let newHeight = Math.max(h1, h2, maxBottom);
                                     
+                                    // Safety: If calculated height is suspiciously small (e.g. empty body), set a minimum
+                                    if (newHeight < 20) newHeight = 20;
+
                                     // Prevent jitter/loops: only update if change is significant (>1px)
-                                    // and prevent infinite growth by checking if we match the scrollHeight
                                     if (Math.abs(newHeight - lastHeight) > 1) {
                                         lastHeight = newHeight;
                                         window.frameElement.style.height = newHeight + 'px';
