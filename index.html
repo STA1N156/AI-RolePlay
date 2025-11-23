@@ -307,9 +307,8 @@
                                     </div>
                                     
                                     <!-- Message Actions -->
-                                    <div v-if="(msg.role !== 'user') || (index === lastUserMessageIndex)"
-                                         :class="['absolute bottom-0 -mb-8 flex items-center space-x-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200', msg.role === 'user' ? 'right-0' : 'left-0']">
-                                        <button v-if="msg.role === 'assistant' || msg.role === 'system'" @click="regenerateMessage(index)" class="p-1.5 text-gray-400 hover:text-primary-600 bg-white rounded-full shadow-sm border border-gray-100 hover:bg-gray-50" title="重新生成">
+                                    <div :class="['absolute bottom-0 -mb-8 flex items-center space-x-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200', msg.role === 'user' ? 'right-0' : 'left-0']">
+                                        <button v-if="index === chatHistory.length - 1" @click="regenerateMessage(index)" class="p-1.5 text-gray-400 hover:text-primary-600 bg-white rounded-full shadow-sm border border-gray-100 hover:bg-gray-50" title="重新生成">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                                         </button>
                                         <button @click="copyMessage(msg.content)" class="p-1.5 text-gray-400 hover:text-primary-600 bg-white rounded-full shadow-sm border border-gray-100 hover:bg-gray-50" title="复制">
@@ -417,6 +416,9 @@
                             </div>
                         </div>
                         <div class="flex items-center space-x-1">
+                            <button @click.stop="exportCharacter(index)" class="p-2 text-gray-400 hover:text-primary-600 bg-gray-50 rounded-lg" title="导出">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            </button>
                             <button @click.stop="editCharacter(index)" class="p-2 text-gray-400 hover:text-primary-600 bg-gray-50 rounded-lg" title="编辑">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                             </button>
@@ -585,10 +587,10 @@
                     </div>
                     <div class="flex space-x-2 md:space-x-3">
                         <button @click="exportPresets" class="p-2 bg-white hover:bg-gray-50 text-gray-600 rounded-lg border border-gray-200 transition-all shadow-sm hover:shadow" title="导出全部">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                         </button>
                         <label class="cursor-pointer p-2 bg-white hover:bg-gray-50 text-gray-600 rounded-lg border border-gray-200 transition-all shadow-sm hover:shadow" title="导入预设">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                             <input type="file" accept=".json" @change="importPresets" class="hidden">
                         </label>
                         <button @click="createPreset" class="p-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-all shadow-sm hover:shadow" title="新建预设">
@@ -646,10 +648,10 @@
                     </div>
                     <div class="flex space-x-2 md:space-x-3">
                         <button @click="exportRegex" class="p-2 bg-white hover:bg-gray-50 text-gray-600 rounded-lg border border-gray-200 transition-all shadow-sm hover:shadow" title="导出">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                         </button>
                         <label class="cursor-pointer p-2 bg-white hover:bg-gray-50 text-gray-600 rounded-lg border border-gray-200 transition-all shadow-sm hover:shadow" title="导入">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                             <input type="file" accept=".json" @change="importRegex" class="hidden">
                         </label>
                         <button @click="createRegex" class="p-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-all shadow-sm hover:shadow" title="新建脚本">
@@ -696,10 +698,10 @@
                     </div>
                     <div class="flex space-x-2 md:space-x-3">
                         <button @click="exportWorldInfo" class="p-2 bg-white hover:bg-gray-50 text-gray-600 rounded-lg border border-gray-200 transition-all shadow-sm hover:shadow" title="导出">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                         </button>
                         <label class="cursor-pointer p-2 bg-white hover:bg-gray-50 text-gray-600 rounded-lg border border-gray-200 transition-all shadow-sm hover:shadow" title="导入">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                             <input type="file" accept=".json" @change="importWorldInfo" class="hidden">
                         </label>
                         <button @click="createWorldInfo" class="p-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-all shadow-sm hover:shadow" title="新建条目">
@@ -1835,7 +1837,14 @@
                                         // We observe body to catch content changes.
                                         updateHeight();
                                     });
-                                    ro.observe(document.body);
+                                    
+                                    if (document.body) {
+                                        ro.observe(document.body);
+                                    } else {
+                                        window.addEventListener('DOMContentLoaded', () => {
+                                            if (document.body) ro.observe(document.body);
+                                        });
+                                    }
                                 } else {
                                     setInterval(updateHeight, 500);
                                 }
@@ -2020,27 +2029,19 @@
 
                 const regenerateMessage = async (index) => {
                     if (isGenerating.value) return;
+
+                    const msg = chatHistory.value[index];
                     
-                    // Remove the message at index and all subsequent messages
-                    // But wait, usually regenerate means regenerate the *last* AI message.
-                    // If user clicks regenerate on an older message, standard behavior is to cut history there and regenerate.
-                    
-                    confirmAction('重新生成将删除此消息及之后的所有消息，确定吗？', async () => {
-                        // Keep messages up to index (exclusive), so we remove index and everything after
-                        chatHistory.value = chatHistory.value.slice(0, index);
-                        
-                        // Now trigger generation based on the remaining history
-                        // We need to ensure the last message is from user, or if it was AI, we just continue?
-                        // Usually regenerate is for AI response.
-                        // If we deleted an AI response, the last one should be User (usually).
-                        // If the last one is AI (e.g. user deleted their own message?), we might just continue generation?
-                        // Let's just call sendMessage with empty input, but we need to handle the "continue" vs "reply" logic.
-                        // Our sendMessage function handles appending user input.
-                        // We need a separate function or modify sendMessage to support "regenerate/continue".
-                        
-                        // Let's extract the generation logic from sendMessage to a reusable function
+                    if (msg.role === 'user') {
+                        // 如果是用户消息，直接基于当前上下文生成（重试/继续）
                         await generateResponse();
-                    });
+                    } else {
+                        // 如果是 AI 消息，删除它（及之后）然后重新生成
+                        confirmAction('确定要重新生成这条消息吗？', async () => {
+                            chatHistory.value = chatHistory.value.slice(0, index);
+                            await generateResponse();
+                        });
+                    }
                 };
 
                 // Refactored generation logic
