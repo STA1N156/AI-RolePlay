@@ -1773,7 +1773,7 @@
                             }
                         };
 
-                        const resetStyle = '<style>body{margin:0 !important;padding:0 !important;overflow-x:hidden;width:100% !important;display:inline-block;} .container{max-width:100% !important; width:100% !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important;}</style>';
+                        const resetStyle = '<style>html,body{margin:0 !important;padding:0 !important;overflow:hidden !important;width:100% !important;display:block !important;} .container{max-width:100% !important; width:100% !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important;}</style>';
                         const scriptShim = `
                             <script>
                                 window.triggerSlash = function(text) {
@@ -1785,21 +1785,19 @@
                                 };
 
                                 // Robust Auto-Resize Logic
+                                let lastHeight = 0;
                                 function updateHeight() {
-                                    if (window.frameElement) {
-                                        const body = document.body;
-                                        const html = document.documentElement;
-                                        
-                                        // Get the maximum of various height properties to ensure we cover everything
-                                        const height = Math.max(
-                                            body.scrollHeight, body.offsetHeight,
-                                            html.scrollHeight, html.offsetHeight
-                                        );
-                                        
-                                        // Set height with a small buffer to prevent scrollbars
-                                        if (height > 0) {
-                                            window.frameElement.style.height = (height + 10) + 'px';
-                                        }
+                                    if (!window.frameElement) return;
+                                    
+                                    const body = document.body;
+                                    // Use scrollHeight which includes all content
+                                    const newHeight = body.scrollHeight;
+                                    
+                                    // Prevent jitter/loops: only update if change is significant (>1px)
+                                    // and prevent infinite growth by checking if we match the scrollHeight
+                                    if (Math.abs(newHeight - lastHeight) > 1) {
+                                        lastHeight = newHeight;
+                                        window.frameElement.style.height = newHeight + 'px';
                                     }
                                 }
 
@@ -1807,14 +1805,16 @@
                                 window.addEventListener('load', updateHeight);
                                 window.addEventListener('resize', updateHeight);
                                 
-                                // Use ResizeObserver for dynamic content changes (e.g. animations, images loading)
+                                // Use ResizeObserver
                                 if (window.ResizeObserver) {
-                                    new ResizeObserver(() => {
-                                        // Debounce slightly to prevent flicker
-                                        requestAnimationFrame(updateHeight);
-                                    }).observe(document.body);
+                                    const ro = new ResizeObserver(entries => {
+                                        // Debounce logic is implicit via requestAnimationFrame usually,
+                                        // but here we just call updateHeight directly as it has a check.
+                                        // We observe body to catch content changes.
+                                        updateHeight();
+                                    });
+                                    ro.observe(document.body);
                                 } else {
-                                    // Fallback polling for older browsers
                                     setInterval(updateHeight, 500);
                                 }
                                 
