@@ -1586,9 +1586,22 @@
 
                 watch(isAutoImageGenEnabled, (newVal) => {
                     if (newVal) {
+                        let messages = [];
                         if (settings.stream) {
                             settings.stream = false;
-                            showToast('为适配生图，流式输出已关闭', 'info');
+                            messages.push('流式输出已关闭');
+                        }
+                        
+                        // 联动开启 Nai画图正则-竖图
+                        const naiRegexName = 'Nai画图正则-竖图';
+                        const naiRegex = regexScripts.value.find(r => r.name === naiRegexName);
+                        if (naiRegex && !naiRegex.enabled) {
+                            naiRegex.enabled = true;
+                            messages.push(`${naiRegexName} 已启用`);
+                        }
+
+                        if (messages.length > 0) {
+                            showToast('为适配生图：' + messages.join('，'), 'info');
                         }
                     } else {
                         if (!settings.stream) {
