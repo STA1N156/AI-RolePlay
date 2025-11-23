@@ -1803,28 +1803,29 @@
                     
                     // Configure DOMPurify
                     const cleanConfig = {
-                        ADD_TAGS: ['details', 'summary', 'iframe', 'svg', 'path', 'g', 'circle', 'rect', 'defs', 'linearGradient', 'stop'],
-                        ADD_ATTR: ['style', 'open', 'srcdoc', 'sandbox', 'frameborder', 'allow', 'allowfullscreen', 'class', 'id', 'viewBox', 'fill', 'stroke', 'stroke-width', 'd', 'stroke-linecap', 'stroke-linejoin', 'x1', 'y1', 'x2', 'y2', 'offset', 'stop-color', 'stop-opacity'],
+                        ADD_TAGS: ['details', 'summary', 'iframe', 'svg', 'path', 'g', 'circle', 'rect', 'defs', 'linearGradient', 'stop', 'style'],
+                        ADD_ATTR: ['style', 'open', 'srcdoc', 'sandbox', 'frameborder', 'allow', 'allowfullscreen', 'class', 'id', 'viewBox', 'fill', 'stroke', 'stroke-width', 'd', 'stroke-linecap', 'stroke-linejoin', 'x1', 'y1', 'x2', 'y2', 'offset', 'stop-color', 'stop-opacity', 'width', 'height'],
                         FORBID_TAGS: ['script'],
-                        FORBID_ATTR: ['onmouseover', 'onclick', 'onload']
+                        FORBID_ATTR: ['onmouseover', 'onclick', 'onload'],
+                        FORCE_BODY: true
                     };
                     
                     let html = DOMPurify.sanitize(marked.parse(processed), cleanConfig);
 
-                    // Auto-render HTML code blocks
+                    // Auto-render HTML code blocks AND escaped HTML texts
                     try {
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(html, 'text/html');
-                        // Check for both language-html and generic code blocks that look like HTML
-                        const codeBlocks = doc.querySelectorAll('pre code');
+                        let modified = false;
 
+                        // 1. Convert code blocks that look like HTML to iframes
+                        const codeBlocks = doc.querySelectorAll('pre code');
                         if (codeBlocks.length > 0) {
-                            let modified = false;
                             codeBlocks.forEach(block => {
                                 const rawHtml = block.textContent;
                                 // Check if it's HTML: has language class OR looks like HTML
                                 const isHtmlClass = block.classList.contains('language-html') || block.classList.contains('language-xml');
-                                const looksLikeHtml = /^\s*<(!doctype|html|head|body|div|span|style|script)/i.test(rawHtml);
+                                const looksLikeHtml = /^\s*<(!doctype|html|head|body|div|span|style|script|table|img)/i.test(rawHtml);
 
                                 if (isHtmlClass || looksLikeHtml) {
                                     const iframe = createIframe(rawHtml);
@@ -1835,8 +1836,29 @@
                                     }
                                 }
                             });
-                            if (modified) return doc.body.innerHTML;
                         }
+
+                        // 2. Recover escaped HTML that was rendered as text (e.g. due to missing newlines in Markdown)
+                        // This fixes cases where AI outputs HTML but Markdown treats it as text because of formatting
+                        const paragraphs = doc.querySelectorAll('p');
+                        if (paragraphs.length > 0) {
+                            paragraphs.forEach(p => {
+                                // Check if innerHTML starts with escaped bracket (ignoring whitespace)
+                                if (/^\s*</.test(p.innerHTML)) {
+                                    const rawHtml = p.textContent;
+                                    // Check if the decoded text looks like an HTML block
+                                    if (/^\s*<(!doctype|html|head|body|div|span|style|script|table|img)/i.test(rawHtml)) {
+                                        const iframe = createIframe(rawHtml);
+                                        if (p.parentNode) {
+                                            p.parentNode.replaceChild(iframe, p);
+                                            modified = true;
+                                        }
+                                    }
+                                }
+                            });
+                        }
+
+                        if (modified) return doc.body.innerHTML;
                     } catch (e) {
                         console.error('Error rendering HTML preview:', e);
                     }
