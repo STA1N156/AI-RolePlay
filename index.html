@@ -1766,7 +1766,7 @@
                     // Helper to create iframe
                     const createIframe = (rawHtml) => {
                         const iframe = document.createElement('iframe');
-                        iframe.className = 'w-full border-y border-gray-200 bg-white shadow-sm block transition-all duration-300';
+                        iframe.className = 'w-full border-y border-gray-200 bg-white shadow-sm block';
                         // Remove fixed height, use a small initial height to prevent layout jumping if possible
                         // height will be auto-adjusted by the script below
                         iframe.style.height = 'auto';
@@ -1788,7 +1788,8 @@
                             }
                         };
 
-                        const resetStyle = '<style>html,body{margin:0 !important;padding:0 !important;overflow:hidden !important;width:100% !important;display:block !important;} .container{max-width:100% !important; width:100% !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important;}</style>';
+                        const resetStyle = '<style>html,body{margin:0 !important;padding:0 !important;overflow-y:hidden !important;overflow-x:hidden !important;width:100% !important;display:block !important;height:auto !important;min-height:0 !important;word-wrap:break-word !important;box-sizing:border-box !important;} *,*::before,*::after{box-sizing:inherit !important;} img,video,canvas,svg{max-width:100% !important;height:auto !important;} table{display:block !important;overflow-x:auto !important;max-width:100% !important;} pre{white-space:pre-wrap !important;word-wrap:break-word !important;max-width:100% !important;} .container{max-width:100% !important; width:100% !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important;}</style>';
+                        const metaViewport = '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">';
                         const scriptShim = `
                             <script>
                                 window.triggerSlash = function(text) {
@@ -1809,7 +1810,6 @@
 
                                     // Method 1: Standard scrollHeight
                                     const h1 = body.scrollHeight;
-                                    const h2 = html.scrollHeight;
 
                                     // Method 2: Traversal of children (handles absolute/fixed/floated elements that might not expand body)
                                     let maxBottom = 0;
@@ -1824,9 +1824,8 @@
                                     }
 
                                     // Use the largest valid height found
-                                    // maxBottom is crucial for absolute positioning
-                                    // h1/h2 is crucial for standard flow
-                                    let newHeight = Math.max(h1, h2, maxBottom);
+                                    // Ignore html.scrollHeight (h2) as it can lock to viewport height preventing shrinkage
+                                    let newHeight = Math.max(h1, maxBottom);
                                     
                                     // Safety: If calculated height is suspiciously small (e.g. empty body), set a minimum
                                     if (newHeight < 20) newHeight = 20;
@@ -1841,6 +1840,9 @@
                                 // Listen for load and resize
                                 window.addEventListener('load', updateHeight);
                                 window.addEventListener('resize', updateHeight);
+                                
+                                // Listen for details toggle
+                                window.addEventListener('toggle', updateHeight, true);
                                 
                                 // Use ResizeObserver
                                 if (window.ResizeObserver) {
@@ -1871,11 +1873,11 @@
                         
                         let content = rawHtml;
                         if (content.includes('<head>')) {
-                            content = content.replace('<head>', '<head>' + resetStyle + scriptShim);
+                            content = content.replace('<head>', '<head>' + metaViewport + resetStyle + scriptShim);
                         } else if (content.includes('<html>')) {
-                            content = content.replace('<html>', '<html><head>' + resetStyle + scriptShim + '</head>');
+                            content = content.replace('<html>', '<html><head>' + metaViewport + resetStyle + scriptShim + '</head>');
                         } else {
-                            content = resetStyle + scriptShim + content;
+                            content = metaViewport + resetStyle + scriptShim + content;
                         }
                         iframe.srcdoc = content;
                         return iframe;
