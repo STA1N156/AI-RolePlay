@@ -1803,8 +1803,8 @@
                     
                     // Configure DOMPurify
                     const cleanConfig = {
-                        ADD_TAGS: ['details', 'summary', 'iframe'],
-                        ADD_ATTR: ['style', 'open', 'srcdoc', 'sandbox', 'frameborder', 'allow', 'allowfullscreen'],
+                        ADD_TAGS: ['details', 'summary', 'iframe', 'svg', 'path', 'g', 'circle', 'rect', 'defs', 'linearGradient', 'stop'],
+                        ADD_ATTR: ['style', 'open', 'srcdoc', 'sandbox', 'frameborder', 'allow', 'allowfullscreen', 'class', 'id', 'viewBox', 'fill', 'stroke', 'stroke-width', 'd', 'stroke-linecap', 'stroke-linejoin', 'x1', 'y1', 'x2', 'y2', 'offset', 'stop-color', 'stop-opacity'],
                         FORBID_TAGS: ['script'],
                         FORBID_ATTR: ['onmouseover', 'onclick', 'onload']
                     };
