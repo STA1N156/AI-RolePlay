@@ -289,7 +289,7 @@
                         <p>开始与 {{ currentCharacter.name }} 对话吧</p>
                     </div>
                     
-                    <div v-for="(msg, index) in chatHistory" :key="index" :class="['flex w-full', msg.role === 'user' ? 'justify-end' : 'justify-start']">
+                    <div v-for="(msg, index) in chatHistory" :key="index" ref="messageElements" :data-role="msg.role" :class="['flex w-full', msg.role === 'user' ? 'justify-end' : 'justify-start']">
                         <div :class="['flex max-w-[95%] md:max-w-[70%] lg:max-w-[60%]', msg.role === 'user' ? 'flex-row-reverse' : 'flex-row']">
                             <!-- Avatar -->
                             <div class="flex-shrink-0">
@@ -345,13 +345,13 @@
                 </div>
 
                 <!-- Input Area -->
-                <div class="p-4 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)]">
+                <div class="p-4 bg-white/70 backdrop-blur-md border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)]">
                     <div class="relative max-w-4xl mx-auto flex items-end gap-2">
                         <textarea
                             v-model="userInput"
                             @keydown.enter.prevent="sendMessage"
                             placeholder="输入消息..."
-                            class="flex-1 bg-gray-50 text-gray-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none border border-gray-200 shadow-inner transition-all focus:bg-white"
+                            class="flex-1 bg-white/50 backdrop-blur-sm text-gray-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none border border-gray-200 shadow-inner transition-all focus:bg-white/90"
                             rows="1"
                             style="min-height: 50px; max-height: 150px;"
                             ref="inputBox"
@@ -378,6 +378,15 @@
                             </button>
                         </div>
                     </div>
+                </div>
+                <!-- Message Navigation -->
+                <div class="fixed z-10 flex flex-col gap-3 transition-all duration-300 left-3 bottom-32 md:left-auto md:right-8 md:bottom-32">
+                    <button @click="scrollToPreviousMessage" class="p-2.5 bg-white/80 backdrop-blur-sm shadow-md rounded-full text-gray-500 hover:bg-white hover:text-primary-600 transition-all border border-gray-200 hover:scale-110 active:scale-95 group" title="上一条信息">
+                        <svg class="w-5 h-5 transform group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                    </button>
+                    <button @click="scrollToNextMessage" class="p-2.5 bg-white/80 backdrop-blur-sm shadow-md rounded-full text-gray-500 hover:bg-white hover:text-primary-600 transition-all border border-gray-200 hover:scale-110 active:scale-95 group" title="下一条信息">
+                        <svg class="w-5 h-5 transform group-hover:translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
                 </div>
             </div>
 
@@ -1307,6 +1316,9 @@
 
         createApp({
             setup() {
+                // Default Avatar (Simple Gray Background)
+                const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2U1ZTdlYiIvPjwvc3ZnPg==';
+
                 // --- State ---
                 const currentView = ref('chat');
                 const showMobileMenu = ref(false);
@@ -1327,6 +1339,7 @@
                 const toasts = ref([]);
                 const chatContainer = ref(null);
                 const inputBox = ref(null);
+                const messageElements = ref([]);
 
                 const user = reactive({
                     name: 'User',
@@ -1688,6 +1701,45 @@
                 });
 
                 // --- Methods ---
+
+                // Navigation Methods
+                const scrollToPreviousMessage = () => {
+                    const container = chatContainer.value;
+                    if (!container || !messageElements.value) return;
+                    
+                    const scrollTop = container.scrollTop;
+                    // Filter nulls, keep only assistant messages, and sort by DOM position
+                    const elements = messageElements.value
+                        .filter(el => el && el.dataset.role === 'assistant')
+                        .sort((a, b) => a.offsetTop - b.offsetTop);
+                    
+                    // Find the last element that is above the current viewport top (minus a buffer)
+                    for (let i = elements.length - 1; i >= 0; i--) {
+                        if (elements[i].offsetTop < scrollTop - 20) {
+                            elements[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            return;
+                        }
+                    }
+                };
+
+                const scrollToNextMessage = () => {
+                    const container = chatContainer.value;
+                    if (!container || !messageElements.value) return;
+                    
+                    const scrollTop = container.scrollTop;
+                    // Filter nulls, keep only assistant messages, and sort by DOM position
+                    const elements = messageElements.value
+                        .filter(el => el && el.dataset.role === 'assistant')
+                        .sort((a, b) => a.offsetTop - b.offsetTop);
+                    
+                    // Find the first element that is below the current viewport top
+                    for (let i = 0; i < elements.length; i++) {
+                        if (elements[i].offsetTop > scrollTop + 20) {
+                            elements[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            return;
+                        }
+                    }
+                };
 
                 // Toast Notification
                 const showToast = (message, type = 'info', duration = 2000) => {
@@ -2592,7 +2644,7 @@
                         name: 'New Character',
                         description: '',
                         first_mes: 'Hello!',
-                        avatar: 'https://ui-avatars.com/api/?name=NC&background=random',
+                        avatar: defaultAvatar,
                         personality: '',
                         scenario: '',
                         mes_example: '',
@@ -3094,7 +3146,7 @@
                                 name,
                                 description,
                                 first_mes,
-                                avatar: avatarUrl || 'https://ui-avatars.com/api/?name=' + name,
+                                avatar: avatarUrl || defaultAvatar,
                                 personality,
                                 scenario,
                                 mes_example,
@@ -3743,7 +3795,7 @@
                             name: 'Seraphina',
                             description: 'A helpful AI assistant.',
                             first_mes: 'Hello! How can I help you today?',
-                            avatar: 'https://ui-avatars.com/api/?name=Seraphina&background=0D8ABC&color=fff',
+                            avatar: defaultAvatar,
                             personality: 'Helpful, kind, intelligent.',
                             scenario: '',
                             mes_example: '',
@@ -3857,9 +3909,10 @@
                     isGenerating, isReceiving, userInput, modelSearchQuery, availableModels, filteredModels,
                     user, settings, characters, currentCharacter, chatHistory, presets, regexScripts, worldInfo,
                     activeRegexCount, activeWorldInfoCount,
-                    editingCharacter, editingPreset, toasts, chatContainer, inputBox,
+                    editingCharacter, editingPreset, toasts, chatContainer, inputBox, messageElements,
                     lastUserMessageIndex, // Expose to template
                     toggleMobileMenu: () => showMobileMenu.value = !showMobileMenu.value,
+                    scrollToPreviousMessage, scrollToNextMessage,
                     fetchModels, selectModel, sendMessage, stopGeneration, clearChat,
                     handleConfirm, handleCancel, // Export handlers
                     manualSave,
