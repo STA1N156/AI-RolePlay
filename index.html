@@ -1852,7 +1852,30 @@
                             }
                             
                             const re = new RegExp(regexPattern, flags);
-                            result = result.replace(re, replacement);
+
+                            // --- Protection Logic Start ---
+                            // 只有当正则不包含 < 或 > 时，才启用 HTML/代码块保护
+                            // 这允许用户编写专门针对 HTML 的正则，同时保护普通文本替换不破坏 HTML
+                            if (!/[<>]/.test(regexPattern)) {
+                                // 匹配 Markdown 代码块 (```...```), 行内代码 (`...`), 或 HTML 标签
+                                const protectionPattern = /(```[\s\S]*?```|`[^`]+`|<\/?[a-zA-Z][\w:-]*[^>]*>)/g;
+                                const parts = result.split(protectionPattern);
+                                
+                                result = parts.map(part => {
+                                    // 检查是否是受保护的部分
+                                    if (!part) return part;
+                                    if (/^(```[\s\S]*?```|`[^`]+`|<\/?[a-zA-Z][\w:-]*[^>]*>)$/.test(part)) {
+                                        return part; // 保持原样
+                                    }
+                                    // 对普通文本应用替换
+                                    return part.replace(re, replacement);
+                                }).join('');
+                            } else {
+                                // 如果正则包含 < 或 >，则假定用户意图操作 HTML，直接替换
+                                result = result.replace(re, replacement);
+                            }
+                            // --- Protection Logic End ---
+
                         } catch (e) {
                             console.error(`Regex error in script "${script.name || 'Unnamed'}":`, e.message);
                         }
