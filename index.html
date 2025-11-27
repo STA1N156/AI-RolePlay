@@ -205,6 +205,83 @@
         .c-yufan { border-left-color: #3b82f6; } .c-yufan .bar-fill { background: #3b82f6; }
         .c-linghu { border-left-color: #8b5cf6; } .c-linghu .bar-fill { background: #8b5cf6; }
         .c-chongtian { border-left-color: #ef4444; } .c-chongtian .bar-fill { background: #ef4444; }
+
+        /* --- Common Role Card Styles (Universal Support) --- */
+        /* Main Container */
+        .main-container, #role-card-container {
+            font-family: system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            background-color: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Headers & Decorations */
+        .scene-header, .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f3f4f6;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            font-size: 0.9em;
+            color: #6b7280;
+        }
+        .scene-overlay {
+            position: absolute; top: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg, #60a5fa, #c084fc);
+        }
+
+        /* Text Content */
+        .content-text p, .content-wrapper p { margin-bottom: 0.75em; }
+        .char-name { color: #db2777; font-weight: 600; background: rgba(219, 39, 119, 0.1); padding: 0 4px; border-radius: 4px; }
+        .user-name { color: #2563eb; font-weight: 600; background: rgba(37, 99, 235, 0.1); padding: 0 4px; border-radius: 4px; }
+
+        /* Status Panel */
+        .status-panel {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 16px;
+            font-size: 0.9em;
+        }
+        .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px; }
+        .status-item { text-align: center; }
+        .status-row { display: flex; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px dashed #e5e7eb; padding-bottom: 4px; }
+        .status-row:last-child { border-bottom: none; margin-bottom: 0; }
+        .status-label { color: #64748b; font-weight: 500; }
+        .status-value { color: #334155; font-weight: 600; }
+
+        /* Progress Bars */
+        .progress-bar, .progress-bar-bg {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        .progress-bar .fill, .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #60a5fa, #a855f7);
+            border-radius: 3px;
+        }
+
+        /* Thoughts */
+        .inner-thought {
+            margin-top: 12px;
+            padding: 10px;
+            background: #fff;
+            border-left: 3px solid #f472b6;
+            font-size: 0.9em;
+            color: #4b5563;
+            font-style: italic;
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans h-screen overflow-hidden selection:bg-primary-200 selection:text-primary-900">
@@ -2588,14 +2665,14 @@ ${rawHtml}
                     // Build System Prompt
                     let systemPromptParts = [];
                     
-                    // 1. System Top WI
+                    // 1. Presets (Moved to top priority)
+                    if (presetPrompt) systemPromptParts.push(presetPrompt);
+
+                    // 2. System Top WI
                     if (wiGroups.system_top.length > 0) systemPromptParts.push(joinContent(wiGroups.system_top));
                     
-                    // 2. Global Notes
+                    // 3. Global Notes
                     if (wiGroups.global_note.length > 0) systemPromptParts.push(joinContent(wiGroups.global_note));
-                    
-                    // 3. Presets
-                    if (presetPrompt) systemPromptParts.push(presetPrompt);
                     
                     // 4. Before Char WI
                     if (wiGroups.before_char.length > 0) systemPromptParts.push(joinContent(wiGroups.before_char));
