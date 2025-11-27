@@ -2970,10 +2970,6 @@ ${rawHtml}
  - 专属特征：年龄、职业、性格、皮肤、种族等
 **特征根据场景和图片的构图智能调整,冲突则临时移除**
 - 互动动作&细节：
-  - 互动前缀：描述角色间互动时，必须使用特定前缀来指明动作的发出者和接受者
-   - 动作的发起方："source#动作" 【如：source#hugging】
-   - 动作的承受方："target#动作"【如：target#hugging】
-   - 双方相互的动作："mutual#动作"【如：mutual#hugging】
   - 自身【如：hands on own ass、grab own ass、arms behind back、covering chest by hand】
   - 对方【如：hand on others' chest 、grabbing another's hair 、penis grab、covering another's eyes、princess carry】
   - 物品【如：holding doorknob、clothes lift、sex toy on floor、bowl in front of girl、dildo in mouth】
@@ -3015,7 +3011,7 @@ ${rawHtml}
 
 示例：
 <示例>
-</image>image###Scene Composition:nsfw,1girl,1boy,face focus,.......;Character 1 Prompt:girl,original,{{long hair}},{{blonde hair}},blue eyes,medium breasts,{{{shirt,white shirt, plaid shirt}}},open clothes,button,no bra,breasts,kneeling,{{female kneeling on floor}},source#fellatio,hands,﻿{grabbing  penis},source#handjob,target#hand on another's head,looking up,blush,cum,{{cum in mouth}},overflow,splashing fluids,speed line|centers:C3;Character 2 Prompt:boy,{{getglobalvar::male}},clothed male nude female,pants down,big penis,﻿sitting,{{{sitting on sofa}}},pov hand,source#hand on another's head,target#fellatio,target#handjob,ejaculation|centers:C4;###</image>
+</image>image###Scene Composition:nsfw,1girl,1boy,face focus,.......;Character 1 Prompt:girl,original,{{long hair}},{{blonde hair}},blue eyes,medium breasts,{{{shirt,white shirt, plaid shirt}}},open clothes,button,no bra,breasts,kneeling,{{female kneeling on floor}},hands,{grabbing  penis},handjob,looking up,blush,cum,{{cum in mouth}},overflow,splashing fluids,speed line|centers:C3;Character 2 Prompt:boy,{{getglobalvar::male}},clothed male nude female,pants down,big penis,sitting,{{{sitting on sofa}}},pov hand,hand on another's head,ejaculation|centers:C4;###</image>
 
 特别提示：出现user或主角参与的情况(如被口交，手交），禁止出现主角的人物形象(脸部，头部）！必须使用第一视角(POV）相关提示词！且要作为Character  Prompt添加进去，提示词内禁止出现角色卡和角色名字(包括拼音），尤其是中文和{{user}}是明令禁止的，且一定要保持同一人物在上下文中的形象一致性，不要丢失人物特性(如有异色瞳特征人物），涉及人物常见特征(如发色，瞳孔颜色等）的提示词请增加权重`,
                         constant: true,
