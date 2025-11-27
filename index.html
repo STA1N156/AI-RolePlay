@@ -2113,12 +2113,21 @@ ${rawHtml}
                     const trimmed = processed.trim();
                     const lowerTrimmed = trimmed.toLowerCase();
                     const startsWithHtml = lowerTrimmed.startsWith('<!doctype html>') || lowerTrimmed.startsWith('<html');
-
-                    // Only use iframe if it STRICTLY starts with HTML structure (Pure HTML Document)
+                    
+                    // Use iframe ONLY if it STRICTLY starts with HTML Document structure
+                    // For other HTML components (like role cards), we render inline to allow style sharing (Global CSS)
                     if (startsWithHtml && !trimmed.includes('```')) {
                         const container = document.createElement('div');
                         container.appendChild(createIframe(trimmed));
                         return container.innerHTML;
+                    }
+
+                    // Smart detection: If content starts with block-level HTML and contains no Markdown Code Blocks,
+                    // assume it is raw HTML and skip marked parsing to prevent breaking layout/styles.
+                    const startsWithBlockHtml = /^\s*<(div|table|section|article|aside|header|footer|style|script)/i.test(trimmed);
+                    if (startsWithBlockHtml && !trimmed.includes('```')) {
+                        // Directly sanitize and return, skipping Markdown parsing
+                        return DOMPurify.sanitize(processed, cleanConfig);
                     }
 
                     // For mixed content (Text + HTML widgets like HUDs/Status Bars),
@@ -3471,13 +3480,24 @@ ${rawHtml}
                                     if (!normalized.regex) {
                                         normalized.regex = '';
                                     }
+
+                                    // Parse /pattern/flags format if present
+                                    if (normalized.regex.startsWith('/') && normalized.regex.lastIndexOf('/') > 0) {
+                                        const lastSlash = normalized.regex.lastIndexOf('/');
+                                        const potentialFlags = normalized.regex.substring(lastSlash + 1);
+                                        // Simple flags validation
+                                        if (/^[gimsuy]*$/.test(potentialFlags)) {
+                                            normalized.flags = potentialFlags;
+                                            normalized.regex = normalized.regex.substring(1, lastSlash);
+                                        }
+                                    }
                                     
                                     // Keep both replaceString (ST standard) and replacement (legacy)
                                     if (!normalized.replacement && script.replaceString) {
                                         normalized.replacement = script.replaceString;
                                     }
                                     
-                                    // Preserve flags
+                                    // Preserve flags (if not already set by parsing)
                                     if (!normalized.flags && script.regexFlags) {
                                         normalized.flags = script.regexFlags;
                                     }
@@ -4303,8 +4323,22 @@ ${rawHtml}
                                         // Normalize legacy fields
                                         if (!s.name && s.scriptName) s.name = s.scriptName;
                                         if (!s.regex && s.findRegex) s.regex = s.findRegex;
+
+                                        // Parse /pattern/flags format if present
+                                        if (s.regex && s.regex.startsWith('/') && s.regex.lastIndexOf('/') > 0) {
+                                            const lastSlash = s.regex.lastIndexOf('/');
+                                            const potentialFlags = s.regex.substring(lastSlash + 1);
+                                            // Simple flags validation
+                                            if (/^[gimsuy]*$/.test(potentialFlags)) {
+                                                s.flags = potentialFlags;
+                                                s.regex = s.regex.substring(1, lastSlash);
+                                            }
+                                        }
+
                                         if (!s.replacement && s.replaceString) s.replacement = s.replaceString;
                                         if (!s.flags && s.regexFlags) s.flags = s.regexFlags;
+                                        // Default flags if still missing
+                                        if (!s.flags) s.flags = 'g';
                                         
                                         // New Fields
                                         if (!s.placement) s.placement = [1, 2];
