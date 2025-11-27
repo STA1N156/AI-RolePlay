@@ -556,7 +556,7 @@
                                         刷新列表
                                     </button>
                                     <button @click="useBackupAPI" class="px-4 py-2 bg-primary-50 hover:bg-primary-100 text-primary-700 rounded-lg border border-primary-200 transition-all shadow-sm hover:shadow whitespace-nowrap text-sm md:text-base h-[42px]">
-                                        获取备用API
+                                        获取备用模型
                                     </button>
                                 </div>
                             </div>
@@ -1382,9 +1382,9 @@
                 });
 
                 const settings = reactive({
-                    apiUrl: 'https://yunwu.zeabur.app',
-                    apiKey: 'sk-7axYRs7NivTFIYTnizpVFI5I5L78kkqnnHq6dqcLvvD043pu',
-                    model: 'gemini-3-pro-preview-thinking',
+                    apiUrl: 'https://iai.iisbo.com',
+                    apiKey: 'sk-OCmlgK5SoyJ6vMjqZhlMcTR2Pmz54A87X2kU8wSFNWxbxzNc',
+                    model: '[bo++]gemini-3-pro-preview-thinking-2',
                     contextSize: 800000,
                     temperature: 0.9,
                     autoFetchModels: true,
@@ -3747,9 +3747,9 @@ ${rawHtml}
 
                     // --- Restore Default API Settings if enabled ---
                     if (settings.autoRestoreDefaultAPI) {
-                        settings.apiUrl = 'https://yunwu.zeabur.app';
-                        settings.apiKey = 'sk-7axYRs7NivTFIYTnizpVFI5I5L78kkqnnHq6dqcLvvD043pu';
-                        settings.model = 'gemini-3-pro-preview-thinking';
+                        settings.apiUrl = 'https://iai.iisbo.com';
+                        settings.apiKey = 'sk-OCmlgK5SoyJ6vMjqZhlMcTR2Pmz54A87X2kU8wSFNWxbxzNc';
+                        settings.model = '[bo++]gemini-3-pro-preview-thinking-2';
                         // showToast('已自动恢复默认 API 设置', 'info');
                     }
 
