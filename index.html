@@ -1384,7 +1384,7 @@
                 const settings = reactive({
                     apiUrl: 'https://iai.iisbo.com',
                     apiKey: 'sk-OCmlgK5SoyJ6vMjqZhlMcTR2Pmz54A87X2kU8wSFNWxbxzNc',
-                    model: '[bo++]gemini-3-pro-preview-thinking-2',
+                    model: '[bo+]gemini-3-pro-preview-1.5',
                     contextSize: 800000,
                     temperature: 0.9,
                     autoFetchModels: true,
@@ -2201,7 +2201,7 @@ ${rawHtml}
                     settings.apiUrl = 'https://iai.iisbo.com';
                     settings.apiKey = 'sk-OCmlgK5SoyJ6vMjqZhlMcTR2Pmz54A87X2kU8wSFNWxbxzNc';
                     settings.model = 'gemini-3-pro-preview';
-                    showToast('已切换至备用模型', 'success');
+                    showToast('已切换至备用 API', 'success');
                 };
 
                 const selectModel = (modelId) => {
@@ -3749,7 +3749,7 @@ ${rawHtml}
                     if (settings.autoRestoreDefaultAPI) {
                         settings.apiUrl = 'https://iai.iisbo.com';
                         settings.apiKey = 'sk-OCmlgK5SoyJ6vMjqZhlMcTR2Pmz54A87X2kU8wSFNWxbxzNc';
-                        settings.model = '[bo++]gemini-3-pro-preview-thinking-2';
+                        settings.model = '[bo+]gemini-3-pro-preview-1.5';
                         // showToast('已自动恢复默认 API 设置', 'info');
                     }
 
