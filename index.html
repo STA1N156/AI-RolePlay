@@ -683,6 +683,13 @@
                                 </div>
                                 <input v-model.number="settings.temperature" type="range" min="0" max="2" step="0.01" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-600">
                             </div>
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <label class="text-sm font-medium text-gray-600">最大重试次数 (Max Retries)</label>
+                                    <span class="text-sm text-primary-600 font-mono">{{ settings.maxRetries }}</span>
+                                </div>
+                                <input v-model.number="settings.maxRetries" type="range" min="0" max="5" step="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-600">
+                            </div>
                         </div>
                     </div>
 
@@ -1467,7 +1474,8 @@
                     autoFetchModels: true,
                     stream: true,
                     autoRestoreDefaultAPI: true,
-                    useCharacterBackground: true
+                    useCharacterBackground: true,
+                    maxRetries: 2
                 });
 
                 const characters = ref([]);
@@ -2881,109 +2889,161 @@ ${rawHtml}
                     console.groupEnd();
                     // ---------------------------
 
+                    let retryCount = 0;
+                    let isBackupRetrying = false;
+                    const maxRetries = settings.maxRetries || 0;
+
                     try {
-                        const response = await fetch(`${settings.apiUrl}/v1/chat/completions`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${settings.apiKey}`
-                            },
-                            body: JSON.stringify({
-                                model: settings.model,
-                                messages: messages,
-                                temperature: settings.temperature,
-                                stream: settings.stream
-                            }),
-                            signal: abortController.value.signal
-                        });
+                        while (true) {
+                            let assistantMessage = null;
+                            let responseContent = '';
 
-                        if (!response.ok) {
-                            let errorMsg = `API Error: ${response.status}`;
                             try {
-                                const errorText = await response.text();
-                                try {
-                                    const errorJson = JSON.parse(errorText);
-                                    if (errorJson.error && errorJson.error.message) {
-                                        errorMsg += `\n${errorJson.error.message}`;
-                                    } else if (errorJson.message) {
-                                        errorMsg += `\n${errorJson.message}`;
-                                    } else {
-                                        errorMsg += `\n${JSON.stringify(errorJson, null, 2)}`;
-                                    }
-                                } catch (e) {
-                                    // Not JSON, use text directly
-                                    if (errorText) errorMsg += `\n${errorText}`;
-                                }
-                            } catch (e) {
-                                // Cannot read body
-                            }
-                            throw new Error(errorMsg);
-                        }
+                                const response = await fetch(`${settings.apiUrl}/v1/chat/completions`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': `Bearer ${settings.apiKey}`
+                                    },
+                                    body: JSON.stringify({
+                                        model: settings.model,
+                                        messages: messages,
+                                        temperature: settings.temperature,
+                                        stream: settings.stream
+                                    }),
+                                    signal: abortController.value.signal
+                                });
 
-                        let assistantMessage = null;
-
-                        if (settings.stream) {
-                            const reader = response.body.getReader();
-                            const decoder = new TextDecoder();
-                            let buffer = '';
-
-                            while (true) {
-                                const { done, value } = await reader.read();
-                                if (done) break;
-                                
-                                buffer += decoder.decode(value, { stream: true });
-                                const lines = buffer.split('\n');
-                                buffer = lines.pop();
-                                
-                                for (const line of lines) {
-                                    const trimmedLine = line.trim();
-                                    if (!trimmedLine) continue;
-                                    
-                                    if (trimmedLine.startsWith('data: ')) {
-                                        const dataStr = trimmedLine.slice(6);
-                                        if (dataStr === '[DONE]') continue;
-                                        
+                                if (!response.ok) {
+                                    let errorMsg = `API Error: ${response.status}`;
+                                    try {
+                                        const errorText = await response.text();
                                         try {
-                                            const data = JSON.parse(dataStr);
-                                            const content = data.choices[0]?.delta?.content || '';
-                                            
-                                            if (content) {
-                                                if (!assistantMessage) {
-                                                    assistantMessage = reactive({ role: 'assistant', name: currentCharacter.value.name, content: '' });
-                                                    chatHistory.value.push(assistantMessage);
-                                                    isReceiving.value = true;
-                                                    await nextTick();
-                                                }
-                                                assistantMessage.content += content;
-                                                scrollToBottom();
+                                            const errorJson = JSON.parse(errorText);
+                                            if (errorJson.error && errorJson.error.message) {
+                                                errorMsg += `\n${errorJson.error.message}`;
+                                            } else if (errorJson.message) {
+                                                errorMsg += `\n${errorJson.message}`;
+                                            } else {
+                                                errorMsg += `\n${JSON.stringify(errorJson, null, 2)}`;
                                             }
                                         } catch (e) {
-                                            console.warn('Error parsing stream chunk:', e);
+                                            // Not JSON, use text directly
+                                            if (errorText) errorMsg += `\n${errorText}`;
+                                        }
+                                    } catch (e) {
+                                        // Cannot read body
+                                    }
+                                    throw new Error(errorMsg);
+                                }
+
+                                if (settings.stream) {
+                                    const reader = response.body.getReader();
+                                    const decoder = new TextDecoder();
+                                    let buffer = '';
+
+                                    while (true) {
+                                        const { done, value } = await reader.read();
+                                        if (done) break;
+                                        
+                                        buffer += decoder.decode(value, { stream: true });
+                                        const lines = buffer.split('\n');
+                                        buffer = lines.pop();
+                                        
+                                        for (const line of lines) {
+                                            const trimmedLine = line.trim();
+                                            if (!trimmedLine) continue;
+                                            
+                                            if (trimmedLine.startsWith('data: ')) {
+                                                const dataStr = trimmedLine.slice(6);
+                                                if (dataStr === '[DONE]') continue;
+                                                
+                                                try {
+                                                    const data = JSON.parse(dataStr);
+                                                    const content = data.choices[0]?.delta?.content || '';
+                                                    
+                                                    if (content) {
+                                                        if (!assistantMessage) {
+                                                            assistantMessage = reactive({ role: 'assistant', name: currentCharacter.value.name, content: '' });
+                                                            chatHistory.value.push(assistantMessage);
+                                                            isReceiving.value = true;
+                                                            await nextTick();
+                                                        }
+                                                        assistantMessage.content += content;
+                                                        responseContent += content;
+                                                        scrollToBottom();
+                                                    }
+                                                } catch (e) {
+                                                    console.warn('Error parsing stream chunk:', e);
+                                                }
+                                            }
                                         }
                                     }
+                                } else {
+                                    // Non-streaming response handling
+                                    const data = await response.json();
+                                    const content = data.choices[0]?.message?.content || '';
+                                    responseContent = content;
+                                    
+                                    if (content) {
+                                        assistantMessage = reactive({ role: 'assistant', name: currentCharacter.value.name, content: content });
+                                        chatHistory.value.push(assistantMessage);
+                                        await nextTick();
+                                        scrollToBottom();
+                                    }
                                 }
-                            }
-                        } else {
-                            // Non-streaming response handling
-                            const data = await response.json();
-                            const content = data.choices[0]?.message?.content || '';
-                            
-                            if (content) {
-                                assistantMessage = reactive({ role: 'assistant', name: currentCharacter.value.name, content: content });
-                                chatHistory.value.push(assistantMessage);
-                                await nextTick();
-                                scrollToBottom();
-                            }
-                        }
-                        
-                        if (assistantMessage) {
-                            console.groupCollapsed('📬 AI 响应接收完毕');
-                            console.log('AI返回的完整内容:', assistantMessage.content);
-                            console.groupEnd();
-                        }
 
+                                // Check for empty content
+                                if (!responseContent || responseContent.trim().length === 0) {
+                                    // Clean up empty message if it was added
+                                    if (assistantMessage) {
+                                        const idx = chatHistory.value.indexOf(assistantMessage);
+                                        if (idx !== -1) chatHistory.value.splice(idx, 1);
+                                    }
+                                    
+                                    // Retry Logic
+                                    if (retryCount < maxRetries) {
+                                        retryCount++;
+                                        showToast(`回复为空，正在自动重试 (${retryCount}/${maxRetries})...`, 'warning');
+                                        console.log(`Retry attempt ${retryCount}/${maxRetries}`);
+                                        continue; // Retry loop
+                                    } else if (!isBackupRetrying && maxRetries > 0) {
+                                        // Switch to backup
+                                        isBackupRetrying = true;
+                                        // retryCount = 0; // Backup gets one shot (as it uses the remaining loop or just next iter)
+                                        // If we want to give backup exactly 1 try, we don't reset retryCount to 0,
+                                        // because retryCount is already >= maxRetries.
+                                        // Next loop, if it fails: retryCount (max) < maxRetries is FALSE.
+                                        // !isBackupRetrying is FALSE.
+                                        // So it throws.
+                                        // This means Backup gets exactly 1 attempt. Correct.
+                                        
+                                        showToast('重试失败，切换备用模型继续尝试...', 'warning');
+                                        useBackupAPI();
+                                        await new Promise(r => setTimeout(r, 1000));
+                                        continue;
+                                    } else {
+                                        throw new Error('生成的回复为空 (Empty Response)');
+                                    }
+                                }
+                                
+                                if (assistantMessage) {
+                                    console.groupCollapsed('📬 AI 响应接收完毕');
+                                    console.log('AI返回的完整内容:', assistantMessage.content);
+                                    console.groupEnd();
+                                }
+
+                                break; // Success
+
+                            } catch (error) {
+                                if (error.name === 'AbortError') throw error;
+                                // For API errors, currently we treat them as fatal unless we want to retry on 5xx?
+                                // Task specific: only empty content retry.
+                                throw error;
+                            }
+                        }
                     } catch (error) {
-                        if (error.name === 'AbortError') {
+                         if (error.name === 'AbortError') {
                             showToast('生成已中止', 'info');
                             const lastMessage = chatHistory.value[chatHistory.value.length - 1];
                             if (lastMessage && lastMessage.role === 'assistant' && isReceiving.value) {
