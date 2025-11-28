@@ -1461,7 +1461,7 @@
                 const settings = reactive({
                     apiUrl: 'https://iai.iisbo.com',
                     apiKey: 'sk-OCmlgK5SoyJ6vMjqZhlMcTR2Pmz54A87X2kU8wSFNWxbxzNc',
-                    model: '[bo+]gemini-3-pro-preview-1.5',
+                    model: '[bo]gemini-3-pro-preview-1',
                     contextSize: 800000,
                     temperature: 0.9,
                     autoFetchModels: true,
@@ -3110,8 +3110,7 @@ ${rawHtml}
                         comment: autoImageGenWIName,
                         keys: [],
                         secondary_keys: [],
-                        content: `##The assistant must add <image>s when the scenes is tempting.
-##根据“<image>”中的请求，在诱人或者精彩场景描绘时使用“<image>”作为场景图片，使用绘画tag对场景人物进行特写。一个场景可以拥有多个<image>
+                        content: `在诱人或者精彩场景描绘时使用“<image>”作为场景图片，使用绘画tag对场景人物进行特写。一个场景可以拥有多个<image>
 只要你认为画面足够精彩足够诱人。
 注意:如果当前场景有私密身体部位暴露,请添加前缀“nsfw, ”.始终使用逗号分隔条目.另外请保证同一角色的特征，如发色，瞳孔颜色，体态，外貌的一致性.
 结合场景进行image生成 使用 <image>image###生成的提示词###</image> 的格式！
@@ -4044,7 +4043,7 @@ ${rawHtml}
                     if (settings.autoRestoreDefaultAPI) {
                         settings.apiUrl = 'https://iai.iisbo.com';
                         settings.apiKey = 'sk-OCmlgK5SoyJ6vMjqZhlMcTR2Pmz54A87X2kU8wSFNWxbxzNc';
-                        settings.model = '[bo+]gemini-3-pro-preview-1.5';
+                        settings.model = '[bo]gemini-3-pro-preview-1';
                         // showToast('已自动恢复默认 API 设置', 'info');
                     }
 
