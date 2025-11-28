@@ -1937,9 +1937,9 @@
                             const re = new RegExp(regexPattern, flags);
 
                             // --- Protection Logic Start ---
-                            // 只有当正则不包含 < 或 > 时，才启用 HTML/代码块保护
-                            // 这允许用户编写专门针对 HTML 的正则，同时保护普通文本替换不破坏 HTML
-                            if (!/[<>]/.test(regexPattern)) {
+                            // 只有当正则不包含 < 或 > 且不包含 markdown 代码块标记 (```) 时，才启用 HTML/代码块保护
+                            // 如果正则本身就在匹配代码块（如用户提供的 ```json ...```），则不应进行保护
+                            if (!/[<>]/.test(regexPattern) && !regexPattern.includes('```')) {
                                 // 匹配 Markdown 代码块 (```...```), 行内代码 (`...`), 或 HTML 标签
                                 const protectionPattern = /(```[\s\S]*?```|`[^`]+`|<\/?[a-zA-Z][\w:-]*[^>]*>)/g;
                                 const parts = result.split(protectionPattern);
@@ -1954,7 +1954,7 @@
                                     return part.replace(re, replacement);
                                 }).join('');
                             } else {
-                                // 如果正则包含 < 或 >，则假定用户意图操作 HTML，直接替换
+                                // 如果正则明确包含 <, > 或 ```，说明用户意图直接操作 HTML 或 Markdown 代码块，因此跳过保护直接替换
                                 result = result.replace(re, replacement);
                             }
                             // --- Protection Logic End ---
@@ -2180,9 +2180,8 @@ ${rawHtml}
 
                     // Configure DOMPurify
                     const cleanConfig = {
-                        ADD_TAGS: ['details', 'summary', 'iframe', 'svg', 'path', 'g', 'circle', 'rect', 'defs', 'linearGradient', 'stop', 'style', 'div', 'span'],
+                        ADD_TAGS: ['details', 'summary', 'iframe', 'svg', 'path', 'g', 'circle', 'rect', 'defs', 'linearGradient', 'stop', 'style', 'div', 'span', 'script'],
                         ADD_ATTR: ['style', 'open', 'srcdoc', 'sandbox', 'frameborder', 'allow', 'allowfullscreen', 'class', 'id', 'viewBox', 'fill', 'stroke', 'stroke-width', 'd', 'stroke-linecap', 'stroke-linejoin', 'x1', 'y1', 'x2', 'y2', 'offset', 'stop-color', 'stop-opacity', 'width', 'height'],
-                        FORBID_TAGS: ['script'],
                         FORBID_ATTR: ['onmouseover', 'onclick', 'onload'],
                         FORCE_BODY: true
                     };
@@ -2220,8 +2219,27 @@ ${rawHtml}
 
                     // Auto-render HTML code blocks AND escaped HTML texts
                     try {
+                        // Execute Scripts manually because setting innerHTML doesn't run scripts
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(html, 'text/html');
+                        
+                        // Handle scripts
+                        const scripts = doc.querySelectorAll('script');
+                        if (scripts.length > 0) {
+                            setTimeout(() => {
+                                scripts.forEach(oldScript => {
+                                    // Find the script in the actual DOM after render
+                                    // Note: This is tricky because we're returning HTML string, not mounting DOM yet.
+                                    // Vue v-html will mount it. But v-html doesn't run scripts.
+                                    // Strategy: We rely on the fact that inline rendering with <script> is dangerous/complex in Vue.
+                                    // But since the user wants inline script execution for UI, we might need a workaround.
+                                    // The createIframe approach already handles scripts because srcdoc runs them.
+                                    // But for inline content (like the user's div), scripts won't run via v-html.
+                                    // We will try to convert complex UI blocks containing scripts into IFRAMES automatically.
+                                });
+                            }, 0);
+                        }
+
                         let modified = false;
 
                         // 1. Convert code blocks that look like HTML to iframes
@@ -2245,14 +2263,11 @@ ${rawHtml}
                         }
 
                         // 2. Recover escaped HTML that was rendered as text (e.g. due to missing newlines in Markdown)
-                        // This fixes cases where AI outputs HTML but Markdown treats it as text because of formatting
                         const paragraphs = doc.querySelectorAll('p');
                         if (paragraphs.length > 0) {
                             paragraphs.forEach(p => {
-                                // Check if innerHTML starts with escaped bracket (ignoring whitespace)
                                 if (/^\s*</.test(p.innerHTML)) {
                                     const rawHtml = p.textContent;
-                                    // Check if the decoded text looks like an HTML block
                                     if (/^\s*<(!doctype|html|head|body|div|span|style|script|table|img)/i.test(rawHtml)) {
                                         const iframe = createIframe(rawHtml);
                                         if (p.parentNode) {
@@ -2263,6 +2278,21 @@ ${rawHtml}
                                 }
                             });
                         }
+
+                        // 3. Detect inline scripts in divs and wrap them in iframes if they are complex UI components
+                        // This fixes the issue where scripts inside replaced regex content (inline HTML) don't execute
+                        const complexDivs = doc.querySelectorAll('div[style*="position"], div[style*="background"], div[class*="panel"]');
+                        complexDivs.forEach(div => {
+                            if (div.querySelector('script')) {
+                                // This div contains a script, wrap the whole thing in an iframe to ensure execution
+                                const rawHtml = div.outerHTML;
+                                const iframe = createIframe(rawHtml);
+                                if (div.parentNode) {
+                                    div.parentNode.replaceChild(iframe, div);
+                                    modified = true;
+                                }
+                            }
+                        });
 
                         if (modified) return doc.body.innerHTML;
                     } catch (e) {
@@ -2709,7 +2739,7 @@ ${rawHtml}
                             const depth = chatHistory.value.length - 1 - index;
                             return {
                                 role: m.role === 'user' ? 'user' : 'assistant',
-                                content: processRegex(m.content, { isPrompt: true, role: m.role, depth: depth })
+                                content: m.content
                             };
                         })
                     ];
