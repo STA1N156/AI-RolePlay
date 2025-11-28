@@ -139,13 +139,13 @@
         .typing-indicator {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
         }
         .typing-indicator span {
             display: block;
-            width: 8px;
-            height: 8px;
-            background-color: #6b7280;
+            width: 10px;
+            height: 10px;
+            /* background-color set via utility classes in HTML */
             border-radius: 50%;
             animation: typing 1.4s infinite ease-in-out both;
         }
@@ -450,11 +450,22 @@
 
                     <!-- Typing Indicator -->
                     <div v-if="isGenerating && !isReceiving" class="flex w-full justify-start">
-                        <div class="flex max-w-[95%] flex-row">
-                            <img :src="currentCharacter.avatar" class="w-8 h-8 rounded-full object-cover mr-2 border border-gray-200 shadow-sm">
-                            <div class="w-16 h-12 rounded-2xl rounded-tl-none bg-white border border-gray-100 shadow-card flex items-center justify-center">
-                                <div class="typing-indicator">
-                                    <span></span><span></span><span></span>
+                        <div class="flex max-w-[95%] md:max-w-[70%] lg:max-w-[60%] flex-row">
+                            <div class="flex-shrink-0">
+                                <img :src="currentCharacter.avatar" class="w-8 h-8 rounded-full object-cover mr-2 border border-gray-200 shadow-sm">
+                            </div>
+                            <div class="flex flex-col min-w-0">
+                                <div class="text-xs text-gray-500 mb-1 select-none text-left ml-1">
+                                    {{ currentCharacter.name }}
+                                </div>
+                                <div class="min-w-[4rem] min-h-[4rem] px-3 py-3 rounded-2xl rounded-tl-none bg-white border border-gray-100 shadow-card flex flex-col items-center justify-center gap-2">
+                                    <div class="typing-indicator scale-125">
+                                        <span class="bg-primary-400"></span><span class="bg-primary-400"></span><span class="bg-primary-400"></span>
+                                    </div>
+                                    <div v-if="isGenerating" class="flex items-center gap-1.5 text-[11px] text-gray-400 font-mono bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100 animate-pulse mt-0.5">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        <span class="whitespace-nowrap">{{ currentWaitTime }}s <span v-if="estimatedGenerationTime" class="text-gray-300 mx-0.5">/</span> <span v-if="estimatedGenerationTime">{{ estimatedGenerationTime }}s</span></span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1491,6 +1502,19 @@
 
                 const regexScripts = ref([]);
                 const worldInfo = ref([]);
+                const recentGenerationTimes = ref([]);
+                const currentWaitTime = ref('0.0');
+                let waitTimer = null;
+
+                const estimatedGenerationTime = computed(() => {
+                    if (recentGenerationTimes.value.length === 0) return null;
+                    const total = recentGenerationTimes.value.reduce((sum, item) => {
+                        // Compatibility: handle both number and object
+                        const duration = typeof item === 'number' ? item : item.duration;
+                        return sum + duration;
+                    }, 0);
+                    return (total / recentGenerationTimes.value.length / 1000).toFixed(1);
+                });
 
                 const showWorldInfoSettings = ref(false);
                 const worldInfoSettings = reactive({
@@ -1569,6 +1593,7 @@
                         await dbSet('silly_tavern_regex', regexScripts.value);
                         await dbSet('silly_tavern_worldinfo', worldInfo.value);
                         await dbSet('silly_tavern_worldinfo_settings', worldInfoSettings);
+                        // await dbSet('silly_tavern_recent_times', recentGenerationTimes.value); // Deprecated: Saved in character
                         await dbSet('silly_tavern_user', user);
                         
                         // Save Chat State
@@ -1682,6 +1707,9 @@
                         const savedWISettings = await dbGet('silly_tavern_worldinfo_settings');
                         if (savedWISettings) Object.assign(worldInfoSettings, savedWISettings);
 
+                        // const savedRecentTimes = await dbGet('silly_tavern_recent_times'); // Deprecated
+                        // if (savedRecentTimes) recentGenerationTimes.value = savedRecentTimes;
+
                         const savedUser = await dbGet('silly_tavern_user');
                         if (savedUser) Object.assign(user, savedUser);
                         
@@ -1722,6 +1750,15 @@
                         const char = characters.value[currentCharacterIndex.value];
                         if (JSON.stringify(char.regexScripts) !== JSON.stringify(newVal)) {
                             char.regexScripts = JSON.parse(JSON.stringify(newVal));
+                        }
+                    }
+                }, { deep: true });
+
+                watch(recentGenerationTimes, (newVal) => {
+                    if (currentCharacterIndex.value !== -1 && characters.value[currentCharacterIndex.value]) {
+                        const char = characters.value[currentCharacterIndex.value];
+                        if (JSON.stringify(char.recentGenerationTimes) !== JSON.stringify(newVal)) {
+                            char.recentGenerationTimes = JSON.parse(JSON.stringify(newVal));
                         }
                     }
                 }, { deep: true });
@@ -1774,7 +1811,7 @@
                 }, 1000);
 
                 // Watch for changes to auto-save
-                watch([characters, settings, presets, regexScripts, worldInfo, user], () => {
+                watch([characters, settings, presets, regexScripts, worldInfo, user, recentGenerationTimes], () => {
                     debouncedSave();
                 }, { deep: true });
 
@@ -2350,6 +2387,7 @@ ${rawHtml}
                 const sendMessage = async () => {
                     if (!userInput.value.trim() || isGenerating.value) return;
                     
+                    const startTime = Date.now(); // Record click time
                     const content = userInput.value.trim();
                     userInput.value = '';
                     
@@ -2358,7 +2396,7 @@ ${rawHtml}
                     await nextTick();
                     scrollToBottom();
 
-                    await generateResponse();
+                    await generateResponse(startTime);
                 };
 
                 const scrollToBottom = () => {
@@ -2399,6 +2437,11 @@ ${rawHtml}
 
                 const deleteMessage = (index) => {
                     confirmAction('确定要删除这条消息吗？', () => {
+                        const msg = chatHistory.value[index];
+                        // Remove timing record if exists
+                        if (msg && msg.id) {
+                            recentGenerationTimes.value = recentGenerationTimes.value.filter(t => (t.id || t) !== msg.id);
+                        }
                         chatHistory.value.splice(index, 1);
                         showToast('消息已删除', 'success');
                     });
@@ -2406,23 +2449,29 @@ ${rawHtml}
 
                 const regenerateMessage = async (index) => {
                     if (isGenerating.value) return;
+                    
+                    const startTime = Date.now(); // Record click time
 
                     const msg = chatHistory.value[index];
                     
                     if (msg.role === 'user') {
                         // 如果是用户消息，直接基于当前上下文生成（重试/继续）
-                        await generateResponse();
+                        await generateResponse(startTime);
                     } else {
                         // 如果是 AI 消息，删除它（及之后）然后重新生成
                         confirmAction('确定要重新生成这条消息吗？', async () => {
+                            // Remove timing record for the message being regenerated
+                            if (msg && msg.id) {
+                                recentGenerationTimes.value = recentGenerationTimes.value.filter(t => (t.id || t) !== msg.id);
+                            }
                             chatHistory.value = chatHistory.value.slice(0, index);
-                            await generateResponse();
+                            await generateResponse(startTime);
                         });
                     }
                 };
 
                 // Refactored generation logic
-                const generateResponse = async () => {
+                const generateResponse = async (startTime = null) => {
                     if (isGenerating.value) return;
                     
                     if (!currentCharacter.value) {
@@ -2433,6 +2482,15 @@ ${rawHtml}
                     isGenerating.value = true;
                     isReceiving.value = false;
                     abortController.value = new AbortController();
+                    const generationStartTime = startTime || Date.now();
+                    
+                    // Start Timer
+                    if (waitTimer) clearInterval(waitTimer);
+                    currentWaitTime.value = '0.0';
+                    waitTimer = setInterval(() => {
+                        const now = Date.now();
+                        currentWaitTime.value = ((now - generationStartTime) / 1000).toFixed(1);
+                    }, 100);
                     
                     // --- Advanced World Info Processing ---
 
@@ -2965,7 +3023,12 @@ ${rawHtml}
                                                     
                                                     if (content) {
                                                         if (!assistantMessage) {
-                                                            assistantMessage = reactive({ role: 'assistant', name: currentCharacter.value.name, content: '' });
+                                                            assistantMessage = reactive({
+                                                                role: 'assistant',
+                                                                name: currentCharacter.value.name,
+                                                                content: '',
+                                                                id: generateUUID() // Assign ID
+                                                            });
                                                             chatHistory.value.push(assistantMessage);
                                                             isReceiving.value = true;
                                                             await nextTick();
@@ -2987,7 +3050,12 @@ ${rawHtml}
                                     responseContent = content;
                                     
                                     if (content) {
-                                        assistantMessage = reactive({ role: 'assistant', name: currentCharacter.value.name, content: content });
+                                        assistantMessage = reactive({
+                                            role: 'assistant',
+                                            name: currentCharacter.value.name,
+                                            content: content,
+                                            id: generateUUID() // Assign ID
+                                        });
                                         chatHistory.value.push(assistantMessage);
                                         await nextTick();
                                         scrollToBottom();
@@ -3032,6 +3100,16 @@ ${rawHtml}
                                     console.groupCollapsed('📬 AI 响应接收完毕');
                                     console.log('AI返回的完整内容:', assistantMessage.content);
                                     console.groupEnd();
+
+                                    // Record generation time
+                                    const duration = Date.now() - generationStartTime;
+                                    recentGenerationTimes.value.push({
+                                        id: assistantMessage.id,
+                                        duration: duration
+                                    });
+                                    if (recentGenerationTimes.value.length > 5) {
+                                        recentGenerationTimes.value.shift();
+                                    }
                                 }
 
                                 break; // Success
@@ -3064,6 +3142,10 @@ ${rawHtml}
                     } finally {
                         isGenerating.value = false;
                         abortController.value = null;
+                        if (waitTimer) {
+                            clearInterval(waitTimer);
+                            waitTimer = null;
+                        }
                     }
                 };
 
@@ -3311,6 +3393,12 @@ ${rawHtml}
                         regexScripts.value = JSON.parse(JSON.stringify(char.regexScripts));
                     } else {
                         regexScripts.value = [];
+                    }
+
+                    if (char.recentGenerationTimes) {
+                        recentGenerationTimes.value = JSON.parse(JSON.stringify(char.recentGenerationTimes));
+                    } else {
+                        recentGenerationTimes.value = [];
                     }
 
                     // Ensure default {{user}} replacement regex exists
@@ -3661,6 +3749,7 @@ ${rawHtml}
                                 mes_example,
                                 worldInfo: [],
                                 regexScripts: [],
+                                recentGenerationTimes: [],
                                 uuid: generateUUID()
                             };
 
@@ -4087,12 +4176,14 @@ ${rawHtml}
                             return;
                         }
 
+                        const startTime = Date.now(); // Record trigger time
+
                         // Add user message
                         chatHistory.value.push({ role: 'user', content: text });
                         await nextTick();
                         scrollToBottom();
 
-                        await generateResponse();
+                        await generateResponse(startTime);
                     };
 
                     await loadData();
@@ -4322,6 +4413,7 @@ ${rawHtml}
                             personality: 'Helpful, kind, intelligent.',
                             scenario: '',
                             mes_example: '',
+                            recentGenerationTimes: [],
                             uuid: generateUUID()
                         });
                     }
@@ -4371,6 +4463,9 @@ ${rawHtml}
                         
                         if (char.regexScripts) regexScripts.value = JSON.parse(JSON.stringify(char.regexScripts));
                         else regexScripts.value = [];
+
+                        if (char.recentGenerationTimes) recentGenerationTimes.value = JSON.parse(JSON.stringify(char.recentGenerationTimes));
+                        else recentGenerationTimes.value = [];
                         
                         // Ensure default regex
                         const defaultRegexName = 'Auto Replace {{user}}';
@@ -4795,7 +4890,7 @@ ${rawHtml}
                     
                     processRegex,
                     showRegexEditor, showWorldInfoEditor, editingRegex, editingWorldInfo,
-                    worldInfoSettings, showWorldInfoSettings,
+                    worldInfoSettings, showWorldInfoSettings, estimatedGenerationTime, currentWaitTime,
                     togglePlacement: (val) => {
                         if (!editingRegex.data.placement) editingRegex.data.placement = [];
                         const index = editingRegex.data.placement.indexOf(val);
