@@ -1461,7 +1461,7 @@
                 const settings = reactive({
                     apiUrl: 'https://iai.iisbo.com',
                     apiKey: 'sk-OCmlgK5SoyJ6vMjqZhlMcTR2Pmz54A87X2kU8wSFNWxbxzNc',
-                    model: '[bo+]gemini-3-pro-preview-thinking-1.5',
+                    model: '[bo+]gemini-3-pro-preview-1.5',
                     contextSize: 800000,
                     temperature: 0.9,
                     autoFetchModels: true,
@@ -2322,7 +2322,7 @@ ${rawHtml}
                 const useBackupAPI = () => {
                     settings.apiUrl = 'https://iai.iisbo.com';
                     settings.apiKey = 'sk-OCmlgK5SoyJ6vMjqZhlMcTR2Pmz54A87X2kU8wSFNWxbxzNc';
-                    settings.model = '[bo+]gemini-3-pro-preview-1.5';
+                    settings.model = 'gemini-3-pro-preview';
                     showToast('已切换至备用 API', 'success');
                 };
 
@@ -3130,7 +3130,7 @@ ${rawHtml}
 特别提示：出现user或主角参与的情况(如被口交，手交），禁止出现主角的人物形象(脸部，头部）！必须使用第一视角(POV）相关提示词！且要作为Character  Prompt添加进去，提示词内禁止出现角色卡和角色名字(包括拼音），尤其是中文和{{user}}是明令禁止的，且一定要保持同一人物在上下文中的形象一致性，不要丢失人物特性(如有异色瞳特征人物），涉及人物常见特征(如发色，瞳孔颜色等）的提示词请增加权重`,
                         constant: true,
                         enabled: false, // Default closed
-                        position: 'global_note',
+                        position: 'an_bottom',
                         depth: 1,
                         order: 100,
                         useProbability: true,
@@ -3981,7 +3981,7 @@ ${rawHtml}
                     if (settings.autoRestoreDefaultAPI) {
                         settings.apiUrl = 'https://iai.iisbo.com';
                         settings.apiKey = 'sk-OCmlgK5SoyJ6vMjqZhlMcTR2Pmz54A87X2kU8wSFNWxbxzNc';
-                        settings.model = '[bo+]gemini-3-pro-preview-thinking-1.5';
+                        settings.model = '[bo+]gemini-3-pro-preview-1.5';
                         // showToast('已自动恢复默认 API 设置', 'info');
                     }
 
@@ -4687,4 +4687,4 @@ ${rawHtml}
         }).mount('#app');
     </script>
 </body>
-</html>
+                                           </html>
