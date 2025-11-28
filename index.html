@@ -2735,8 +2735,6 @@ ${rawHtml}
                     let messages = [
                         { role: 'system', content: systemPrompt },
                         ...chatHistory.value.map((m, index) => {
-                            // 计算深度 (从底向上，0开始)
-                            const depth = chatHistory.value.length - 1 - index;
                             return {
                                 role: m.role === 'user' ? 'user' : 'assistant',
                                 content: m.content
