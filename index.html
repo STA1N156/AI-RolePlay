@@ -2733,14 +2733,32 @@ ${rawHtml}
 
                     // Base Messages
                     let messages = [
-                        { role: 'system', content: systemPrompt },
-                        ...chatHistory.value.map((m, index) => {
-                            return {
-                                role: m.role === 'user' ? 'user' : 'assistant',
-                                content: m.content
-                            };
-                        })
+                        { role: 'system', content: systemPrompt }
                     ];
+
+                    // 确保开场白存在 (Double check for First Message)
+                    // 如果聊天记录为空，或者第一条不是开场白，且角色有开场白，则手动添加
+                    // 注意：通常 chatHistory 会包含开场白，这里是为了响应用户反馈的强制保险
+                    const hasFirstMesInHistory = chatHistory.value.length > 0 &&
+                                               chatHistory.value[0].role === 'assistant' &&
+                                               chatHistory.value[0].content === currentCharacter.value.first_mes;
+                    
+                    if (!hasFirstMesInHistory && currentCharacter.value.first_mes) {
+                        messages.push({
+                            role: 'assistant',
+                            name: currentCharacter.value.name,
+                            content: currentCharacter.value.first_mes
+                        });
+                    }
+
+                    // 添加聊天记录
+                    messages = messages.concat(chatHistory.value.map((m, index) => {
+                        return {
+                            role: m.role === 'user' ? 'user' : 'assistant',
+                            name: m.role === 'user' ? user.name : (m.name || currentCharacter.value.name),
+                            content: m.content
+                        };
+                    }));
 
                     // Handle @D (At Depth) and other message-level injections
                     const processMessageInjections = (msgArray) => {
@@ -2797,24 +2815,69 @@ ${rawHtml}
 
                     messages = processMessageInjections(messages);
 
-                    // --- 优化后的控制台日志 ---
-                    console.group('🚀 发送给 AI 的请求详情');
-                    console.log(`🤖 模型: ${settings.model}`);
+                    // --- 核心修改：将所有信息注入系统提示词 (Anti-Censorship) ---
+                    let finalSystemPrompt = '';
+                    let isHistoryStarted = false;
                     
-                    console.groupCollapsed('📝 系统提示词 (System Prompt)');
-                    console.log(systemPrompt);
+                    // 强制 AI 在回复开头带上名字的指令
+                    const charName = currentCharacter.value.name;
+                    const formatInstruction = `\n[System Instruction]\n以下为对话历史，请直接根据用户输入，输出作为"${charName}: "的content内容，不需要输出角色名和冒号\n`;
+
+                    messages.forEach(msg => {
+                        if (msg.role === 'system') {
+                            finalSystemPrompt += msg.content + '\n\n';
+                        } else {
+                            // 一旦遇到非 system 消息（User 或 Assistant），说明进入了对话历史或开场白
+                            if (!isHistoryStarted) {
+                                finalSystemPrompt += formatInstruction;
+                                finalSystemPrompt += '\n[Conversation History]\n';
+                                isHistoryStarted = true;
+                            }
+                            const name = msg.name || (msg.role === 'user' ? user.name : charName);
+                            finalSystemPrompt += `${name}: ${msg.content}\n\n`;
+                        }
+                    });
+                    
+                    // 如果遍历完了还没有开始历史（比如全是 system 消息），虽然不常见，但也补上指令
+                    if (!isHistoryStarted) {
+                        finalSystemPrompt += formatInstruction + '\n[Start of Conversation]\n';
+                    }
+
+                    // 移除末尾多余换行并添加引导
+                    finalSystemPrompt = finalSystemPrompt.trim();
+                    // 可选：添加引导，让 AI 知道该轮到它了，但通常 Chat 模型不需要
+                    // finalSystemPrompt += `\n\n${currentCharacter.value.name}:`;
+
+                    // 重构 messages 数组，只包含 System Prompt 和一个空的 User 消息
+                    messages = [
+                        { role: 'system', content: finalSystemPrompt },
+                        { role: 'user', content: ' ' } // 使用空格占位，满足 API 格式要求
+                    ];
+                    // -----------------------------------------------------------
+
+                    // --- 优化后的控制台日志 (Anti-Censorship View) ---
+                    console.group('%c🚀 AI 请求详情 (防审查模式)', 'color: #10b981; font-weight: bold; font-size: 14px;');
+                    console.log(`%c🤖 模型: %c${settings.model}`, 'font-weight: bold;', 'color: #3b82f6;');
+                    
+                    console.log(`%c📦 最终发送结构:`, 'font-weight: bold;');
+                    console.log(`1. System Message (${finalSystemPrompt.length} chars)`);
+                    console.log(`2. User Message (Placeholder " ")`);
+
+                    console.groupCollapsed('%c📝 查看完整注入内容 (Final System Prompt)', 'color: #f59e0b; font-weight: bold;');
+                    console.log(finalSystemPrompt);
                     console.groupEnd();
 
-                    console.groupCollapsed('💬 完整对话历史 (Messages)');
-                    console.table(messages.map(m => ({
-                        '角色 (Role)': m.role === 'user' ? '用户 (User)' : (m.role === 'system' ? '系统 (System)' : 'AI (Assistant)'),
-                        '内容预览 (Content)': m.content.length > 50 ? m.content.substring(0, 50) + '...' : m.content,
-                        '完整内容': m.content
+                    console.groupCollapsed('%c💬 原始对话流 (便于阅读)', 'color: #8b5cf6; font-weight: bold;');
+                    // 这里的 messages 已经被修改为 System+User，所以我们无法直接打印它来显示对话流
+                    // 我们使用 chatHistory 来展示，因为它保留了原始结构
+                    console.table(chatHistory.value.map(m => ({
+                        'Role': m.role,
+                        'Name': m.role === 'user' ? user.name : (m.name || currentCharacter.value.name),
+                        'Content': m.content.length > 100 ? m.content.substring(0, 100) + '...' : m.content
                     })));
-                    console.log('原始 Messages 数组:', JSON.parse(JSON.stringify(messages)));
                     console.groupEnd();
 
-                    console.log('✅ 请求已发送，等待响应...');
+                    console.log('%c✅ 请求已发送，等待响应...', 'color: #10b981;');
                     console.groupEnd();
                     // ---------------------------
 
