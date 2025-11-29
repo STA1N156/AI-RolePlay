@@ -2034,6 +2034,20 @@
                                 }
                             }
                             
+                            // Compatibility: Handle inline modifiers (?s), (?i), (?m) commonly found in ST scripts
+                            if (regexPattern.includes('(?s)')) {
+                                regexPattern = regexPattern.replace(/\(\?s\)/g, '');
+                                if (!flags.includes('s')) flags += 's';
+                            }
+                            if (regexPattern.includes('(?i)')) {
+                                regexPattern = regexPattern.replace(/\(\?i\)/g, '');
+                                if (!flags.includes('i')) flags += 'i';
+                            }
+                            if (regexPattern.includes('(?m)')) {
+                                regexPattern = regexPattern.replace(/\(\?m\)/g, '');
+                                if (!flags.includes('m')) flags += 'm';
+                            }
+
                             const re = new RegExp(regexPattern, flags);
 
                             // --- Protection Logic Start ---
