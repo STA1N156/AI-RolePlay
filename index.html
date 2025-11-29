@@ -677,6 +677,13 @@
                                     <span class="ml-3 text-sm text-gray-600">使用角色卡作为聊天背景</span>
                                 </label>
                             </div>
+                            <div class="mt-3 border-t border-gray-100 pt-3">
+                                <label class="block text-sm font-medium text-gray-600 mb-1">生图风格 (配合自动生图)</label>
+                                <select v-model="settings.imageStyle" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none text-sm">
+                                    <option value="vertical">默认</option>
+                                    <option value="r18">本子风</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -1493,7 +1500,8 @@
                     stream: true,
                     autoRestoreDefaultAPI: true,
                     useCharacterBackground: true,
-                    maxRetries: 2
+                    maxRetries: 2,
+                    imageStyle: 'vertical'
                 });
 
                 const characters = ref([]);
@@ -1775,6 +1783,40 @@
                     return entry ? entry.enabled : false;
                 });
 
+                const updateImageGenRegexState = () => {
+                    if (!isAutoImageGenEnabled.value) return;
+
+                    const verticalRegexName = 'Nai画图正则-竖图';
+                    const r18RegexName = 'Nai画图正则-本子风';
+                    
+                    const verticalRegex = regexScripts.value.find(r => r.name === verticalRegexName);
+                    const r18Regex = regexScripts.value.find(r => r.name === r18RegexName);
+                    
+                    let messages = [];
+
+                    if (settings.imageStyle === 'r18') {
+                        // Enable R18, Disable Vertical
+                        if (r18Regex && !r18Regex.enabled) {
+                            r18Regex.enabled = true;
+                            messages.push(`${r18RegexName} 已启用`);
+                        }
+                        if (verticalRegex && verticalRegex.enabled) {
+                            verticalRegex.enabled = false;
+                        }
+                    } else {
+                        // Enable Vertical, Disable R18
+                        if (verticalRegex && !verticalRegex.enabled) {
+                            verticalRegex.enabled = true;
+                            messages.push(`${verticalRegexName} 已启用`);
+                        }
+                        if (r18Regex && r18Regex.enabled) {
+                            r18Regex.enabled = false;
+                        }
+                    }
+                    
+                    return messages;
+                };
+
                 watch(isAutoImageGenEnabled, (newVal) => {
                     if (newVal) {
                         let messages = [];
@@ -1783,12 +1825,9 @@
                             messages.push('流式输出已关闭');
                         }
                         
-                        // 联动开启 Nai画图正则-竖图
-                        const naiRegexName = 'Nai画图正则-竖图';
-                        const naiRegex = regexScripts.value.find(r => r.name === naiRegexName);
-                        if (naiRegex && !naiRegex.enabled) {
-                            naiRegex.enabled = true;
-                            messages.push(`${naiRegexName} 已启用`);
+                        const regexMessages = updateImageGenRegexState();
+                        if (regexMessages && regexMessages.length > 0) {
+                            messages.push(...regexMessages);
                         }
 
                         if (messages.length > 0) {
@@ -1798,6 +1837,15 @@
                         if (!settings.stream) {
                             settings.stream = true;
                             showToast('自动生图已关闭，流式输出已恢复', 'success');
+                        }
+                    }
+                });
+
+                watch(() => settings.imageStyle, () => {
+                    if (isAutoImageGenEnabled.value) {
+                        const messages = updateImageGenRegexState();
+                        if (messages && messages.length > 0) {
+                            showToast('生图风格已切换：' + messages.join('，'), 'success');
                         }
                     }
                 });
@@ -2374,7 +2422,7 @@ ${rawHtml}
                 const useBackupAPI = () => {
                     settings.apiUrl = 'https://iai.iisbo.com';
                     settings.apiKey = 'sk-OCmlgK5SoyJ6vMjqZhlMcTR2Pmz54A87X2kU8wSFNWxbxzNc';
-                    settings.model = '[爱神]claude-sonnet-4-5-20250929-2';
+                    settings.model = '[bo]gemini-3-pro-preview-1';
                     showToast('已切换至备用 API', 'success');
                 };
 
@@ -2484,6 +2532,13 @@ ${rawHtml}
                         showToast('请先选择一个角色', 'error');
                         return;
                     }
+
+                    // 保存原始设置，用于自动切换备用模型后恢复
+                    const originalSettings = {
+                        apiUrl: settings.apiUrl,
+                        apiKey: settings.apiKey,
+                        model: settings.model
+                    };
 
                     isGenerating.value = true;
                     isReceiving.value = false;
@@ -3165,6 +3220,14 @@ ${rawHtml}
                             clearInterval(waitTimer);
                             waitTimer = null;
                         }
+
+                        // 如果使用了备用模型重试，无论成功失败，都恢复原设置
+                        if (isBackupRetrying) {
+                            settings.apiUrl = originalSettings.apiUrl;
+                            settings.apiKey = originalSettings.apiKey;
+                            settings.model = originalSettings.model;
+                            showToast('已恢复默认模型设置', 'info');
+                        }
                     }
                 };
 
@@ -3225,11 +3288,11 @@ ${rawHtml}
 
                 const enforceSpecialRules = () => {
                     // 1. Nai画图正则
-                    const imageGenRegexName = 'Nai画图正则';
+                    const imageGenRegexName = 'Nai画图正则-本子风';
                     const imageGenRegexContent = {
                         name: imageGenRegexName,
                         regex: '/image###([^>]+)###/g',
-                        replacement: '<div style="width: auto; height: auto; max-width: 100%; border: 8px solid transparent; background-image: linear-gradient(45deg, #FFC9D9, #CCE5FF); position: relative; border-radius: 16px; overflow: hidden; display: flex; justify-content: center; align-items: center; animation: gradientBG 3s ease infinite; box-shadow: 0 4px 15px rgba(204,229,255,0.3);"><div style="background: rgba(255,255,255,0.85); backdrop-filter: blur(5px); width: 100%; height: 100%; position: absolute; top: 0; left: 0;"></div><img src="https://std.loliyc.com/generate?tag=$1&token=STD-yxyLAKX8ekcAwDoSuwMo&model=nai-diffusion-4-5-full&artist=[[[artist:dishwasher1910]]], {{yd_(orange_maru)}}, [artist:ciloranko], [artist:sho_(sho_lwlw)], [ningen mame], year 2024,&size=横图&steps=32&scale=6&cfg=0&sampler=k_dpmpp_2m_sde&negative=pixelate&nocache=0&noise_schedule=karras"  alt="生成图片" style="max-width: 100%; height: auto; width: auto; display: block; object-fit: contain; transition: transform 0.3s ease; position: relative; z-index: 1;"></div><style>@keyframes gradientBG {0% {background-image: linear-gradient(45deg, #FFC9D9, #CCE5FF);}50% {background-image: linear-gradient(225deg, #FFC9D9, #CCE5FF);}100% {background-image: linear-gradient(45deg, #FFC9D9, #CCE5FF);}}</style>',
+                        replacement: '<div style="width: auto; height: auto; max-width: 100%; border: 8px solid transparent; background-image: linear-gradient(45deg, #FFC9D9, #CCE5FF); position: relative; border-radius: 16px; overflow: hidden; display: flex; justify-content: center; align-items: center; animation: gradientBG 3s ease infinite; box-shadow: 0 4px 15px rgba(204,229,255,0.3);"><div style="background: rgba(255,255,255,0.85); backdrop-filter: blur(5px); width: 100%; height: 100%; position: absolute; top: 0; left: 0;"></div><img src="https://std.loliyc.com/generate?tag=$1&token=STD-yxyLAKX8ekcAwDoSuwMo&model=nai-diffusion-4-5-full&artist={{artist:yd_(orange maru)}}, nixeu, {ikuchan kaoru}, cutesexyrobutts, redrop, [[artist:kojima saya]], lam_(ramdayo), oekakizuki, qiandaiyiyu,&size=竖图&steps=40&scale=6&cfg=0&sampler=k_dpmpp_2m_sde&negative=pixelate&nocache=0&noise_schedule=karras"  alt="生成图片" style="max-width: 100%; height: auto; width: auto; display: block; object-fit: contain; transition: transform 0.3s ease; position: relative; z-index: 1;"></div><style>@keyframes gradientBG {0% {background-image: linear-gradient(45deg, #FFC9D9, #CCE5FF);}50% {background-image: linear-gradient(225deg, #FFC9D9, #CCE5FF);}100% {background-image: linear-gradient(45deg, #FFC9D9, #CCE5FF);}}</style>',
                         placement: [2],
                         markdownOnly: true,
                         promptOnly: false,
@@ -3250,7 +3313,7 @@ ${rawHtml}
                     const nai3RegexContent = {
                         name: nai3RegexName,
                         regex: '/image###([^>]+)###/g',
-                        replacement: '<div style="width: auto; height: auto; max-width: 100%; border: 8px solid transparent; background-image: linear-gradient(45deg, #FFC9D9, #CCE5FF); position: relative; border-radius: 16px; overflow: hidden; display: flex; justify-content: center; align-items: center; animation: gradientBG 3s ease infinite; box-shadow: 0 4px 15px rgba(204,229,255,0.3);"><div style="background: rgba(255,255,255,0.85); backdrop-filter: blur(5px); width: 100%; height: 100%; position: absolute; top: 0; left: 0;"></div><img src="https://std.loliyc.com/generate?tag=$1&token=STD-yxyLAKX8ekcAwDoSuwMo&model=nai-diffusion-4-5-full&artist=[[[artist:dishwasher1910]]], {{yd_(orange_maru)}}, [artist:ciloranko], [artist:sho_(sho_lwlw)], [ningen mame], year 2024,&size=竖图&steps=32&scale=6&cfg=0&sampler=k_dpmpp_2m_sde&negative=pixelate&nocache=0&noise_schedule=karras"  alt="生成图片" style="max-width: 100%; height: auto; width: auto; display: block; object-fit: contain; transition: transform 0.3s ease; position: relative; z-index: 1;"></div><style>@keyframes gradientBG {0% {background-image: linear-gradient(45deg, #FFC9D9, #CCE5FF);}50% {background-image: linear-gradient(225deg, #FFC9D9, #CCE5FF);}100% {background-image: linear-gradient(45deg, #FFC9D9, #CCE5FF);}}</style>',
+                        replacement: '<div style="width: auto; height: auto; max-width: 100%; border: 8px solid transparent; background-image: linear-gradient(45deg, #FFC9D9, #CCE5FF); position: relative; border-radius: 16px; overflow: hidden; display: flex; justify-content: center; align-items: center; animation: gradientBG 3s ease infinite; box-shadow: 0 4px 15px rgba(204,229,255,0.3);"><div style="background: rgba(255,255,255,0.85); backdrop-filter: blur(5px); width: 100%; height: 100%; position: absolute; top: 0; left: 0;"></div><img src="https://std.loliyc.com/generate?tag=$1&token=STD-yxyLAKX8ekcAwDoSuwMo&model=nai-diffusion-4-5-full&artist=[[[artist:dishwasher1910]]], {{yd_(orange_maru)}}, [artist:ciloranko], [artist:sho_(sho_lwlw)], [ningen mame], year 2024,&size=竖图&steps=40&scale=6&cfg=0&sampler=k_dpmpp_2m_sde&negative=pixelate&nocache=0&noise_schedule=karras"  alt="生成图片" style="max-width: 100%; height: auto; width: auto; display: block; object-fit: contain; transition: transform 0.3s ease; position: relative; z-index: 1;"></div><style>@keyframes gradientBG {0% {background-image: linear-gradient(45deg, #FFC9D9, #CCE5FF);}50% {background-image: linear-gradient(225deg, #FFC9D9, #CCE5FF);}100% {background-image: linear-gradient(45deg, #FFC9D9, #CCE5FF);}}</style>',
                         placement: [2],
                         markdownOnly: true,
                         promptOnly: false,
@@ -3463,6 +3526,14 @@ ${rawHtml}
 
                     // Enforce special rules (Nai画图正则 & 自动生图)
                     enforceSpecialRules();
+
+                    // Sync image style rules
+                    if (isAutoImageGenEnabled.value) {
+                        const messages = updateImageGenRegexState();
+                        if (messages && messages.length > 0) {
+                            showToast('已同步生图风格：' + messages.join('，'), 'success');
+                        }
+                    }
 
                     currentView.value = 'chat';
                     showToast(`已切换到角色: ${char.name}`, 'success');
@@ -4526,6 +4597,11 @@ ${rawHtml}
 
                        // Enforce special rules (Nai画图正则 & 自动生图)
                        enforceSpecialRules();
+
+                       // Sync image style rules
+                       if (isAutoImageGenEnabled.value) {
+                           updateImageGenRegexState();
+                       }
 
                        // showToast(`欢迎回来，${user.name}`, 'success'); // Removed per user request
                        await nextTick();
