@@ -1495,7 +1495,7 @@
                     apiKey: 'sk-K1PJfy3Dlh8i3foc2utKJB5YWmftWD9uVwJ0O6GZDhFBpnMV',
                     model: '[bo+]gemini-3-pro-preview-thinking-1.5',
                     contextSize: 800000,
-                    temperature: 0.9,
+                    temperature: 1.0,
                     autoFetchModels: true,
                     stream: true,
                     autoRestoreDefaultAPI: true,
@@ -4292,8 +4292,8 @@ ${rawHtml}
 
                     await loadData();
 
-                    // 每次启动时强制重置温度为 0.9
-                    settings.temperature = 0.9;
+                    // 每次启动时强制重置温度为 1.0
+                    settings.temperature = 1.0;
 
                     // --- Restore Default API Settings if enabled ---
                     if (settings.autoRestoreDefaultAPI) {
