@@ -113,6 +113,7 @@
             margin-left: 0 !important;
             margin-right: 0 !important;
             max-width: none;
+            overflow: hidden !important;
         }
 
         .markdown-body p { color: #374151; }
@@ -122,6 +123,21 @@
         .markdown-body pre { background-color: #f3f4f6; padding: 1em; border-radius: 0.5em; overflow-x: auto; border: 1px solid #e5e7eb; margin-left: 1rem; margin-right: 1rem; }
         .markdown-body pre code { background-color: transparent; padding: 0; color: #1f2937; }
         .markdown-body blockquote { border-left: 4px solid #e5e7eb; padding-left: 1em; color: #6b7280; margin-left: 1rem; margin-right: 1rem; }
+        
+        /* Enhanced Markdown Styles */
+        .markdown-body strong { font-weight: 700; color: #111827; }
+        .markdown-body em { font-style: italic; }
+        .markdown-body h1 { font-size: 1.5em; font-weight: 700; margin-top: 1em; margin-bottom: 0.5em; line-height: 1.2; }
+        .markdown-body h2 { font-size: 1.25em; font-weight: 600; margin-top: 1em; margin-bottom: 0.5em; line-height: 1.25; }
+        .markdown-body h3 { font-size: 1.1em; font-weight: 600; margin-top: 1em; margin-bottom: 0.5em; line-height: 1.3; }
+        .markdown-body h4 { font-weight: 600; margin-top: 1em; margin-bottom: 0.5em; }
+        .markdown-body a { color: #2563eb; text-decoration: underline; text-underline-offset: 2px; }
+        .markdown-body a:hover { color: #1d4ed8; }
+        .markdown-body hr { border: 0; border-top: 1px solid #e5e7eb; margin: 1.5em 1rem; height: 1px; }
+        .markdown-body table { width: auto; border-collapse: collapse; margin: 0 1rem 1em 1rem; display: block; overflow-x: auto; }
+        .markdown-body th, .markdown-body td { border: 1px solid #e5e7eb; padding: 0.5em 0.75em; text-align: left; }
+        .markdown-body th { background-color: #f9fafb; font-weight: 600; }
+        .markdown-body del { text-decoration: line-through; color: #6b7280; }
 
         .glass-panel {
             background: rgba(255, 255, 255, 0.8);
@@ -2092,6 +2108,9 @@
                         // Remove fixed height, use a small initial height to prevent layout jumping if possible
                         // height will be auto-adjusted by the script below
                         iframe.style.height = 'auto';
+                        iframe.style.overflow = 'hidden';
+                        iframe.style.transition = 'height 0.2s ease-out';
+                        iframe.setAttribute('scrolling', 'no');
                         iframe.sandbox = 'allow-scripts allow-forms allow-popups allow-modals allow-same-origin';
                         
                         // External fallback resize (in case internal script fails or is blocked)
@@ -2111,9 +2130,11 @@
                         };
 
                         const hudCSS = '.sinan-hud{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;padding:12px;background:linear-gradient(to bottom right,rgba(255,255,255,0.9),rgba(255,255,255,0.6));border-radius:12px;border:1px solid rgba(0,0,0,0.08);backdrop-filter:blur(4px)}.char-card{flex:1 1 140px;background:#fff;padding:10px;border-radius:8px;border-left:4px solid #ddd;box-shadow:0 2px 6px rgba(0,0,0,0.04);display:flex;flex-direction:column;gap:4px;font-size:12px;position:relative;overflow:hidden;transition:transform 0.2s}.char-card:hover{transform:translateY(-2px);box-shadow:0 4px 8px rgba(0,0,0,0.1)}.char-name{font-weight:700;font-size:14px;color:#374151;display:flex;justify-content:space-between;align-items:center}.char-mood{color:#6b7280;font-size:12px}.char-loc{color:#9ca3af;font-size:11px;margin-top:auto;padding-top:4px}.bar-bg{height:4px;background:#f3f4f6;border-radius:2px;overflow:hidden;margin-top:6px}.bar-fill{height:100%;background:#10b981;border-radius:2px}.c-tongqiu{border-left-color:#f59e0b}.c-tongqiu .bar-fill{background:#f59e0b}.c-yufan{border-left-color:#3b82f6}.c-yufan .bar-fill{background:#3b82f6}.c-linghu{border-left-color:#8b5cf6}.c-linghu .bar-fill{background:#8b5cf6}.c-chongtian{border-left-color:#ef4444}.c-chongtian .bar-fill{background:#ef4444}';
-                        const resetStyle = '<style>html,body{margin:0 !important;padding:0 !important;overflow:hidden !important;width:100% !important;word-wrap:break-word !important;box-sizing:border-box !important;} *,*::before,*::after{box-sizing:inherit !important;} img,video,canvas,svg{max-width:100% !important;height:auto !important;} table{display:block !important;overflow-x:auto !important;max-width:100% !important;} pre{white-space:pre-wrap !important;word-wrap:break-word !important;max-width:100% !important;} .container{max-width:100% !important; width:100% !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important;}' + hudCSS + '</style>';
+                        // Removed overflow:hidden to prevent content clipping if height calc is delayed
+                        const resetStyle = '<style>html,body{margin:0 !important;padding:0 !important;width:100% !important;word-wrap:break-word !important;box-sizing:border-box !important;overflow:hidden !important;} ::-webkit-scrollbar{display:none;} *,*::before,*::after{box-sizing:inherit !important;} img,video,canvas,svg{max-width:100% !important;height:auto !important;} table{display:block !important;overflow-x:auto !important;max-width:100% !important;} pre{white-space:pre-wrap !important;word-wrap:break-word !important;max-width:100% !important;} .container{max-width:100% !important; width:100% !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important;}' + hudCSS + '</style>';
                         const metaViewport = '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">';
-                        const jqueryScript = '<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"><\/script>';
+                        // Use defer to prevent blocking rendering if CDN is slow
+                        const jqueryScript = '<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js" defer><\/script>';
                         const scriptShim = `
                             <script>
                                 window.triggerSlash = function(text) {
@@ -2129,7 +2150,10 @@
                                 let isUpdating = false;
 
                                 function updateHeight() {
-                                    if (!window.frameElement || isUpdating) return;
+                                    // Safety check for cross-origin or detached iframe
+                                    if (!window.frameElement) return;
+                                    if (isUpdating) return;
+                                    
                                     isUpdating = true;
                                     
                                     requestAnimationFrame(() => {
@@ -2201,8 +2225,8 @@
                                 // Debounced resize handler
                                 let resizeTimeout;
                                 const onResize = () => {
-                                    clearTimeout(resizeTimeout);
-                                    resizeTimeout = setTimeout(updateHeight, 50);
+                                    // 直接更新，移除防抖延迟以获得更快的响应，updateHeight 内部已有 rAF 锁
+                                    updateHeight();
                                 };
 
                                 window.addEventListener('load', () => {
@@ -2216,8 +2240,19 @@
                                 
                                 // Click handler for accordions/menus
                                 window.addEventListener('click', () => {
-                                    setTimeout(updateHeight, 50);
-                                    setTimeout(updateHeight, 300); // Transition end estimate
+                                    // 使用动画循环在点击后的一段时间内持续检测高度变化，以捕捉展开动画
+                                    const start = Date.now();
+                                    const duration = 600; // 持续监测 600ms
+                                    
+                                    const animate = () => {
+                                        const now = Date.now();
+                                        if (now - start >= duration) return;
+                                        
+                                        updateHeight();
+                                        requestAnimationFrame(animate);
+                                    };
+                                    
+                                    animate();
                                 });
 
                                 // Image load handler
@@ -2293,24 +2328,68 @@ ${rawHtml}
 
                     // Configure DOMPurify
                     const cleanConfig = {
-                        ADD_TAGS: ['details', 'summary', 'iframe', 'svg', 'path', 'g', 'circle', 'rect', 'defs', 'linearGradient', 'stop', 'style', 'div', 'span', 'script'],
-                        ADD_ATTR: ['style', 'open', 'srcdoc', 'sandbox', 'frameborder', 'allow', 'allowfullscreen', 'class', 'id', 'viewBox', 'fill', 'stroke', 'stroke-width', 'd', 'stroke-linecap', 'stroke-linejoin', 'x1', 'y1', 'x2', 'y2', 'offset', 'stop-color', 'stop-opacity', 'width', 'height'],
-                        FORBID_ATTR: ['onmouseover', 'onclick', 'onload'],
+                        ADD_TAGS: ['details', 'summary', 'iframe', 'svg', 'path', 'g', 'circle', 'rect', 'defs', 'linearGradient', 'stop', 'style', 'div', 'span', 'script', 'button', 'input'],
+                        ADD_ATTR: ['style', 'open', 'srcdoc', 'sandbox', 'frameborder', 'allow', 'allowfullscreen', 'class', 'id', 'viewBox', 'fill', 'stroke', 'stroke-width', 'd', 'stroke-linecap', 'stroke-linejoin', 'x1', 'y1', 'x2', 'y2', 'offset', 'stop-color', 'stop-opacity', 'width', 'height', 'onclick', 'type', 'value', 'checked'],
+                        FORBID_ATTR: ['onmouseover', 'onload'], // Removed onclick to allow interactive UI
                         FORCE_BODY: true
                     };
 
                     const trimmed = processed.trim();
-                    const lowerTrimmed = trimmed.toLowerCase();
-                    const startsWithHtml = lowerTrimmed.startsWith('<!doctype html>') || lowerTrimmed.startsWith('<html');
                     
-                    // Use iframe ONLY if it STRICTLY starts with HTML Document structure
-                    // For other HTML components (like role cards), we render inline to allow style sharing (Global CSS)
-                    if (startsWithHtml && !trimmed.includes('```')) {
+                    // Improved HTML Document Detection
+                    // Look for standard HTML document markers anywhere in the text, not just at the start
+                    // This handles cases where there might be some text before the HTML code
+                    const htmlDocPattern = /(<!doctype html>|<html\b[^>]*>)/i;
+                    const htmlMatch = trimmed.match(htmlDocPattern);
+                    const containsHtmlDoc = !!htmlMatch;
+
+                    // If it looks like a full HTML document, extract and render it in an iframe
+                    // We check !trimmed.includes('```') to avoid rendering code blocks that the user intended to display as code
+                    if (containsHtmlDoc && !trimmed.includes('```')) {
+                        const startIndex = htmlMatch.index;
+                        
+                        // Find end index to preserve text AFTER the HTML
+                        const closeTag = '</html>';
+                        const closeIndex = trimmed.toLowerCase().lastIndexOf(closeTag);
+                        
+                        let htmlContent, preText, postText;
+                        
+                        if (closeIndex !== -1 && closeIndex > startIndex) {
+                            const endIndex = closeIndex + closeTag.length;
+                            htmlContent = trimmed.substring(startIndex, endIndex);
+                            preText = trimmed.substring(0, startIndex);
+                            postText = trimmed.substring(endIndex);
+                        } else {
+                            // Fallback: Take everything from start match to end
+                            htmlContent = trimmed.substring(startIndex);
+                            preText = trimmed.substring(0, startIndex);
+                            postText = '';
+                        }
+
+                        let resultHtml = '';
+                        
+                        // 1. Render Pre-text (Markdown)
+                        if (preText.trim()) {
+                            resultHtml += DOMPurify.sanitize(marked.parse(preText), cleanConfig);
+                        }
+
+                        // 2. Render Iframe (HTML Card)
                         const container = document.createElement('div');
-                        container.appendChild(createIframe(trimmed));
-                        return container.innerHTML;
+                        // Add some spacing
+                        container.style.margin = '1em 0';
+                        container.appendChild(createIframe(htmlContent));
+                        resultHtml += container.outerHTML;
+
+                        // 3. Render Post-text (Markdown)
+                        if (postText.trim()) {
+                            resultHtml += DOMPurify.sanitize(marked.parse(postText), cleanConfig);
+                        }
+
+                        return resultHtml;
                     }
 
+                    const lowerTrimmed = trimmed.toLowerCase();
+                    
                     // Smart detection: If content starts with block-level HTML and contains no Markdown Code Blocks,
                     // assume it is raw HTML and skip marked parsing to prevent breaking layout/styles.
                     const startsWithBlockHtml = /^\s*<(div|table|section|article|aside|header|footer|style|script)/i.test(trimmed);
