@@ -448,8 +448,8 @@
                                 <div class="group relative">
                                     <div :class="['p-0 rounded-2xl shadow-sm text-sm md:text-base leading-relaxed overflow-hidden',
                                         msg.role === 'user' ? 'bg-primary-100 text-gray-900 rounded-tr-none shadow-sm border border-primary-200' :
-                                        msg.role === 'system' ? 'bg-red-50 text-red-800 rounded-tl-none border border-red-200' :
-                                        'bg-white text-gray-800 rounded-tl-none border border-gray-100 shadow-card']">
+                                        msg.role === 'system' ? 'bg-red-50 text-red-800 border border-red-200' :
+                                        'bg-white text-gray-800 border border-gray-100 shadow-card']">
                                         <div class="markdown-body" v-html="renderMarkdown(msg.content, msg.role)"></div>
                                     </div>
                                     
@@ -480,7 +480,7 @@
                                 <div class="text-xs text-gray-500 mb-1 select-none text-left ml-1">
                                     {{ currentCharacter.name }}
                                 </div>
-                                <div class="min-w-[4rem] min-h-[4rem] px-3 py-3 rounded-2xl rounded-tl-none bg-white border border-gray-100 shadow-card flex flex-col items-center justify-center gap-2">
+                                <div class="min-w-[4rem] min-h-[4rem] px-3 py-3 rounded-2xl bg-white border border-gray-100 shadow-card flex flex-col items-center justify-center gap-2">
                                     <div class="typing-indicator scale-125">
                                         <span class="bg-primary-400"></span><span class="bg-primary-400"></span><span class="bg-primary-400"></span>
                                     </div>
@@ -2379,7 +2379,7 @@ ${rawHtml}
                         const container = document.createElement('div');
                         container.className = 'html-card-container';
                         // Add some spacing
-                        container.style.margin = '1em 0';
+                        container.style.margin = '0em 0';
                         container.appendChild(createIframe(htmlContent));
                         resultHtml += container.outerHTML;
 
