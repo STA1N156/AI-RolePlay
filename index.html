@@ -1205,6 +1205,8 @@ opacity: 0;
                                        <option value="global_note">Global Note (全局)</option>
                                        <option value="before_char">Before Character (角色前)</option>
                                        <option value="after_char">After Character (角色后)</option>
+                                       <option value="before_examples">Before Examples (示例前)</option>
+                                       <option value="after_examples">After Examples (示例后)</option>
                                     </optgroup>
                                     <optgroup label="Author's Note">
                                        <option value="an_top">AN Top (注释顶)</option>
@@ -3100,7 +3102,8 @@ ${rawHtml}
                         .map(p => p.content)
                         .join('\n\n');
                     
-                    const charPrompt = `Name: ${currentCharacter.value.name}\nDescription: ${currentCharacter.value.description}\nPersonality: ${currentCharacter.value.personality}\nScenario: ${currentCharacter.value.scenario}\n\n${currentCharacter.value.mes_example}`;
+                    const charPrompt = `Name: ${currentCharacter.value.name}\nDescription: ${currentCharacter.value.description}\nPersonality: ${currentCharacter.value.personality}\nScenario: ${currentCharacter.value.scenario}`;
+                    const mesExample = currentCharacter.value.mes_example;
                     
                     const userPrompt = `[User Info]\nName: ${user.name}\nDescription: ${user.description || ''}`;
 
@@ -3123,10 +3126,21 @@ ${rawHtml}
                     if (wiGroups.before_char.length > 0) systemPromptParts.push(joinContent(wiGroups.before_char));
                     
                     // 5. Character Definition
-                    let charDefinition = `[Character]\n${charPrompt}`;
-                    if (wiGroups.before_examples.length > 0) charDefinition += '\n\n' + joinContent(wiGroups.before_examples);
-                    if (wiGroups.after_examples.length > 0) charDefinition += '\n\n' + joinContent(wiGroups.after_examples);
-                    systemPromptParts.push(charDefinition);
+                    let charDefinitionParts = [`[Character]`, charPrompt];
+                    
+                    if (wiGroups.before_examples.length > 0) {
+                        charDefinitionParts.push(joinContent(wiGroups.before_examples));
+                    }
+                    
+                    if (mesExample && mesExample.trim()) {
+                        charDefinitionParts.push(mesExample);
+                    }
+                    
+                    if (wiGroups.after_examples.length > 0) {
+                        charDefinitionParts.push(joinContent(wiGroups.after_examples));
+                    }
+                    
+                    systemPromptParts.push(charDefinitionParts.join('\n\n'));
                     
                     // 6. After Char WI
                     if (wiGroups.after_char.length > 0) systemPromptParts.push(joinContent(wiGroups.after_char));
@@ -4024,9 +4038,23 @@ ${rawHtml}
                     let position = 'at_depth'; // Default
                     const stPos = mergedEntry.position;
                     const validPositions = ['system_top', 'global_note', 'before_char', 'after_char', 'before_examples', 'after_examples', 'an_top', 'author_note', 'an_bottom', 'at_depth', 'user_top', 'assistant_top'];
+                    
+                    const posNameMap = {
+                        'before_character': 'before_char',
+                        'after_character': 'after_char',
+                        'character_top': 'before_char',
+                        'character_bottom': 'after_char',
+                        'example_top': 'before_examples',
+                        'example_bottom': 'after_examples'
+                    };
 
                     if (typeof stPos === 'string') {
-                        const lowerPos = stPos.toLowerCase().replace(/ /g, '_');
+                        let lowerPos = stPos.toLowerCase().replace(/ /g, '_');
+                        // Handle standard mappings
+                        if (posNameMap[lowerPos]) {
+                            lowerPos = posNameMap[lowerPos];
+                        }
+                        
                         const foundPos = validPositions.find(p => p === lowerPos);
                         if (foundPos) {
                             position = foundPos;
