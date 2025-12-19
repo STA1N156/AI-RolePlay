@@ -107,7 +107,8 @@
         .markdown-body > *:last-child { padding-bottom: 0.75rem; margin-bottom: 0; }
 
         /* Full-width elements (iframe) */
-        .markdown-body > iframe {
+        .markdown-body > iframe,
+        .markdown-body > .html-card-container {
             width: 100%;
             padding: 0 !important;
             margin-left: 0 !important;
@@ -120,9 +121,9 @@
         .markdown-body ul { list-style-type: disc; margin-left: 1.5em; color: #374151; }
         .markdown-body ol { list-style-type: decimal; margin-left: 1.5em; color: #374151; }
         .markdown-body code { background-color: #f3f4f6; padding: 0.2em 0.4em; border-radius: 0.25em; font-family: monospace; color: #ef4444; }
-        .markdown-body pre { background-color: #f3f4f6; padding: 1em; border-radius: 0.5em; overflow-x: auto; border: 1px solid #e5e7eb; margin-left: 0.75rem; margin-right: 0.75rem; }
+        .markdown-body pre { background-color: #f3f4f6; padding: 1em; border-radius: 0.5em; overflow-x: auto; border: 1px solid #e5e7eb; margin-left: 0.5rem; margin-right: 0.5rem; }
         .markdown-body pre code { background-color: transparent; padding: 0; color: #1f2937; }
-        .markdown-body blockquote { border-left: 4px solid #e5e7eb; padding-left: 1em; color: #6b7280; margin-left: 0.75rem; margin-right: 0.75rem; }
+        .markdown-body blockquote { border-left: 4px solid #e5e7eb; padding-left: 1em; color: #6b7280; margin-left: 0.5rem; margin-right: 0.5rem; }
         
         /* Enhanced Markdown Styles */
         .markdown-body strong { font-weight: 700; color: #111827; }
@@ -133,8 +134,8 @@
         .markdown-body h4 { font-weight: 600; margin-top: 1em; margin-bottom: 0.5em; }
         .markdown-body a { color: #2563eb; text-decoration: underline; text-underline-offset: 2px; }
         .markdown-body a:hover { color: #1d4ed8; }
-        .markdown-body hr { border: 0; border-top: 1px solid #e5e7eb; margin: 1.5em 0.75rem; height: 1px; }
-        .markdown-body table { width: auto; border-collapse: collapse; margin: 0 0.75rem 1em 0.75rem; display: block; overflow-x: auto; }
+        .markdown-body hr { border: 0; border-top: 1px solid #e5e7eb; margin: 1.5em 0.5rem; height: 1px; }
+        .markdown-body table { width: auto; border-collapse: collapse; margin: 0 0.5rem 1em 0.5rem; display: block; overflow-x: auto; }
         .markdown-body th, .markdown-body td { border: 1px solid #e5e7eb; padding: 0.5em 0.75em; text-align: left; }
         .markdown-body th { background-color: #f9fafb; font-weight: 600; }
         .markdown-body del { text-decoration: line-through; color: #6b7280; }
@@ -2376,6 +2377,7 @@ ${rawHtml}
 
                         // 2. Render Iframe (HTML Card)
                         const container = document.createElement('div');
+                        container.className = 'html-card-container';
                         // Add some spacing
                         container.style.margin = '1em 0';
                         container.appendChild(createIframe(htmlContent));
