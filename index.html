@@ -97,8 +97,8 @@
         
         /* Default padding for text elements */
         .markdown-body > * {
-            padding-left: 1rem;
-            padding-right: 1rem;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
             margin-bottom: 0.75em;
         }
 
@@ -120,9 +120,9 @@
         .markdown-body ul { list-style-type: disc; margin-left: 1.5em; color: #374151; }
         .markdown-body ol { list-style-type: decimal; margin-left: 1.5em; color: #374151; }
         .markdown-body code { background-color: #f3f4f6; padding: 0.2em 0.4em; border-radius: 0.25em; font-family: monospace; color: #ef4444; }
-        .markdown-body pre { background-color: #f3f4f6; padding: 1em; border-radius: 0.5em; overflow-x: auto; border: 1px solid #e5e7eb; margin-left: 1rem; margin-right: 1rem; }
+        .markdown-body pre { background-color: #f3f4f6; padding: 1em; border-radius: 0.5em; overflow-x: auto; border: 1px solid #e5e7eb; margin-left: 0.5rem; margin-right: 0.5rem; }
         .markdown-body pre code { background-color: transparent; padding: 0; color: #1f2937; }
-        .markdown-body blockquote { border-left: 4px solid #e5e7eb; padding-left: 1em; color: #6b7280; margin-left: 1rem; margin-right: 1rem; }
+        .markdown-body blockquote { border-left: 4px solid #e5e7eb; padding-left: 1em; color: #6b7280; margin-left: 0.5rem; margin-right: 0.5rem; }
         
         /* Enhanced Markdown Styles */
         .markdown-body strong { font-weight: 700; color: #111827; }
@@ -133,8 +133,8 @@
         .markdown-body h4 { font-weight: 600; margin-top: 1em; margin-bottom: 0.5em; }
         .markdown-body a { color: #2563eb; text-decoration: underline; text-underline-offset: 2px; }
         .markdown-body a:hover { color: #1d4ed8; }
-        .markdown-body hr { border: 0; border-top: 1px solid #e5e7eb; margin: 1.5em 1rem; height: 1px; }
-        .markdown-body table { width: auto; border-collapse: collapse; margin: 0 1rem 1em 1rem; display: block; overflow-x: auto; }
+        .markdown-body hr { border: 0; border-top: 1px solid #e5e7eb; margin: 1.5em 0.5rem; height: 1px; }
+        .markdown-body table { width: auto; border-collapse: collapse; margin: 0 0.5rem 1em 0.5rem; display: block; overflow-x: auto; }
         .markdown-body th, .markdown-body td { border: 1px solid #e5e7eb; padding: 0.5em 0.75em; text-align: left; }
         .markdown-body th { background-color: #f9fafb; font-weight: 600; }
         .markdown-body del { text-decoration: line-through; color: #6b7280; }
@@ -428,7 +428,7 @@
                     </div>
                     
                     <div v-for="(msg, index) in chatHistory" :key="index" ref="messageElements" :data-role="msg.role" :class="['flex w-full', msg.role === 'user' ? 'justify-end' : 'justify-start']">
-                        <div :class="['flex max-w-[95%] md:max-w-[70%] lg:max-w-[60%]', msg.role === 'user' ? 'flex-row-reverse' : 'flex-row']">
+                        <div :class="['flex max-w-[98%] md:max-w-[85%] lg:max-w-[80%]', msg.role === 'user' ? 'flex-row-reverse' : 'flex-row']">
                             <!-- Avatar -->
                             <div class="flex-shrink-0">
                                 <div v-if="msg.role === 'user'" class="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-xs text-white ml-2 shadow-sm">
@@ -471,7 +471,7 @@
 
                     <!-- Typing Indicator -->
                     <div v-if="isGenerating && !isReceiving" class="flex w-full justify-start">
-                        <div class="flex max-w-[95%] md:max-w-[70%] lg:max-w-[60%] flex-row">
+                        <div class="flex max-w-[98%] md:max-w-[85%] lg:max-w-[80%] flex-row">
                             <div class="flex-shrink-0">
                                 <img :src="currentCharacter.avatar" class="w-8 h-8 rounded-full object-cover mr-2 border border-gray-200 shadow-sm">
                             </div>
