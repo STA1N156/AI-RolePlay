@@ -4487,7 +4487,7 @@ ${rawHtml}
 - 如果角色拥有非人类器官，应特别着重描述这些器官在故事情节中的作用。
 - 当角色身上存在伤势时，详细地描绘受伤时伤口、血液、皮肤的程度与变化，描述伤口疼痛的程度和伤口渗出液，以及它给带来的身体和心理上的影响。
 - 强调描述身体器官状态的变化以及在此过程中从各个视角所体验到的感觉，运用细腻且生理上准确的方式描绘此过程中产生的液体（如精液和唾液）。
-- 氛围未到或剧情发展未到时，请避免性爱内容，根据人物划分应有不同的性观念，而不是无条件同意主角的性行为`;
+- 氛围未到或不符合对应人设时，请让对应人物拒绝性爱，根据人物划分应有不同的性观念，而不是每个角色都无条件顺从主角`;
 
                     const existingNsfwPreset = presets.value.find(p => p.name === nsfwPresetName);
                     if (!existingNsfwPreset) {
@@ -4573,7 +4573,7 @@ ${rawHtml}
                         presets.value.push({
                             name: secondPersonPresetName,
                             content: secondPersonPresetContent,
-                            enabled: false
+                            enabled: true
                         });
                         // showToast('已添加第二人称预设', 'info');
                     } else {
@@ -4595,7 +4595,7 @@ ${rawHtml}
                         presets.value.splice(insertIndex, 0, {
                             name: thirdPersonPresetName,
                             content: thirdPersonPresetContent,
-                            enabled: true
+                            enabled: false
                         });
                         // showToast('已添加第三人称预设', 'info');
                     } else {
@@ -4607,8 +4607,9 @@ ${rawHtml}
                     // 1.9 Enforce Default Preset (禁止规则)
                     const banRulePresetName = '禁止规则';
                     const banRulePresetContent = `以下是禁止输出的内容：
-- 过于华丽和文学性的修辞、意象和比喻手法
--"手指因为用力""泛白""麝香"
+- 过多过长和过于华丽和文学性的修辞、意象和比喻手法
+- 过长过于文学性的环境描写
+- "手指因为用力""泛白""麝香"“囊袋”
 禁止输出内容陈列完毕`;
                     const existingBanRulePreset = presets.value.find(p => p.name === banRulePresetName);
                     
