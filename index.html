@@ -97,9 +97,9 @@
         
         /* Default padding for text elements */
         .markdown-body > * {
-            padding-left: 0.75rem;
-            padding-right: 0.75rem;
-            margin-bottom: 0rem;
+            padding-left: 0.9rem;
+            padding-right: 0.9rem;
+            margin-bottom: 0.75em;
         }
 
         /* Top/Bottom padding simulation */
@@ -1466,6 +1466,7 @@
         // Configure marked to disable indented code blocks
         // This allows indented HTML (like details/summary) to be rendered as HTML instead of code
         marked.use({
+            breaks: true,
             tokenizer: {
                 // Disable the indentation-based code block tokenizer
                 code(src) {
