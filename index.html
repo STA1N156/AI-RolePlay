@@ -429,7 +429,7 @@
                     </div>
                     
                     <div v-for="(msg, index) in chatHistory" :key="index" ref="messageElements" :data-role="msg.role" :class="['flex w-full', msg.role === 'user' ? 'justify-end' : 'justify-start']">
-                        <div :class="['flex max-w-[98%] md:max-w-[85%] lg:max-w-[80%]', msg.role === 'user' ? 'flex-row-reverse' : 'flex-row']">
+                        <div :class="['flex max-w-[98%] md:max-w-[70%] lg:max-w-[70%]', msg.role === 'user' ? 'flex-row-reverse' : 'flex-row']">
                             <!-- Avatar -->
                             <div class="flex-shrink-0">
                                 <div v-if="msg.role === 'user'" class="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-xs text-white ml-2 shadow-sm">
@@ -472,7 +472,7 @@
 
                     <!-- Typing Indicator -->
                     <div v-if="isGenerating && !isReceiving" class="flex w-full justify-start">
-                        <div class="flex max-w-[98%] md:max-w-[85%] lg:max-w-[80%] flex-row">
+                        <div class="flex max-w-[98%] md:max-w-[70%] lg:max-w-[70%] flex-row">
                             <div class="flex-shrink-0">
                                 <img :src="currentCharacter.avatar" class="w-8 h-8 rounded-full object-cover mr-2 border border-gray-200 shadow-sm">
                             </div>
