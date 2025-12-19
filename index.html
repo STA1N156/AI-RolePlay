@@ -2211,9 +2211,10 @@
     
                                         // 4. Fix for infinite growth loop:
                                         // If newHeight is almost the same as current height (within small tolerance), ignore it.
-                                        // This prevents small pixel additions (like scrollbars appearing/disappearing) from triggering a loop.
+                                        // Since we forced overflow:hidden, the scrollbar loop risk is minimal.
+                                        // We use a threshold of 0 to ensure smooth animations.
                                         
-                                        if (Math.abs(newHeight - lastHeight) > 4) {
+                                        if (Math.abs(newHeight - lastHeight) > 0) {
                                             lastHeight = newHeight;
                                             window.frameElement.style.height = newHeight + 'px';
                                         }
