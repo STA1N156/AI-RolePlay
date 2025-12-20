@@ -3176,10 +3176,7 @@ ${rawHtml}
                     // 6. After Char WI
                     if (wiGroups.after_char.length > 0) systemPromptParts.push(joinContent(wiGroups.after_char));
                     
-                    // 7. User Info
-                    systemPromptParts.push(userPrompt);
-
-                    // 8. Author's Note section
+                    // 7. Author's Note section
                     let authorsNoteParts = [];
                     if (wiGroups.an_top.length > 0) authorsNoteParts.push(joinContent(wiGroups.an_top));
                     if (wiGroups.author_note.length > 0) authorsNoteParts.push(joinContent(wiGroups.author_note));
@@ -3188,6 +3185,9 @@ ${rawHtml}
                     if (authorsNoteParts.length > 0) {
                         systemPromptParts.push(`[Author's Note]\n${authorsNoteParts.join('\n\n')}`);
                     }
+
+                    // 8. User Info (Moved to end)
+                    systemPromptParts.push(userPrompt);
 
                     const systemPrompt = systemPromptParts.join('\n\n');
 
