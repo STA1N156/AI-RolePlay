@@ -1244,6 +1244,29 @@ opacity: 0;
 
         <!-- Modals -->
 
+        <!-- Update Notification Modal -->
+        <div v-if="showUpdateModal" class="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
+            <div class="bg-white rounded-xl border border-gray-200 w-full max-w-lg flex flex-col shadow-2xl transform transition-all scale-100 overflow-hidden">
+                <div class="bg-gradient-to-r from-primary-50 to-purple-50 p-6 border-b border-gray-100">
+                    <div class="flex items-center gap-3">
+                        <h3 class="text-2xl font-bold text-gray-900">{{ latestUpdate.title }}</h3>
+                        <span class="bg-primary-100 text-primary-600 text-xs font-bold px-2 py-1 rounded-full border border-primary-200 transform translate-y-0.5">New</span>
+                    </div>
+                </div>
+                <div class="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                    <div class="prose prose-sm prose-gray max-w-none">
+                        <!-- 使用 Markdown 渲染内容，支持富文本 -->
+                        <div class="markdown-body" v-html="renderMarkdown(latestUpdate.content)"></div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 p-6 flex justify-end rounded-b-xl border-t border-gray-100">
+                    <button @click="closeUpdateModal" class="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg shadow-sm hover:shadow transition-all active:scale-95">
+                        知道了
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- User Setup Modal -->
         <!-- User Setup Modal -->
         <div v-if="showUserSetupModal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
@@ -1690,6 +1713,41 @@ opacity: 0;
                 const showWorldInfoEditor = ref(false);
                 const showUserSetupModal = ref(false);
                 const tempUserSetup = reactive({ name: '', description: '' });
+                
+                // Update Modal Logic
+                const showUpdateModal = ref(false);
+                const latestUpdate = reactive({
+                    id: 10002, // 确保这是一个五位数ID，每次更新内容时增加这个数字
+                    date: new Date().toISOString().split('T')[0],
+                    title: '系统更新公告',
+                    content: `
+### Roleplay 2.0.1
+### 优化和改进：
+
+- 完全修复了世界书插入逻辑，优化了后续对话UI样式/世界观丢失问题。
+- 减少了开启自动生图后，模型的截断现象。
+- 提升了模型响应速度，重构上下文构建逻辑。
+- 默认模型更为Gemini-3-Flash-Preview，大幅度提升了模型响应/生成速度、角色设定遵循能力。
+- 更改了部分UI的样式，位置。
+
+### 更新时间：12/20/22:48
+                    `
+                });
+
+                const closeUpdateModal = () => {
+                    showUpdateModal.value = false;
+                    // 记录已读版本ID
+                    localStorage.setItem('roleplay_hub_update_id', latestUpdate.id.toString());
+                };
+
+                const checkUpdate = () => {
+                    const lastId = localStorage.getItem('roleplay_hub_update_id');
+                    // 如果没有记录，或者记录的ID小于当前ID，则显示弹窗
+                    if (!lastId || parseInt(lastId) < latestUpdate.id) {
+                        showUpdateModal.value = true;
+                    }
+                };
+
                 const showConfirmModal = ref(false);
                 const confirmMessage = ref('');
                 const confirmCallback = ref(null);
@@ -1712,7 +1770,7 @@ opacity: 0;
                 const settings = reactive({
                     apiUrl: 'https://iai.iisbo.com',
                     apiKey: 'sk-GZstxyrMmK0LlZiVWTx21vtMBZXFUaRTEv5PAyv1nHstrVrC',
-                    model: '[bo+]gemini-3-pro-preview-thinking-1.5',
+                    model: '[bo]gemini-3-flash-preview-vertex-1',
                     contextSize: 800000,
                     temperature: 1.0,
                     autoFetchModels: true,
@@ -2739,7 +2797,7 @@ ${rawHtml}
                 const useBackupAPI = () => {
                     settings.apiUrl = 'https://iai.iisbo.com';
                     settings.apiKey = 'sk-GZstxyrMmK0LlZiVWTx21vtMBZXFUaRTEv5PAyv1nHstrVrC';
-                    settings.model = '[bo]gemini-3-flash-preview-vertex-1';
+                    settings.model = '[bo+]gemini-3-pro-preview-thinking-1.5';
                     showToast('已切换至备用 API', 'success');
                 };
 
@@ -4616,6 +4674,8 @@ ${rawHtml}
 
                 // Lifecycle
                 onMounted(async () => {
+                    checkUpdate(); // Check for updates
+
                     // Expose triggerSlash for character cards
                     window.triggerSlash = async (text) => {
                         console.log('triggerSlash called:', text);
@@ -4658,7 +4718,7 @@ ${rawHtml}
                     if (settings.autoRestoreDefaultAPI) {
                         settings.apiUrl = 'https://iai.iisbo.com';
                         settings.apiKey = 'sk-GZstxyrMmK0LlZiVWTx21vtMBZXFUaRTEv5PAyv1nHstrVrC';
-                        settings.model = '[bo+]gemini-3-pro-preview-thinking-1.5';
+                        settings.model = '[bo]gemini-3-flash-preview-vertex-1';
                         // showToast('已自动恢复默认 API 设置', 'info');
                     }
 
@@ -5035,6 +5095,7 @@ ${rawHtml}
 
                 return {
                     currentView, showMobileMenu, showDescriptionPanel, showModelSelector, showCharacterEditor, showPresetEditor,
+                    showUpdateModal, latestUpdate, closeUpdateModal, // Update Modal
                     showConfirmModal, confirmMessage, // Export for template
                     isGenerating, isReceiving, userInput, modelSearchQuery, availableModels, filteredModels,
                     user, settings, characters, currentCharacter, chatHistory, presets, regexScripts, worldInfo,
