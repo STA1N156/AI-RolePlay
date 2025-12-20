@@ -3022,7 +3022,11 @@ ${rawHtml}
                     let finalEntries = Array.from(triggeredEntries.keys());
                     const groups = {};
                     finalEntries.forEach(entry => {
-                        if (entry.group) {
+                        // Fix: Don't group System entries if they are constant (intended to coexist)
+                        const isSystemGroup = entry.group && entry.group.toLowerCase() === 'system';
+                        const shouldGroup = !isSystemGroup || !entry.constant;
+
+                        if (entry.group && shouldGroup) {
                             if (!groups[entry.group]) groups[entry.group] = [];
                             groups[entry.group].push(entry);
                         }
@@ -3125,6 +3129,11 @@ ${rawHtml}
                         } else {
                             wiGroups.at_depth.push(entry);
                         }
+                    });
+
+                    // Fix: Sort entries within each group by Order (Ascending)
+                    Object.keys(wiGroups).forEach(key => {
+                        wiGroups[key].sort((a, b) => (a.order || 0) - (b.order || 0));
                     });
 
                     // Construct Prompt Parts
@@ -4105,7 +4114,7 @@ ${rawHtml}
                         useProbability: toBoolean(getValue(['useProbability', 'use_probability'], true), true),
 
                         // --- Grouping ---
-                        group: getValue(['group'], ''),
+                        group: toBoolean(getValue(['constant'], false), false) && getValue(['group'], '').toLowerCase() === 'system' ? '' : getValue(['group'], ''),
                         groupWeight: toNumber(getValue(['group_weight', 'groupWeight'], 100), 100),
                         preferential: toBoolean(getValue(['preferential', 'preferential_inclusion'], false), false),
                         
