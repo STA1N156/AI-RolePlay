@@ -1255,8 +1255,8 @@ opacity: 0;
                 </div>
                 <div class="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
                     <div class="prose prose-sm prose-gray max-w-none">
-                        <!-- 使用 Markdown 渲染内容，支持富文本 -->
-                        <div class="markdown-body" v-html="renderMarkdown(latestUpdate.content)"></div>
+                        <!-- 使用 Markdown 渲染内容，支持富文本，且不应用正则替换 -->
+                        <div class="markdown-body" v-html="renderMarkdown(latestUpdate.content, 'assistant', true)"></div>
                     </div>
                 </div>
                 <div class="bg-gray-50 p-6 flex justify-end rounded-b-xl border-t border-gray-100">
@@ -1724,7 +1724,8 @@ opacity: 0;
 ### Roleplay 2.0.1
 ### 优化和改进：
 
-- 完全修复了世界书插入位置不正确的问题，优化了(UI样式/世界观)遵循不规范的情况。
+- 完全修复了世界书插入位置不正确的问题。
+- 优化了(UI样式/世界观)遵循不规范的情况。
 - 减少了开启自动生图后，模型的截断现象。
 - 默认模型更为Gemini-3-Flash-Preview，大幅度提升了模型响应/生成速度、角色设定遵循能力。
 - 更改了部分UI的样式，位置。
