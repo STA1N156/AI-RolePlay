@@ -1625,20 +1625,23 @@ opacity: 0;
                     </div>
                 </div>
                 <div class="p-6 space-y-4">
-                    <p class="text-gray-600 leading-relaxed">是否为此角色卡开启 <span class="font-bold text-primary-600">自动生图</span> 功能？</p>
-                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
-                        <div class="flex">
+                    <p class="text-gray-600 leading-relaxed text-center text-lg font-medium">是否为此角色卡开启 <span class="font-bold text-primary-600">自动生图</span> 功能？</p>
+                    
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                        <div class="flex items-start mb-3">
                             <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                <svg class="h-5 w-5 text-yellow-500 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                                 </svg>
                             </div>
-                            <div class="ml-3">
-                                <p class="text-sm text-yellow-700">
-                                    注意：开启后，将关闭流式输出（全部内容生成完毕后再展示，不会影响生成速度）。此功能有概率触发模型 “ 截断 ” 现象（输出内容不完整），如遇到请尝试重新生成对话。您也可以在 “ 世界书-自动生图 ” 自行开启/关闭该功能，或前往设置切换生图风格。
-                                </p>
-                            </div>
+                            <h4 class="ml-2 text-sm font-bold text-yellow-800">注意事项</h4>
                         </div>
+                        <ul class="list-disc list-outside ml-9 space-y-1.5 text-sm text-yellow-700">
+                            <li>开启后，将<strong>自动关闭流式输出</strong>（不影响生成速度）。</li>
+                            <li>此功能有概率触发模型 <strong>“截断”</strong> 现象（内容不完整），如遇到请尝试重新生成。</li>
+                            <li>您可以在 “世界书 -> 自动生图” 手动管理此功能。</li>
+                            <li>前往 “设置” 可以切换生图风格。</li>
+                        </ul>
                     </div>
                 </div>
                 <div class="bg-gray-50 p-4 flex justify-end gap-3 rounded-b-2xl border-t border-gray-100">
