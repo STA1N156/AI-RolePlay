@@ -950,7 +950,7 @@ opacity: 0;
                                 <input v-model.number="settings.maxRetries" type="range" min="0" max="5" step="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-600">
                             </div>
                             <div class="border-t border-gray-100 pt-3">
-                                <label class="block text-sm font-medium text-gray-600 mb-1">生图风格 (配合自动生图)</label>
+                                <label class="block text-sm font-medium text-gray-600 mb-1">生图风格 (自动生图)</label>
                                 <select v-model="settings.imageStyle" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none text-sm">
                                     <option value="vertical">默认</option>
                                     <option value="r18">本子风</option>
@@ -5124,13 +5124,13 @@ ${rawHtml}
 
                     // 1.9 Enforce Default Preset (禁止规则)
                     const banRulePresetName = '禁止规则';
-                    const banRulePresetContent = `以下是坚决禁止输出的形式或内容：
+                    const banRulePresetContent = `---以下是坚决禁止输出的形式或内容：
 - 过多过长和过于华丽和文学性的修辞、意象和比喻手法
 - 不符合人设的行为
 - 角色卡中的人物不合常理地无条件服从{{user}}，例如哪怕设定为普通关系但也会无条件接受{{user}}的性行为，这是坚决不允许的
-- 过长过于大段地文学性环境描写
+- 过长或大段的文学性环境描写
 - 禁止输出的词句："手指因为用力""泛白""麝香"“囊袋”“淫靡”“翕”“石龛”“肥美”
-禁止输出形式或内容陈列完毕`;
+禁止输出形式或内容陈列完毕---`;
                     const existingBanRulePreset = presets.value.find(p => p.name === banRulePresetName);
                     
                     if (!existingBanRulePreset) {
