@@ -2495,15 +2495,18 @@ opacity: 0;
                             // --- Protection Logic Start ---
                             // 只有当正则不包含 < 或 > 且不包含 markdown 代码块标记 (```) 时，才启用 HTML/代码块保护
                             // 如果正则本身就在匹配代码块（如用户提供的 ```json ...```），则不应进行保护
-                            if (!/[<>]/.test(regexPattern) && !regexPattern.includes('```')) {
-                                // 匹配 Markdown 代码块 (```...```), 行内代码 (`...`), 或 HTML 标签
-                                const protectionPattern = /(```[\s\S]*?```|`[^`]+`|<\/?[a-zA-Z][\w:-]*[^>]*>)/g;
+                            // 增强保护：防止普通正则（通常带g）破坏 iframe 渲染内容（HTML文档、Script/Style块）
+                            // 特例：'Auto Replace {{user}}' 允许全局替换，包括 iframe 内部
+                            if (!/[<>]/.test(regexPattern) && !regexPattern.includes('```') && script.name !== 'Auto Replace {{user}}') {
+                                // 匹配 完整的 HTML 文档, Script/Style 块, Markdown 代码块, 行内代码, 或 HTML 标签
+                                const protectionPattern = /(<!DOCTYPE html>[\s\S]*?<\/html>|<html\b[^>]*>[\s\S]*?<\/html>|<script\b[^>]*>[\s\S]*?<\/script>|<style\b[^>]*>[\s\S]*?<\/style>|```[\s\S]*?```|`[^`]+`|<\/?[a-zA-Z][\w:-]*[^>]*>)/gi;
                                 const parts = result.split(protectionPattern);
                                 
                                 result = parts.map(part => {
                                     // 检查是否是受保护的部分
                                     if (!part) return part;
-                                    if (/^(```[\s\S]*?```|`[^`]+`|<\/?[a-zA-Z][\w:-]*[^>]*>)$/.test(part)) {
+                                    // 验证是否匹配保护规则
+                                    if (/^(<!DOCTYPE html>[\s\S]*?<\/html>|<html\b[^>]*>[\s\S]*?<\/html>|<script\b[^>]*>[\s\S]*?<\/script>|<style\b[^>]*>[\s\S]*?<\/style>|```[\s\S]*?```|`[^`]+`|<\/?[a-zA-Z][\w:-]*[^>]*>)$/i.test(part)) {
                                         return part; // 保持原样
                                     }
                                     // 对普通文本应用替换
@@ -2531,12 +2534,14 @@ opacity: 0;
                     // Helper to create iframe
                     const createIframe = (rawHtml) => {
                         const iframe = document.createElement('iframe');
-                        iframe.className = 'w-full border-y border-gray-200 bg-white shadow-sm block';
+                        iframe.className = 'w-full border-t border-gray-200 bg-white shadow-sm block';
                         // Remove fixed height, use a small initial height to prevent layout jumping if possible
                         // height will be auto-adjusted by the script below
                         iframe.style.height = 'auto';
                         iframe.style.overflow = 'hidden';
                         iframe.style.transition = 'height 0.2s ease-out';
+                        // Ensure no margin at the bottom of iframe itself
+                        iframe.style.marginBottom = '0';
                         iframe.setAttribute('scrolling', 'no');
                         iframe.sandbox = 'allow-scripts allow-forms allow-popups allow-modals allow-same-origin';
                         
@@ -2548,7 +2553,7 @@ opacity: 0;
                                         const doc = this.contentWindow.document;
                                         // Calculate precise height without minimum limit
                                         const height = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight);
-                                        this.style.height = (height + 10) + 'px'; // Add small buffer
+                                        this.style.height = height + 'px'; // Exact height, no buffer
                                     }
                                 }, 100);
                             } catch (e) {
@@ -2558,7 +2563,7 @@ opacity: 0;
 
                         const hudCSS = '.sinan-hud{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;padding:12px;background:linear-gradient(to bottom right,rgba(255,255,255,0.9),rgba(255,255,255,0.6));border-radius:12px;border:1px solid rgba(0,0,0,0.08);backdrop-filter:blur(4px)}.char-card{flex:1 1 140px;background:#fff;padding:10px;border-radius:8px;border-left:4px solid #ddd;box-shadow:0 2px 6px rgba(0,0,0,0.04);display:flex;flex-direction:column;gap:4px;font-size:12px;position:relative;overflow:hidden;transition:transform 0.2s}.char-card:hover{transform:translateY(-2px);box-shadow:0 4px 8px rgba(0,0,0,0.1)}.char-name{font-weight:700;font-size:14px;color:#374151;display:flex;justify-content:space-between;align-items:center}.char-mood{color:#6b7280;font-size:12px}.char-loc{color:#9ca3af;font-size:11px;margin-top:auto;padding-top:4px}.bar-bg{height:4px;background:#f3f4f6;border-radius:2px;overflow:hidden;margin-top:6px}.bar-fill{height:100%;background:#10b981;border-radius:2px}.c-tongqiu{border-left-color:#f59e0b}.c-tongqiu .bar-fill{background:#f59e0b}.c-yufan{border-left-color:#3b82f6}.c-yufan .bar-fill{background:#3b82f6}.c-linghu{border-left-color:#8b5cf6}.c-linghu .bar-fill{background:#8b5cf6}.c-chongtian{border-left-color:#ef4444}.c-chongtian .bar-fill{background:#ef4444}';
                         // Removed overflow:hidden to prevent content clipping if height calc is delayed
-                        const resetStyle = '<style>html,body{margin:0 !important;padding:0 !important;width:100% !important;word-wrap:break-word !important;box-sizing:border-box !important;overflow:hidden !important;} ::-webkit-scrollbar{display:none;} *,*::before,*::after{box-sizing:inherit !important;} img,video,canvas,svg{max-width:100% !important;height:auto !important;} table{display:block !important;overflow-x:auto !important;max-width:100% !important;} pre{white-space:pre-wrap !important;word-wrap:break-word !important;max-width:100% !important;} .container{max-width:100% !important; width:100% !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important;}' + hudCSS + '</style>';
+                        const resetStyle = '<style>html,body{margin:0 !important;padding:0 !important;width:100% !important;word-wrap:break-word !important;box-sizing:border-box !important;overflow:hidden !important;} ::-webkit-scrollbar{display:none;} *,*::before,*::after{box-sizing:inherit !important;} img,video,canvas,svg{max-width:100% !important;height:auto !important;} table{display:block !important;overflow-x:auto !important;max-width:100% !important;} pre{white-space:pre-wrap !important;word-wrap:break-word !important;max-width:100% !important;} .container, .reality-panel {max-width:100% !important; width:100% !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important; border: none !important;} body > div:first-child { margin: 0 !important; max-width: 100% !important; }' + hudCSS + '</style>';
                         const metaViewport = '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">';
                         // Use defer to prevent blocking rendering if CDN is slow
                         const jqueryScript = '<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js" defer><\/script>';
@@ -2643,6 +2648,7 @@ opacity: 0;
                                         
                                         if (Math.abs(newHeight - lastHeight) > 0) {
                                             lastHeight = newHeight;
+                                            // Remove extra buffer for tighter fit
                                             window.frameElement.style.height = newHeight + 'px';
                                         }
                                         
@@ -2804,8 +2810,11 @@ ${rawHtml}
                         // 2. Render Iframe (HTML Card)
                         const container = document.createElement('div');
                         container.className = 'html-card-container';
-                        // Add some spacing
-                        container.style.margin = '0em 0';
+                        // Remove bottom margin to align with bubble bottom
+                        container.style.margin = '0';
+                        container.style.paddingBottom = '0';
+                        // Adjust negative margin to pull it down slightly if needed, or just 0
+                        container.style.marginBottom = '-1px'; // Slight pull to cover border if any
                         container.appendChild(createIframe(htmlContent));
                         resultHtml += container.outerHTML;
 
