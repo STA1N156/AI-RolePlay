@@ -950,7 +950,7 @@ opacity: 0;
                                 <input v-model.number="settings.maxRetries" type="range" min="0" max="5" step="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-600">
                             </div>
                             <div class="border-t border-gray-100 pt-3">
-                                <label class="block text-sm font-medium text-gray-600 mb-1">生图风格 (自动生图)</label>
+                                <label class="block text-sm font-medium text-gray-600 mb-1">生图风格 (配合自动生图)</label>
                                 <select v-model="settings.imageStyle" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:outline-none text-sm">
                                     <option value="vertical">默认</option>
                                     <option value="r18">本子风</option>
@@ -4067,7 +4067,7 @@ ${rawHtml}
                     // 添加新的到首位
                     worldInfo.value.unshift(autoImageGenWIContent);
                 };
-                const selectCharacter = async (index) => {
+                const selectCharacter = async (index, isNewImport = false) => {
                     currentCharacterIndex.value = index;
                     const char = characters.value[index];
                     
@@ -4171,8 +4171,10 @@ ${rawHtml}
                     currentView.value = 'chat';
                     showToast(`已切换到角色: ${char.name}`, 'success');
                     
-                    // 弹出自动生图询问
-                    showAutoImageGenModal.value = true;
+                    // 弹出自动生图询问 (仅在导入新卡时)
+                    if (isNewImport) {
+                        showAutoImageGenModal.value = true;
+                    }
 
                     saveData(); // Save the switch immediately
                     await nextTick();
@@ -4600,7 +4602,7 @@ ${rawHtml}
                             showToast(`角色导入成功: ${name}`, 'success');
                             
                             // Auto-select the new character
-                            selectCharacter(characters.value.length - 1);
+                            selectCharacter(characters.value.length - 1, true);
                             
                         } catch (err) {
                             console.error("Character processing error:", err);
