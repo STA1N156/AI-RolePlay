@@ -5006,7 +5006,7 @@ ${rawHtml}
                     // 1.8 Enforce Default Preset (第二人称)
                     const secondPersonPresetName = '第二人称';
                     const secondPersonPresetContent = `# 镜头应当全程跟随Role_{{user}}的视角，描写{{user}}所感知到的一切。
-  - 对{{user}}以第二人称称呼;
+  - 对{{user}}以第二人称称呼，使用角色名称呼人物卡中的人物;
   - 剧情以{{user}}视角进行的同时，决不能出现Role_user的语言和行为；
   - 使用“你”（即第二人称）来称呼{{user}}，确保输出的“你”指代的是 {{user}};`;
                     const existingSecondPersonPreset = presets.value.find(p => p.name === secondPersonPresetName);
@@ -5048,11 +5048,13 @@ ${rawHtml}
 
                     // 1.9 Enforce Default Preset (禁止规则)
                     const banRulePresetName = '禁止规则';
-                    const banRulePresetContent = `以下是禁止输出的内容：
+                    const banRulePresetContent = `以下是坚决禁止输出的形式或内容：
 - 过多过长和过于华丽和文学性的修辞、意象和比喻手法
-- 过长过于文学性的环境描写
+- 不符合人设的行为
+- 角色卡中的人物不合常理地无条件服从{{user}}，例如哪怕设定为普通关系但也会无条件接受{{user}}的性行为，这是坚决不允许的
+- 过长过于大段地文学性环境描写
 - "手指因为用力""泛白""麝香"“囊袋”
-禁止输出内容陈列完毕`;
+禁止输出形式或内容陈列完毕`;
                     const existingBanRulePreset = presets.value.find(p => p.name === banRulePresetName);
                     
                     if (!existingBanRulePreset) {
