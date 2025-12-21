@@ -381,6 +381,12 @@ opacity: 0;
             margin-top: 0.5em !important;
             margin-bottom: 0.5em !important;
         }
+
+        /* Performance Optimization for Character Cards */
+        .char-grid-item {
+            content-visibility: auto;
+            contain-intrinsic-size: 1px 300px; /* Rough estimate of card height */
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans h-screen overflow-hidden selection:bg-primary-200 selection:text-primary-900">
@@ -766,13 +772,13 @@ opacity: 0;
 
                 <!-- Mobile View (Grid) -->
                 <div class="md:hidden grid grid-cols-2 gap-4">
-                    <div v-for="char in filteredCharacters" :key="'mobile-'+char.uuid"
-                         class="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-md active:scale-[0.97] transition-[transform,shadow,border-color] duration-300 border border-gray-100"
+                    <div v-for="char in displayedCharacters" :key="'mobile-'+char.uuid"
+                         class="char-grid-item relative aspect-[3/4] rounded-2xl overflow-hidden shadow-md active:scale-[0.97] transition-[transform,shadow,border-color] duration-300 border border-gray-100"
                          :class="{'ring-4 ring-primary-500 ring-offset-2': currentCharacter && currentCharacter.uuid === char.uuid && !isBatchDeleteMode}"
                          @click="isBatchDeleteMode ? toggleCharacterSelection(char.originalIndex) : selectCharacter(char.originalIndex)">
                         
                         <!-- Avatar Background -->
-                        <img :src="char.avatar" class="absolute inset-0 w-full h-full object-cover">
+                        <img :src="char.avatar" class="absolute inset-0 w-full h-full object-cover" loading="lazy">
                         
                         <!-- Gradient Overlay -->
                         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
@@ -821,15 +827,15 @@ opacity: 0;
 
                 <!-- Desktop View (Grid) -->
                 <div class="hidden md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    <div v-for="char in filteredCharacters" :key="char.uuid"
-                         class="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:border-primary-400 hover:shadow-xl transition-[transform,shadow,border-color] duration-300 cursor-pointer group relative shadow-sm flex flex-col"
+                    <div v-for="char in displayedCharacters" :key="char.uuid"
+                         class="char-grid-item bg-white rounded-2xl border border-gray-200 overflow-hidden hover:border-primary-400 hover:shadow-xl transition-[transform,shadow,border-color] duration-300 cursor-pointer group relative shadow-sm flex flex-col"
                          :class="{
                              'ring-4 ring-primary-500 ring-offset-2': currentCharacter && currentCharacter.uuid === char.uuid && !isBatchDeleteMode,
                              'ring-2 ring-red-500 border-red-500': isBatchDeleteMode && selectedCharacterIndices.has(char.originalIndex)
                          }"
                          @click="isBatchDeleteMode ? toggleCharacterSelection(char.originalIndex) : selectCharacter(char.originalIndex)">
                         <div class="aspect-w-3 aspect-h-4 relative h-96 overflow-hidden">
-                            <img :src="char.avatar" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                            <img :src="char.avatar" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy">
                             <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
                             
                             <!-- Status Tag Overlay -->
@@ -876,6 +882,14 @@ opacity: 0;
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Load More Button -->
+                <div v-if="characterDisplayLimit < filteredCharacters.length" class="mt-8 flex justify-center">
+                    <button @click="loadMoreCharacters" class="px-8 py-3 bg-white border border-gray-200 text-primary-600 font-bold rounded-2xl shadow-sm hover:shadow-md active:scale-95 transition-all flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 13l-7 7-7-7m14-8l-7 7-7-7"></path></svg>
+                        加载更多角色 ({{ filteredCharacters.length - characterDisplayLimit }})
+                    </button>
                 </div>
             </div>
 
@@ -1877,23 +1891,23 @@ opacity: 0;
                 const showUserSetupModal = ref(false);
                 const showAutoImageGenModal = ref(false);
                 const tempUserSetup = reactive({ name: '', description: '', person: 'second' });
+                const characterDisplayLimit = ref(20);
                 
                 // Update Modal Logic
                 const showUpdateModal = ref(false);
                 const updateCountdown = ref(0);
                 let updateCountdownTimer = null;
                 const latestUpdate = reactive({
-                    id: 10019, // 确保这是一个五位数ID，每次更新内容时增加这个数字
+                    id: 10029, // 确保这是一个五位数ID，每次更新内容时增加这个数字
                     date: new Date().toISOString().split('T')[0],
                     title: '网站更新公告',
                     content: `
 ### Roleplay 2.3.0
 - 美化了聊天/角色管理界面的UI样式，增加了沉浸感。
-- 优化了角色卡生成页面的UI排布和样式。
-- 修复了角色卡生成页面在部分设备上显示错误的问题。
-- 为角色卡智能Diff修改功能添加独立模态框和引导。
-- 强化了部分预设（人称/禁止规则）的效果，提高了回复质量。
-- 增加新角色卡加载时，自动生图功能的开启引导/询问弹窗。
+- 优化了角色卡生成页面的UI样式，修复了部分问题。
+- 为角色卡智能Diff修改功能添加了独立模态框和用户指导。
+- 强化了部分预设的效果，提高了回复质量。
+- 增加了自动生图功能的开启引导弹窗。
 - 统一了预设/世界书/正则界面的UI风格
 
 #### 更新时间：12/22/05:32
@@ -2402,6 +2416,19 @@ opacity: 0;
                     });
 
                     return result;
+                });
+
+                const displayedCharacters = computed(() => {
+                    return filteredCharacters.value.slice(0, characterDisplayLimit.value);
+                });
+
+                const loadMoreCharacters = () => {
+                    characterDisplayLimit.value += 20;
+                };
+
+                // Reset limit when search query changes
+                watch(characterSearchQuery, () => {
+                    characterDisplayLimit.value = 20;
                 });
 
                 const activeRegexCount = computed(() => regexScripts.value.filter(r => r.enabled !== false && !systemRegexNames.includes(r.name)).length);
@@ -5375,7 +5402,7 @@ ${rawHtml}
                     editingCharacter, editingPreset, toasts, chatContainer, inputBox, messageElements,
                     lastUserMessageIndex, // Expose to template
                     isGeneratorLoading, generatorUrl, onGeneratorLoad, // Generator exports
-                    editorTab,
+                    editorTab, characterDisplayLimit, displayedCharacters, loadMoreCharacters,
                     toggleMobileMenu: () => showMobileMenu.value = !showMobileMenu.value,
                     scrollToPreviousMessage, scrollToNextMessage,
                     fetchModels, useBackupAPI, selectModel, sendMessage, stopGeneration, clearChat,
