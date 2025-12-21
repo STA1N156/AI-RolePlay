@@ -170,6 +170,20 @@
         /* Mobile optimizations */
         @media (max-width: 768px) {
             .mobile-hide { display: none; }
+            
+            /* Hide scrollbar for Chrome, Safari and Opera */
+            ::-webkit-scrollbar,
+            .custom-scrollbar::-webkit-scrollbar {
+                display: none !important;
+                width: 0 !important;
+                height: 0 !important;
+            }
+            
+            /* Hide scrollbar for IE, Edge and Firefox */
+            * {
+                -ms-overflow-style: none !important;  /* IE and Edge */
+                scrollbar-width: none !important;  /* Firefox */
+            }
         }
         
         .typing-indicator {
@@ -572,7 +586,7 @@ opacity: 0;
                     </div>
                     
                     <div v-for="(msg, index) in chatHistory" :key="index" ref="messageElements" :data-role="msg.role" :class="['flex w-full', msg.role === 'user' ? 'justify-end' : 'justify-start']">
-                        <div :class="['flex max-w-[100%] md:max-w-[75%] lg:max-w-[70%]', msg.role === 'user' ? 'flex-row-reverse' : 'flex-row']">
+                        <div :class="['flex max-w-[99%] md:max-w-[75%] lg:max-w-[70%]', msg.role === 'user' ? 'flex-row-reverse' : 'flex-row']">
                             <!-- Avatar -->
                             <div class="flex-shrink-0">
                                 <div v-if="msg.role === 'user'" class="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-xs text-white ml-1.5 shadow-sm">
@@ -615,7 +629,7 @@ opacity: 0;
 
                     <!-- Typing Indicator -->
                     <div v-if="isGenerating && !isReceiving" class="flex w-full justify-start">
-                        <div class="flex max-w-[100%] md:max-w-[75%] lg:max-w-[70%] flex-row">
+                        <div class="flex max-w-[99%] md:max-w-[75%] lg:max-w-[70%] flex-row">
                             <div class="flex-shrink-0">
                                 <img :src="currentCharacter.avatar" class="w-8 h-8 rounded-full object-cover mr-1.5 border border-gray-200 shadow-sm">
                             </div>
@@ -673,11 +687,11 @@ opacity: 0;
                     </div>
                 </div>
                 <!-- Message Navigation -->
-                <div class="fixed z-10 flex flex-col gap-2 transition-all duration-300 left-3 bottom-60 md:left-auto md:right-8 md:bottom-40">
-                    <button @click="scrollToPreviousMessage" class="p-1.5 md:p-2 bg-white/70 hover:bg-white backdrop-blur-[2px] shadow-sm rounded-full text-gray-500 hover:text-primary-600 active:text-primary-600 transition-all border border-white/20 hover:shadow-sm hover:scale-110 active:scale-95 group" title="上一条信息">
+                <div class="fixed z-10 flex flex-col gap-2 transition-all duration-300 left-2 bottom-60 md:left-auto md:right-8 md:bottom-40">
+                    <button @click="scrollToPreviousMessage" class="p-1.5 md:p-2 bg-white/70 md:hover:bg-white backdrop-blur-[2px] shadow-sm rounded-full text-gray-500 md:hover:text-primary-600 active:text-primary-600 transition-all border border-white/20 md:hover:shadow-sm md:hover:scale-110 active:scale-95 group" title="上一条信息">
                         <svg class="w-4 h-4 transform md:group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
                     </button>
-                    <button @click="scrollToNextMessage" class="p-1.5 md:p-2 bg-white/70 hover:bg-white backdrop-blur-[2px] shadow-sm rounded-full text-gray-500 hover:text-primary-600 active:text-primary-600 transition-all border border-white/20 hover:shadow-sm hover:scale-110 active:scale-95 group" title="下一条信息">
+                    <button @click="scrollToNextMessage" class="p-1.5 md:p-2 bg-white/70 md:hover:bg-white backdrop-blur-[2px] shadow-sm rounded-full text-gray-500 md:hover:text-primary-600 active:text-primary-600 transition-all border border-white/20 md:hover:shadow-sm md:hover:scale-110 active:scale-95 group" title="下一条信息">
                         <svg class="w-4 h-4 transform md:group-hover:translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
                 </div>
