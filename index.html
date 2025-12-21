@@ -557,8 +557,8 @@ opacity: 0;
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
                         </button>
                         <div v-if="currentCharacter" class="flex items-center min-w-0 cursor-pointer" @click="showDescriptionPanel = !showDescriptionPanel">
-                            <img :src="currentCharacter.avatar" class="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-sm flex-shrink-0">
-                            <span class="ml-3 font-medium text-gray-800 truncate">{{ currentCharacter.name }}</span>
+                            <img :src="currentCharacter.avatar" class="w-9 h-9 rounded-full object-cover border border-gray-200 shadow-sm flex-shrink-0">
+                            <span class="ml-2 font-medium text-gray-800 truncate">{{ currentCharacter.name }}</span>
                             <button class="ml-1 p-1.5 text-gray-400 hover:text-primary-500 hover:bg-primary-50 rounded-full transition-all flex-shrink-0" :class="{'bg-primary-50 text-primary-600': showDescriptionPanel}">
                                 <svg class="w-4 h-4 transition-transform duration-300 ease-out" :class="{'rotate-180': showDescriptionPanel}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -597,10 +597,10 @@ opacity: 0;
                         <div :class="['flex max-w-[99%] md:max-w-[75%] lg:max-w-[70%]', msg.role === 'user' ? 'flex-row-reverse' : 'flex-row']">
                             <!-- Avatar -->
                             <div class="flex-shrink-0">
-                                <div v-if="msg.role === 'user'" class="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-xs text-white ml-1.5 shadow-sm">
+                                <div v-if="msg.role === 'user'" class="w-9 h-9 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-xs text-white ml-1.5 shadow-sm">
                                     {{ user.name.charAt(0) }}
                                 </div>
-                                <img v-else :src="currentCharacter.avatar" class="w-10 h-10 rounded-full object-cover mr-1.5 border border-gray-200 shadow-sm">
+                                <img v-else :src="currentCharacter.avatar" class="w-9 h-9 rounded-full object-cover mr-1.5 border border-gray-200 shadow-sm">
                             </div>
                             
                             <!-- Message Column -->
@@ -639,7 +639,7 @@ opacity: 0;
                     <div v-if="isGenerating && !isReceiving" class="flex w-full justify-start">
                         <div class="flex max-w-[99%] md:max-w-[75%] lg:max-w-[70%] flex-row">
                             <div class="flex-shrink-0">
-                                <img :src="currentCharacter.avatar" class="w-10 h-10 rounded-full object-cover mr-1.5 border border-gray-200 shadow-sm">
+                                <img :src="currentCharacter.avatar" class="w-9 h-9 rounded-full object-cover mr-1.5 border border-gray-200 shadow-sm">
                             </div>
                             <div class="flex flex-col min-w-0">
                                 <div class="text-[10px] font-bold text-gray-600 mb-1 select-none px-1.5 py-0.5 rounded-md bg-white/50 backdrop-blur-sm border border-white/20 w-fit shadow-sm mr-auto ml-1">
@@ -726,18 +726,18 @@ opacity: 0;
                         </div>
                     </div>
 
-                    <div class="flex space-x-2 md:space-x-3 w-full md:w-auto overflow-x-auto no-scrollbar pb-1" v-if="!isBatchDeleteMode">
-                        <button @click="toggleBatchDeleteMode" class="flex-shrink-0 px-4 py-2 bg-white hover:bg-gray-50 text-red-600 rounded-xl border border-gray-200 transition-all shadow-sm hover:shadow flex items-center text-sm font-bold">
-                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            批量删除
+                    <div class="flex space-x-2 md:space-x-3 w-full md:w-auto pb-1" v-if="!isBatchDeleteMode">
+                        <button @click="toggleBatchDeleteMode" class="flex-1 md:flex-none justify-center px-2 md:px-4 py-2 bg-white hover:bg-gray-50 text-red-600 rounded-xl border border-gray-200 transition-all shadow-sm hover:shadow flex items-center text-xs md:text-sm font-bold">
+                            <svg class="w-4 h-4 mr-1 md:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            删除角色
                         </button>
-                        <label class="cursor-pointer flex-shrink-0 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-xl border border-gray-200 transition-all shadow-sm hover:shadow flex items-center text-sm font-bold">
-                            <svg class="w-4 h-4 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        <label class="cursor-pointer flex-1 md:flex-none justify-center px-2 md:px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-xl border border-gray-200 transition-all shadow-sm hover:shadow flex items-center text-xs md:text-sm font-bold">
+                            <svg class="w-4 h-4 mr-1 md:mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                             导入角色
                             <input type="file" accept=".png,.json" @change="importCharacter" class="hidden">
                         </label>
-                        <button @click="createNewCharacter" class="flex-shrink-0 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl transition-all shadow-sm hover:shadow flex items-center text-sm font-bold">
-                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        <button @click="createNewCharacter" class="flex-1 md:flex-none justify-center px-2 md:px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl transition-all shadow-sm hover:shadow flex items-center text-xs md:text-sm font-bold">
+                            <svg class="w-4 h-4 mr-1 md:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                             新建角色
                         </button>
                     </div>
@@ -767,7 +767,7 @@ opacity: 0;
                 <!-- Mobile View (Grid) -->
                 <div class="md:hidden grid grid-cols-2 gap-4">
                     <div v-for="char in filteredCharacters" :key="'mobile-'+char.uuid"
-                         class="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-md active:scale-[0.97] transition-all border border-gray-100"
+                         class="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-md active:scale-[0.97] transition-[transform,shadow,border-color] duration-300 border border-gray-100"
                          :class="{'ring-4 ring-primary-500 ring-offset-2': currentCharacter && currentCharacter.uuid === char.uuid && !isBatchDeleteMode}"
                          @click="isBatchDeleteMode ? toggleCharacterSelection(char.originalIndex) : selectCharacter(char.originalIndex)">
                         
@@ -822,8 +822,11 @@ opacity: 0;
                 <!-- Desktop View (Grid) -->
                 <div class="hidden md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     <div v-for="char in filteredCharacters" :key="char.uuid"
-                         class="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:border-primary-400 hover:shadow-xl transition-all cursor-pointer group relative shadow-sm flex flex-col"
-                         :class="{'ring-2 ring-red-500 border-red-500': isBatchDeleteMode && selectedCharacterIndices.has(char.originalIndex)}"
+                         class="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:border-primary-400 hover:shadow-xl transition-[transform,shadow,border-color] duration-300 cursor-pointer group relative shadow-sm flex flex-col"
+                         :class="{
+                             'ring-4 ring-primary-500 ring-offset-2': currentCharacter && currentCharacter.uuid === char.uuid && !isBatchDeleteMode,
+                             'ring-2 ring-red-500 border-red-500': isBatchDeleteMode && selectedCharacterIndices.has(char.originalIndex)
+                         }"
                          @click="isBatchDeleteMode ? toggleCharacterSelection(char.originalIndex) : selectCharacter(char.originalIndex)">
                         <div class="aspect-w-3 aspect-h-4 relative h-96 overflow-hidden">
                             <img :src="char.avatar" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
@@ -1880,18 +1883,20 @@ opacity: 0;
                 const updateCountdown = ref(0);
                 let updateCountdownTimer = null;
                 const latestUpdate = reactive({
-                    id: 10009, // 确保这是一个五位数ID，每次更新内容时增加这个数字
+                    id: 10019, // 确保这是一个五位数ID，每次更新内容时增加这个数字
                     date: new Date().toISOString().split('T')[0],
                     title: '网站更新公告',
                     content: `
-### Roleplay 2.2.0
+### Roleplay 2.3.0
+- 美化了聊天/角色管理界面的UI样式，增加了沉浸感。
 - 优化了角色卡生成页面的UI排布和样式。
 - 修复了角色卡生成页面在部分设备上显示错误的问题。
 - 为角色卡智能Diff修改功能添加独立模态框和引导。
 - 强化了部分预设（人称/禁止规则）的效果，提高了回复质量。
 - 增加新角色卡加载时，自动生图功能的开启引导/询问弹窗。
+- 统一了预设/世界书/正则界面的UI风格
 
-#### 更新时间：12/22/03:32
+#### 更新时间：12/22/05:32
                     `
                 });
 
@@ -3938,11 +3943,11 @@ ${rawHtml}
                                 currentCharacterIndex.value = -1;
                             }
 
-                            showToast('批量删除成功', 'success');
+                            showToast('删除成功', 'success');
                             toggleBatchDeleteMode();
                         } catch (err) {
                             console.error('Batch delete failed:', err);
-                            showToast('批量删除失败', 'error');
+                            showToast('删除失败', 'error');
                         }
                     });
                 };
