@@ -1304,21 +1304,21 @@ opacity: 0;
         <!-- Update Notification Modal -->
         <div v-if="showUpdateModal" class="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
             <div class="bg-white rounded-xl border border-gray-200 w-full max-w-lg flex flex-col shadow-2xl transform transition-all scale-100 overflow-hidden">
-                <div class="bg-gradient-to-r from-primary-50 to-purple-50 p-6 border-b border-gray-100">
+                <div class="bg-gradient-to-r from-primary-50 to-purple-50 p-4 border-b border-gray-100">
                     <div class="flex items-center gap-3">
-                        <h3 class="text-2xl font-bold text-gray-900">{{ latestUpdate.title }}</h3>
-                        <span class="bg-primary-100 text-primary-600 text-xs font-bold px-2 py-1 rounded-full border border-primary-200 transform translate-y-0.5">New</span>
+                        <h3 class="text-xl font-bold text-gray-900">{{ latestUpdate.title }}</h3>
+                        <span class="bg-primary-100 text-primary-600 text-[10px] font-bold px-2 py-0.5 rounded-full border border-primary-200 transform translate-y-0.5">New</span>
                     </div>
                 </div>
-                <div class="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar update-content">
+                <div class="p-4 max-h-[60vh] overflow-y-auto custom-scrollbar update-content">
                     <div class="prose prose-sm prose-gray max-w-none">
                         <!-- 使用 Markdown 渲染内容，支持富文本，且不应用正则替换 -->
                         <div class="markdown-body" v-html="renderMarkdown(latestUpdate.content, 'assistant', true)"></div>
                     </div>
                 </div>
-                <div class="bg-gray-50 p-6 flex justify-end rounded-b-xl border-t border-gray-100">
-                    <button @click="closeUpdateModal" class="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg shadow-sm hover:shadow transition-all active:scale-95">
-                        知道了
+                <div class="bg-gray-50 p-4 flex justify-end rounded-b-xl border-t border-gray-100">
+                    <button @click="closeUpdateModal" :disabled="updateCountdown > 0" :class="{'opacity-50 cursor-not-allowed': updateCountdown > 0}" class="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg shadow-sm hover:shadow transition-all active:scale-95">
+                        知道了 <span v-if="updateCountdown > 0">({{ updateCountdown }}s)</span>
                     </button>
                 </div>
             </div>
@@ -1333,7 +1333,7 @@ opacity: 0;
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                     </div>
                     <h3 class="text-xl font-bold text-gray-900 mb-2 text-center">欢迎使用 RolePlay Hub</h3>
-                    <p class="text-sm text-gray-500 mb-6 text-center">检测到您尚未设置角色信息。为了获得更好的沉浸式体验，请先设置您的称呼和设定。</p>
+                    <p class="text-sm text-gray-500 mb-6 text-center">为了获得更好的沉浸式体验，请先进行您的个性化设置。</p>
                     
                     <div class="space-y-4">
                         <div>
@@ -1341,8 +1341,20 @@ opacity: 0;
                             <input v-model="tempUserSetup.name" type="text" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-all" placeholder="角色对您的称呼">
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">旁白叙事视角</label>
+                            <div class="flex p-1 bg-gray-100 rounded-xl gap-1">
+                                <button @click="tempUserSetup.person = 'second'" :class="['flex-1 py-2 text-sm font-bold transition-all rounded-lg', tempUserSetup.person === 'second' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700']">
+                                    第二人称 (你)
+                                </button>
+                                <button @click="tempUserSetup.person = 'third'" :class="['flex-1 py-2 text-sm font-bold transition-all rounded-lg', tempUserSetup.person === 'third' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700']">
+                                    第三人称 ({{ tempUserSetup.name || '您的称呼' }})
+                                </button>
+                            </div>
+                            <p class="mt-1.5 text-[11px] text-gray-400 px-1"></p>
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">详细设定 (可选)</label>
-                            <textarea v-model="tempUserSetup.description" rows="6" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-all" placeholder="例如：您的外貌、性格、人设等..."></textarea>
+                            <textarea v-model="tempUserSetup.description" rows="4" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-all" placeholder="例如：您的外貌、性格、人设等..."></textarea>
                         </div>
                     </div>
                 </div>
@@ -1601,6 +1613,45 @@ opacity: 0;
             </div>
         </div>
 
+        <!-- Auto Image Gen Inquiry Modal -->
+        <div v-if="showAutoImageGenModal" class="fixed inset-0 z-[90] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
+            <div class="bg-white rounded-2xl border border-gray-200 w-full max-w-md flex flex-col shadow-2xl transform transition-all scale-100 overflow-hidden">
+                <div class="bg-gradient-to-r from-primary-50 to-blue-50 p-6 border-b border-gray-100">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900">自动生图</h3>
+                    </div>
+                </div>
+                <div class="p-6 space-y-4">
+                    <p class="text-gray-600 leading-relaxed">是否为此角色卡开启 <span class="font-bold text-primary-600">自动生图</span> 功能？</p>
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-yellow-700">
+                                    注意：开启后，将关闭流式输出（全部内容生成完毕后再展示，不会影响生成速度）。此功能有概率触发模型 “ 截断 ” 现象（输出内容不完整），如遇到请尝试重新生成对话。您也可以在 “ 世界书-自动生图 ” 自行开启/关闭该功能。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 p-4 flex justify-end gap-3 rounded-b-2xl border-t border-gray-100">
+                    <button @click="setAutoImageGen(false)" class="px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-xl border border-gray-200 transition-all active:scale-95">
+                        暂不开启
+                    </button>
+                    <button @click="setAutoImageGen(true)" class="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl shadow-sm hover:shadow-md transition-all active:scale-95">
+                        立即开启
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- World Info Editor Modal -->
         <div v-if="showWorldInfoEditor" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <div class="bg-white rounded-xl border border-gray-200 w-full max-w-3xl flex flex-col shadow-2xl max-h-[90vh]">
@@ -1818,28 +1869,51 @@ opacity: 0;
                 const showRegexEditor = ref(false);
                 const showWorldInfoEditor = ref(false);
                 const showUserSetupModal = ref(false);
-                const tempUserSetup = reactive({ name: '', description: '' });
+                const showAutoImageGenModal = ref(false);
+                const tempUserSetup = reactive({ name: '', description: '', person: 'second' });
                 
                 // Update Modal Logic
                 const showUpdateModal = ref(false);
+                const updateCountdown = ref(0);
+                let updateCountdownTimer = null;
                 const latestUpdate = reactive({
-                    id: 10006, // 确保这是一个五位数ID，每次更新内容时增加这个数字
+                    id: 10007, // 确保这是一个五位数ID，每次更新内容时增加这个数字
                     date: new Date().toISOString().split('T')[0],
-                    title: '系统更新公告',
+                    title: '网站更新公告',
                     content: `
-### Roleplay 2.1.2
+### Roleplay 2.2.0
 - 优化了角色卡生成页面的UI排布和样式。
 - 修复了角色卡生成页面在部分设备上显示错误的问题。
 - 为角色卡智能Diff修改功能添加独立模态框和引导。
+- 强化了部分预设（人称/禁止规则）的效果，提高了回复质量。
+- 增加新角色卡加载时，自动生图功能的开启引导/询问弹窗。
 
-#### 更新时间：12/22/02:54
+#### 更新时间：12/22/03:32
                     `
                 });
 
                 const closeUpdateModal = () => {
+                    if (updateCountdown.value > 0) return;
                     showUpdateModal.value = false;
+                    if (updateCountdownTimer) {
+                        clearInterval(updateCountdownTimer);
+                        updateCountdownTimer = null;
+                    }
                     // 记录已读版本ID
                     localStorage.setItem('roleplay_hub_update_id', latestUpdate.id.toString());
+                };
+
+                const startUpdateCountdown = () => {
+                    updateCountdown.value = 5;
+                    if (updateCountdownTimer) clearInterval(updateCountdownTimer);
+                    updateCountdownTimer = setInterval(() => {
+                        if (updateCountdown.value > 0) {
+                            updateCountdown.value--;
+                        } else {
+                            clearInterval(updateCountdownTimer);
+                            updateCountdownTimer = null;
+                        }
+                    }, 1000);
                 };
 
                 const checkUpdate = () => {
@@ -1847,6 +1921,7 @@ opacity: 0;
                     // 如果没有记录，或者记录的ID小于当前ID，则显示弹窗
                     if (!lastId || parseInt(lastId) < latestUpdate.id) {
                         showUpdateModal.value = true;
+                        startUpdateCountdown();
                     }
                 };
 
@@ -4095,6 +4170,10 @@ ${rawHtml}
 
                     currentView.value = 'chat';
                     showToast(`已切换到角色: ${char.name}`, 'success');
+                    
+                    // 弹出自动生图询问
+                    showAutoImageGenModal.value = true;
+
                     saveData(); // Save the switch immediately
                     await nextTick();
                     scrollToBottom();
@@ -4863,6 +4942,7 @@ ${rawHtml}
                     if (user.name === '请前往设置自定义你的名称') {
                         tempUserSetup.name = '';
                         tempUserSetup.description = user.description;
+                        tempUserSetup.person = 'second'; // 默认选第二人称
                         showUserSetupModal.value = true;
                     }
 
@@ -5001,7 +5081,7 @@ ${rawHtml}
 
                     // 1.8 Enforce Default Preset (第二人称)
                     const secondPersonPresetName = '第二人称';
-                    const secondPersonPresetContent = `# 镜头应当全程跟随Role_{{user}}的视角，描写{{user}}所感知到的一切。
+                    const secondPersonPresetContent = `# 无论开场白如何，镜头应当全程跟随Role_{{user}}的视角，描写{{user}}所感知到的一切。
   - 对{{user}}以第二人称称呼，使用角色名称呼人物卡中的人物;
   - 剧情以{{user}}视角进行的同时，决不能出现Role_user的语言和行为；
   - 使用“你”（即第二人称）来称呼{{user}}，确保输出的“你”指代的是 {{user}};`;
@@ -5022,7 +5102,7 @@ ${rawHtml}
 
                     // 1.7 Enforce Default Preset (第三人称)
                     const thirdPersonPresetName = '第三人称';
-                    const thirdPersonPresetContent = '除人物外，旁白应使用{{user}}替代主角，并用全知视角第三人称叙事';
+                    const thirdPersonPresetContent = '除角色卡中的人物外，无论开场白如何，旁白都应使用{{user}}称呼主角，并用全知视角第三人称叙事';
                     const existingThirdPersonPreset = presets.value.find(p => p.name === thirdPersonPresetName);
                     
                     if (!existingThirdPersonPreset) {
@@ -5049,7 +5129,7 @@ ${rawHtml}
 - 不符合人设的行为
 - 角色卡中的人物不合常理地无条件服从{{user}}，例如哪怕设定为普通关系但也会无条件接受{{user}}的性行为，这是坚决不允许的
 - 过长过于大段地文学性环境描写
-- "手指因为用力""泛白""麝香"“囊袋”
+- 禁止输出的词句："手指因为用力""泛白""麝香"“囊袋”“淫靡”“翕”“石龛”“肥美”
 禁止输出形式或内容陈列完毕`;
                     const existingBanRulePreset = presets.value.find(p => p.name === banRulePresetName);
                     
@@ -5252,7 +5332,7 @@ ${rawHtml}
 
                 return {
                     currentView, showMobileMenu, showDescriptionPanel, showModelSelector, showCharacterEditor, showPresetEditor,
-                    showUpdateModal, latestUpdate, closeUpdateModal, // Update Modal
+                    showUpdateModal, updateCountdown, latestUpdate, closeUpdateModal, // Update Modal
                     showConfirmModal, confirmMessage, // Export for template
                     isGenerating, isReceiving, userInput, modelSearchQuery, characterSearchQuery, availableModels, filteredModels, filteredCharacters,
                     user, settings, characters, currentCharacter, chatHistory, presets, regexScripts, worldInfo,
@@ -5625,9 +5705,35 @@ ${rawHtml}
                         }
                         user.name = tempUserSetup.name;
                         user.description = tempUserSetup.description;
+                        
+                        // 应用人称选择到预设
+                        const secondPersonPreset = presets.value.find(p => p.name === '第二人称');
+                        const thirdPersonPreset = presets.value.find(p => p.name === '第三人称');
+                        
+                        if (tempUserSetup.person === 'second') {
+                            if (secondPersonPreset) secondPersonPreset.enabled = true;
+                            if (thirdPersonPreset) thirdPersonPreset.enabled = false;
+                        } else {
+                            if (secondPersonPreset) secondPersonPreset.enabled = false;
+                            if (thirdPersonPreset) thirdPersonPreset.enabled = true;
+                        }
+                        
                         showUserSetupModal.value = false;
                         saveData();
                         showToast('用户信息已保存', 'success');
+                    },
+
+                    // Auto Image Gen Inquiry
+                    showAutoImageGenModal,
+                    setAutoImageGen: (enabled) => {
+                        const autoImageGenWIName = '自动生图';
+                        const entry = worldInfo.value.find(w => w.comment === autoImageGenWIName);
+                        if (entry) {
+                            entry.enabled = enabled;
+                            showToast(enabled ? '自动生图已开启' : '已保持关闭状态', enabled ? 'success' : 'info');
+                        }
+                        showAutoImageGenModal.value = false;
+                        saveData();
                     }
                 };
             }
