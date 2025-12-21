@@ -101,6 +101,14 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #d1d5db;
         }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
         
         body {
             background-color: #f9fafb;
@@ -549,7 +557,7 @@ opacity: 0;
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
                         </button>
                         <div v-if="currentCharacter" class="flex items-center min-w-0 cursor-pointer" @click="showDescriptionPanel = !showDescriptionPanel">
-                            <img :src="currentCharacter.avatar" class="w-8 h-8 rounded-full object-cover border border-gray-200 shadow-sm flex-shrink-0">
+                            <img :src="currentCharacter.avatar" class="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-sm flex-shrink-0">
                             <span class="ml-3 font-medium text-gray-800 truncate">{{ currentCharacter.name }}</span>
                             <button class="ml-1 p-1.5 text-gray-400 hover:text-primary-500 hover:bg-primary-50 rounded-full transition-all flex-shrink-0" :class="{'bg-primary-50 text-primary-600': showDescriptionPanel}">
                                 <svg class="w-4 h-4 transition-transform duration-300 ease-out" :class="{'rotate-180': showDescriptionPanel}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -589,10 +597,10 @@ opacity: 0;
                         <div :class="['flex max-w-[99%] md:max-w-[75%] lg:max-w-[70%]', msg.role === 'user' ? 'flex-row-reverse' : 'flex-row']">
                             <!-- Avatar -->
                             <div class="flex-shrink-0">
-                                <div v-if="msg.role === 'user'" class="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-xs text-white ml-1.5 shadow-sm">
+                                <div v-if="msg.role === 'user'" class="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-xs text-white ml-1.5 shadow-sm">
                                     {{ user.name.charAt(0) }}
                                 </div>
-                                <img v-else :src="currentCharacter.avatar" class="w-8 h-8 rounded-full object-cover mr-1.5 border border-gray-200 shadow-sm">
+                                <img v-else :src="currentCharacter.avatar" class="w-10 h-10 rounded-full object-cover mr-1.5 border border-gray-200 shadow-sm">
                             </div>
                             
                             <!-- Message Column -->
@@ -631,7 +639,7 @@ opacity: 0;
                     <div v-if="isGenerating && !isReceiving" class="flex w-full justify-start">
                         <div class="flex max-w-[99%] md:max-w-[75%] lg:max-w-[70%] flex-row">
                             <div class="flex-shrink-0">
-                                <img :src="currentCharacter.avatar" class="w-8 h-8 rounded-full object-cover mr-1.5 border border-gray-200 shadow-sm">
+                                <img :src="currentCharacter.avatar" class="w-10 h-10 rounded-full object-cover mr-1.5 border border-gray-200 shadow-sm">
                             </div>
                             <div class="flex flex-col min-w-0">
                                 <div class="text-[10px] font-bold text-gray-600 mb-1 select-none px-1.5 py-0.5 rounded-md bg-white/50 backdrop-blur-sm border border-white/20 w-fit shadow-sm mr-auto ml-1">
@@ -701,10 +709,10 @@ opacity: 0;
             <div v-if="currentView === 'characters'" class="p-4 md:p-6 h-full overflow-y-auto animate-fade-in">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 gap-3">
                     <div class="flex items-center w-full md:w-auto">
-                        <button @click="toggleMobileMenu" class="md:hidden mr-3 text-gray-500 md:hover:text-gray-700 active:text-gray-700 transition-colors flex-shrink-0">
+                        <button @click="toggleMobileMenu" class="md:hidden mr-3 p-2 bg-white border border-gray-200 rounded-xl text-gray-500 shadow-sm active:scale-95 transition-all flex-shrink-0">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
                         </button>
-                        <h2 class="text-xl md:text-2xl font-bold text-gray-800 flex items-center">
+                        <h2 class="text-xl md:text-2xl font-bold text-gray-900 flex items-center">
                             <svg class="w-6 h-6 md:w-7 md:h-7 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                             角色管理
                         </h2>
@@ -712,74 +720,100 @@ opacity: 0;
                     
                     <!-- Search Controls -->
                     <div class="flex flex-1 w-full md:w-auto md:max-w-md gap-2" v-if="!isBatchDeleteMode">
-                        <div class="relative flex-1">
-                            <input v-model="characterSearchQuery" type="text" placeholder="搜索角色..." class="w-full bg-white border border-gray-200 rounded-lg pl-9 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all shadow-sm">
-                            <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <div class="relative flex-1 group">
+                            <input v-model="characterSearchQuery" type="text" placeholder="搜索角色名称或描述..." class="w-full bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl pl-10 pr-4 py-2.5 text-sm focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all shadow-sm group-hover:border-gray-300">
+                            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors group-focus-within:text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </div>
                     </div>
 
-                    <div class="flex space-x-2 md:space-x-3 w-full md:w-auto" v-if="!isBatchDeleteMode">
-                        <button @click="toggleBatchDeleteMode" class="flex-1 md:flex-none justify-center px-3 py-2 bg-white hover:bg-gray-50 text-red-600 rounded-lg border border-gray-200 transition-all shadow-sm hover:shadow flex items-center text-sm md:text-base">
-                            <svg class="w-4 h-4 md:w-5 md:h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            删除
+                    <div class="flex space-x-2 md:space-x-3 w-full md:w-auto overflow-x-auto no-scrollbar pb-1" v-if="!isBatchDeleteMode">
+                        <button @click="toggleBatchDeleteMode" class="flex-shrink-0 px-4 py-2 bg-white hover:bg-gray-50 text-red-600 rounded-xl border border-gray-200 transition-all shadow-sm hover:shadow flex items-center text-sm font-bold">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            批量删除
                         </button>
-                        <label class="cursor-pointer flex-1 md:flex-none justify-center px-3 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg border border-gray-200 transition-all shadow-sm hover:shadow flex items-center text-sm md:text-base">
-                            <svg class="w-4 h-4 md:w-5 md:h-5 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                            导入
+                        <label class="cursor-pointer flex-shrink-0 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-xl border border-gray-200 transition-all shadow-sm hover:shadow flex items-center text-sm font-bold">
+                            <svg class="w-4 h-4 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            导入角色
                             <input type="file" accept=".png,.json" @change="importCharacter" class="hidden">
                         </label>
-                        <button @click="createNewCharacter" class="flex-1 md:flex-none justify-center px-3 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-all shadow-sm hover:shadow flex items-center text-sm md:text-base">
-                            <svg class="w-4 h-4 md:w-5 md:h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                            新建
+                        <button @click="createNewCharacter" class="flex-shrink-0 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl transition-all shadow-sm hover:shadow flex items-center text-sm font-bold">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            新建角色
                         </button>
                     </div>
                     <div class="flex space-x-2 md:space-x-3 w-full md:w-auto" v-else>
-                        <button @click="toggleBatchDeleteMode" class="flex-1 md:flex-none justify-center px-3 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-lg border border-gray-200 transition-all shadow-sm hover:shadow flex items-center text-sm md:text-base">
-                            取消
+                        <button @click="toggleBatchDeleteMode" class="flex-1 md:flex-none justify-center px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-700 rounded-xl border border-gray-200 transition-all shadow-sm hover:shadow flex items-center text-sm font-bold">
+                            取消选择
                         </button>
-                        <button @click="batchDeleteCharacters" :disabled="selectedCharacterIndices.size === 0" class="flex-1 md:flex-none justify-center px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all shadow-sm hover:shadow flex items-center text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed">
-                            <svg class="w-4 h-4 md:w-5 md:h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        <button @click="batchDeleteCharacters" :disabled="selectedCharacterIndices.size === 0" class="flex-1 md:flex-none justify-center px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl transition-all shadow-sm hover:shadow flex items-center text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             确认删除 ({{ selectedCharacterIndices.size }})
                         </button>
                     </div>
                 </div>
 
                 <!-- Empty State -->
-                <div v-if="filteredCharacters.length === 0" class="flex flex-col items-center justify-center py-20 text-gray-400">
-                    <svg class="w-16 h-16 mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                    <p class="text-lg">未找到匹配的角色</p>
-                    <button @click="characterSearchQuery = ''" class="mt-2 text-primary-600 hover:underline">清除搜索条件</button>
+                <div v-if="filteredCharacters.length === 0" class="flex flex-col items-center justify-center py-32 text-center animate-fade-in">
+                    <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6 text-gray-300">
+                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">未找到匹配的角色</h3>
+                    <p class="text-gray-500 max-w-xs mx-auto mb-6">尝试更换搜索关键词，或者新建一个属于你的角色卡。</p>
+                    <button @click="characterSearchQuery = ''" class="px-6 py-2 bg-primary-50 text-primary-600 rounded-xl font-bold hover:bg-primary-100 transition-colors">
+                        清除搜索条件
+                    </button>
                 </div>
 
-                <!-- Mobile View (List) -->
-                <div class="md:hidden space-y-3">
+                <!-- Mobile View (Grid) -->
+                <div class="md:hidden grid grid-cols-2 gap-4">
                     <div v-for="char in filteredCharacters" :key="'mobile-'+char.uuid"
-                         class="bg-white p-3 rounded-xl border border-gray-200 flex items-center justify-between shadow-sm active:scale-[0.99] transition-transform"
-                         :class="{'ring-2 ring-primary-500 border-transparent': currentCharacter && currentCharacter.uuid === char.uuid && !isBatchDeleteMode}"
+                         class="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-md active:scale-[0.97] transition-all border border-gray-100"
+                         :class="{'ring-4 ring-primary-500 ring-offset-2': currentCharacter && currentCharacter.uuid === char.uuid && !isBatchDeleteMode}"
                          @click="isBatchDeleteMode ? toggleCharacterSelection(char.originalIndex) : selectCharacter(char.originalIndex)">
-                        <div class="flex items-center flex-1 min-w-0 mr-2">
-                            <div class="relative flex-shrink-0">
-                                <img :src="char.avatar" class="w-12 h-12 rounded-full object-cover border border-gray-100 shadow-sm">
-                                <div v-if="currentCharacter && currentCharacter.uuid === char.uuid" class="absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full p-0.5 border-2 border-white">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        
+                        <!-- Avatar Background -->
+                        <img :src="char.avatar" class="absolute inset-0 w-full h-full object-cover">
+                        
+                        <!-- Gradient Overlay -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                        
+                        <!-- Selection Indicator (Batch Delete) -->
+                        <div v-if="isBatchDeleteMode" class="absolute inset-0 bg-black/40 flex items-center justify-center z-20">
+                            <div class="w-10 h-10 rounded-full border-2 flex items-center justify-center transition-colors"
+                                 :class="selectedCharacterIndices.has(char.originalIndex) ? 'bg-red-500 border-red-500' : 'bg-white/20 border-white/50'">
+                                 <svg v-if="selectedCharacterIndices.has(char.originalIndex)" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                        </div>
+
+                        <!-- Current Active Badge -->
+                        <div v-if="currentCharacter && currentCharacter.uuid === char.uuid && !isBatchDeleteMode" class="absolute top-3 left-3 z-10">
+                            <div class="flex items-center text-[10px] font-bold text-white bg-green-600/60 backdrop-blur-xl px-2 py-1 rounded-full border border-white/30 shadow-lg">
+                                <span class="w-1.5 h-1.5 bg-green-400 rounded-full mr-1.5 animate-pulse shadow-[0_0_5px_rgba(74,222,128,0.8)]"></span>
+                                当前使用
+                            </div>
+                        </div>
+
+                        <!-- Info & Actions -->
+                        <div class="absolute bottom-0 left-0 right-0 p-3 z-10">
+                            <h3 class="text-white font-bold text-sm truncate mb-2 drop-shadow-md">{{ char.name }}</h3>
+                            
+                            <div class="flex items-center justify-between" v-if="!isBatchDeleteMode">
+                                <div class="flex flex-wrap gap-1">
+                                    <span class="px-1.5 py-0.5 bg-white/20 backdrop-blur-md text-white text-[8px] rounded border border-white/10">
+                                        {{ getCharacterWICount(char) }} 世界书
+                                    </span>
+                                    <span class="px-1.5 py-0.5 bg-white/20 backdrop-blur-md text-white text-[8px] rounded border border-white/10">
+                                        {{ getCharacterRegexCount(char) }} 正则
+                                    </span>
                                 </div>
-                            </div>
-                            <div class="ml-3 min-w-0">
-                                <h3 class="font-bold text-gray-800 truncate text-base">{{ char.name }}</h3>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-1" v-if="!isBatchDeleteMode">
-                            <button @click.stop="exportCharacter(char.originalIndex)" class="p-2 text-gray-400 hover:text-primary-600 bg-gray-50 rounded-lg" title="导出">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            </button>
-                            <button @click.stop="editCharacter(char.originalIndex)" class="p-2 text-gray-400 hover:text-primary-600 bg-gray-50 rounded-lg" title="编辑">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                            </button>
-                        </div>
-                        <div v-if="isBatchDeleteMode" class="ml-3">
-                            <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors"
-                                 :class="selectedCharacterIndices.has(char.originalIndex) ? 'bg-red-500 border-red-500' : 'border-gray-300'">
-                                 <svg v-if="selectedCharacterIndices.has(char.originalIndex)" class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <div class="flex gap-1">
+                                    <button @click.stop="editCharacter(char.originalIndex)" class="p-1.5 bg-white/20 backdrop-blur-md text-white rounded-lg border border-white/20 active:bg-white/40">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    </button>
+                                    <button @click.stop="exportCharacter(char.originalIndex)" class="p-1.5 bg-white/20 backdrop-blur-md text-white rounded-lg border border-white/20 active:bg-white/40">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -809,7 +843,7 @@ opacity: 0;
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                 </button>
                                 <button @click.stop="exportCharacter(char.originalIndex)" class="p-2 bg-white/90 backdrop-blur-sm text-gray-700 hover:text-primary-600 rounded-full shadow-lg transition-all hover:scale-110" title="导出角色">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                                 </button>
                                 <button @click.stop="deleteCharacter(char.originalIndex)" class="p-2 bg-white/90 backdrop-blur-sm text-red-500 hover:text-red-700 rounded-full shadow-lg transition-all hover:scale-110" title="删除角色">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
@@ -1236,81 +1270,27 @@ opacity: 0;
                 </div>
 
                 <div class="space-y-4">
-                    <div v-for="(entry, index) in worldInfo" :key="index" class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all flex flex-col gap-2 relative border-l-4" :class="entry.enabled ? 'border-l-primary-500' : 'border-l-gray-300'">
-                        <div class="flex items-center gap-3">
-                            <!-- Toggle -->
-                            <div class="flex-shrink-0">
-                                <label class="relative inline-flex items-center cursor-pointer" title="启用/禁用">
-                                    <input type="checkbox" v-model="entry.enabled" class="sr-only peer">
-                                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-600"></div>
-                                </label>
+                    <div v-for="(entry, index) in worldInfo" :key="index" class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all flex justify-between items-center">
+                        <div class="flex-1 min-w-0 mr-4">
+                            <div class="flex items-center">
+                                <h3 class="font-bold text-gray-800 truncate">{{ entry.comment || '未命名条目' }}</h3>
                             </div>
-
-                            <!-- Name/Comment & Status -->
-                            <div class="flex-1 min-w-0">
-                                <input type="text" v-model="entry.comment" class="bg-transparent border-none text-gray-800 text-base font-bold rounded-lg focus:ring-1 focus:ring-primary-500 block w-full p-1 -ml-1" placeholder="条目名称/备注...">
-                            </div>
-                            
-                            <!-- Actions -->
-                            <div class="flex items-center space-x-1 flex-shrink-0">
-                                <button @click="editWorldInfo(index)" class="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="编辑详情">
+                        </div>
+                        <div class="flex items-center space-x-4 flex-shrink-0">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" v-model="entry.enabled" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                            </label>
+                            <div class="flex space-x-1 border-l border-gray-200 pl-4">
+                                <button @click="editWorldInfo(index)" class="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="编辑">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                 </button>
-                                <button @click="exportSingleWorldInfo(index)" class="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="导出条目">
+                                <button @click="exportSingleWorldInfo(index)" class="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="导出">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                                 </button>
                                 <button @click="deleteWorldInfo(index)" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="删除">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                 </button>
-                            </div>
-                        </div>
-
-                        <!-- Keywords -->
-                        <div class="pl-12 text-xs text-gray-500 truncate">
-                            <span class="font-semibold">关键词:</span>
-                            <span v-if="entry.keys && entry.keys.length > 0" class="ml-1">{{ entry.keys.join(', ') }}</span>
-                            <span v-else class="ml-1 italic text-green-600">常驻 (无关键词)</span>
-                        </div>
-
-                        <!-- Stats Grid -->
-                        <div class="pl-12 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 mt-2 text-xs">
-                            <div class="flex items-center" title="插入位置">
-                                <svg class="w-3.5 h-3.5 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                                <select v-model="entry.position" class="bg-gray-50 border-none text-gray-700 text-xs rounded-md focus:ring-1 focus:ring-primary-500 block w-full p-1">
-                                    <optgroup label="System Prompt">
-                                       <option value="system_top">System Top (最顶)</option>
-                                       <option value="global_note">Global Note (全局)</option>
-                                       <option value="before_char">Before Character (角色前)</option>
-                                       <option value="after_char">After Character (角色后)</option>
-                                       <option value="before_examples">Before Examples (示例前)</option>
-                                       <option value="after_examples">After Examples (示例后)</option>
-                                    </optgroup>
-                                    <optgroup label="Author's Note">
-                                       <option value="an_top">AN Top (注释顶)</option>
-                                       <option value="author_note">AN Middle (注释中)</option>
-                                       <option value="an_bottom">AN Bottom (注释底)</option>
-                                    </optgroup>
-                                    <optgroup label="In-Chat">
-                                       <option value="at_depth">@ Depth (按深度)</option>
-                                       <option value="user_top">User Message Top (用户消息顶)</option>
-                                       <option value="assistant_top">AI Message Top (AI消息顶)</option>
-                                    </optgroup>
-                                </select>
-                            </div>
-                            <div class="flex items-center" title="深度 (Depth)">
-                                <svg class="w-3.5 h-3.5 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
-                                <input type="number" v-model.number="entry.depth" class="bg-gray-50 border-none text-gray-700 text-xs rounded-md focus:ring-1 focus:ring-primary-500 block w-full p-1" placeholder="4">
-                            </div>
-                            <div class="flex items-center" title="顺序 (Order)">
-                                <svg class="w-3.5 h-3.5 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9M3 12h9m-9 4h13m0-4l4 4m0 0l-4 4m-4-8l4-4m0 0l4 4"></path></svg>
-                                <input type="number" v-model.number="entry.order" class="bg-gray-50 border-none text-gray-700 text-xs rounded-md focus:ring-1 focus:ring-primary-500 block w-full p-1" placeholder="0">
-                            </div>
-                            <div class="flex items-center" title="触发概率 (%)">
-                                <svg class="w-3.5 h-3.5 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 15.536c-1.171 1.952-3.07 1.952-4.242 0-1.172-1.953-1.172-5.119 0-7.072 1.171-1.952 3.07-1.952 4.242 0 1.172 1.953 1.172 5.119 0 7.072zM12 12h.01"></path></svg>
-                                <div class="flex items-center gap-1 w-full">
-                                    <input type="checkbox" v-model="entry.useProbability" class="rounded text-primary-600 focus:ring-primary-500 h-3 w-3" title="启用概率">
-                                    <input type="number" v-model.number="entry.probability" min="0" max="100" class="bg-gray-50 border-none text-gray-700 text-xs rounded-md focus:ring-1 focus:ring-primary-500 block w-full p-1" placeholder="100" :disabled="entry.useProbability === false">
-                                </div>
                             </div>
                         </div>
                     </div>
