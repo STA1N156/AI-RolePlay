@@ -2129,18 +2129,20 @@ opacity: 0;
                 const updateCountdown = ref(0);
                 let updateCountdownTimer = null;
                 const latestUpdate = reactive({
-                    id: 10030, // 确保这是一个五位数ID，每次更新内容时增加这个数字
+                    id: 10031, // 确保这是一个五位数ID，每次更新内容时增加这个数字
                     date: new Date().toISOString().split('T')[0],
                     title: '网站更新公告',
                     content: `
-### Roleplay 2.3.0
+### Roleplay 2.4.1
+### 新增在线角色卡广场功能！
 
-- 重构美化了预设/世界书/正则的编辑页面
-- 修复了平板端的部分显示错误
-- 新增用户头像自定义/人称快速切换功能
-- 优化了移动端角色卡管理界面的UI布局
+- 现在您可以通过“羁绊回廊”进入角色卡广场，分享自己的原创角色卡/下载他人上传的角色卡！
+- 重构美化了预设/世界书/正则的编辑页面。
+- 修复了平板端的部分显示错误。
+- 新增设置界面用户头像自定义/叙事人称快速切换功能。
+- 优化了移动端角色卡管理界面的UI布局。
 
-#### 更新时间：12/22/05:32
+#### 更新时间：12/25/06:44
                     `
                 });
 
@@ -2156,7 +2158,7 @@ opacity: 0;
                 };
 
                 const startUpdateCountdown = () => {
-                    updateCountdown.value = 8;
+                    updateCountdown.value = 15;
                     if (updateCountdownTimer) clearInterval(updateCountdownTimer);
                     updateCountdownTimer = setInterval(() => {
                         if (updateCountdown.value > 0) {
