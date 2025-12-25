@@ -2994,6 +2994,12 @@ opacity: 0;
                                             const child = body.children[i];
                                             if (child.tagName === 'SCRIPT' || child.tagName === 'STYLE' || child.tagName === 'LINK') continue;
                                             
+                                            // Check computed style to exclude fixed elements which cause infinite growth loops
+                                            // Fixed elements move with the viewport, so increasing iframe height moves them down,
+                                            // causing the next height calculation to be even larger.
+                                            const style = window.getComputedStyle(child);
+                                            if (style.position === 'fixed') continue;
+
                                             // Exclude hidden elements if possible, but getBoundingClientRect handles them (height 0)
                                             const rect = child.getBoundingClientRect();
                                             const bottom = rect.bottom; // Relative to viewport (iframe window)
