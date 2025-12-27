@@ -46,11 +46,16 @@
                         'slide-up': 'slideUp 0.3s ease-out',
                         'slide-down': 'slideDown 0.3s ease-out',
                         'bounce-slow': 'bounce 1.5s infinite',
+                        'message-in': 'messageIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) backwards',
                     },
                     keyframes: {
                         fadeIn: {
                             '0%': { opacity: '0' },
                             '100%': { opacity: '1' },
+                        },
+                        messageIn: {
+                            '0%': { opacity: '0', transform: 'translateY(100px) scale(0.95)', filter: 'blur(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0) scale(1)', filter: 'blur(0)' },
                         },
                         slideUp: {
                             '0%': { transform: 'translateY(20px)', opacity: '0' },
@@ -467,18 +472,6 @@ opacity: 0;
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
                     正则脚本
                 </button>
-                <button @click="currentView = 'plugins'; showMobileMenu = false" :class="['w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200 font-medium', currentView === 'plugins' ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900']">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                    插件管理
-                </button>
-                <!-- Plugin Sidebar Items -->
-                <button v-for="item in pluginSidebarItems" :key="item.id" @click="item.onClick(); showMobileMenu = false" class="w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200 font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900">
-                    <svg v-if="item.icon" class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.icon"></path>
-                    </svg>
-                    {{ item.label }}
-                </button>
-                <div v-if="pluginSidebarItems.length > 0" class="my-1 border-t border-gray-100"></div>
                 <button @click="currentView = 'settings'; showMobileMenu = false" :class="['w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200 font-medium', currentView === 'settings' ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900']">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                     设置
@@ -618,16 +611,6 @@ opacity: 0;
                         <button @click="clearChat" class="p-2 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition-colors" title="清空聊天">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
-                        <!-- Plugin Actions -->
-                        <div v-if="pluginActions.length > 0" class="h-6 w-px bg-gray-200 mx-1"></div>
-                        <button v-for="action in pluginActions" :key="action.id" @click="action.onClick"
-                                class="p-2 text-gray-500 hover:text-primary-600 rounded-full hover:bg-gray-100 transition-colors"
-                                :title="action.label">
-                            <svg v-if="action.icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="action.icon"></path>
-                            </svg>
-                            <span v-else class="text-xs font-bold">{{ action.label }}</span>
-                        </button>
                     </div>
                 </div>
 
@@ -649,7 +632,9 @@ opacity: 0;
                         <p>开始与 {{ currentCharacter.name }} 对话吧</p>
                     </div>
                     
-                    <div v-else v-for="(msg, index) in chatHistory" :key="index" ref="messageElements" :data-role="msg.role" :class="['flex w-full', msg.role === 'user' ? 'justify-end' : 'justify-start']">
+                    <div v-else v-for="(msg, index) in chatHistory" :key="index" ref="messageElements" :data-role="msg.role"
+                         :class="['flex w-full', msg.shouldAnimate ? 'animate-message-in' : '', msg.role === 'user' ? 'justify-end' : 'justify-start']"
+                         :style="{ animationDelay: msg.role === 'user' ? '0ms' : '0ms' }">
                         <div :class="['flex max-w-[99%] md:max-w-[75%] lg:max-w-[70%]', msg.role === 'user' ? 'flex-row-reverse' : 'flex-row']">
                             <!-- Avatar -->
                             <div class="flex-shrink-0">
@@ -674,7 +659,14 @@ opacity: 0;
                                         msg.role === 'user' ? 'bg-primary-100 text-gray-900 rounded-tr-none shadow-sm border border-primary-200' :
                                         msg.role === 'system' ? 'bg-red-50 text-red-800 border border-red-200' :
                                         'bg-white text-gray-800 border border-gray-100 shadow-card']">
-                                        <div class="markdown-body" v-html="renderMarkdown(msg.content, msg.role)"></div>
+                                        <div v-if="msg.isTriggered && !msg.showRaw" @click="msg.showRaw = true" class="px-4 py-3 flex items-center space-x-2 text-primary-800/80 select-none cursor-pointer hover:bg-primary-50 transition-colors" :title="msg.content">
+                                            <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                            <span class="font-bold text-sm">触发了卡片交互 <span class="text-[10px] opacity-60 ml-1"></span></span>
+                                        </div>
+                                        <div v-else-if="msg.isTriggered && msg.showRaw" @click="msg.showRaw = false" class="cursor-pointer hover:opacity-80 transition-opacity" title="点击收起">
+                                            <div class="markdown-body" v-html="renderMarkdown(msg.content, msg.role)"></div>
+                                        </div>
+                                        <div v-else class="markdown-body" v-html="renderMarkdown(msg.content, msg.role)"></div>
                                     </div>
                                     
                                     <!-- Message Actions -->
@@ -695,7 +687,7 @@ opacity: 0;
                     </div>
 
                     <!-- Typing Indicator -->
-                    <div v-if="isGenerating && !isReceiving" class="flex w-full justify-start">
+                    <div v-if="isGenerating && !isReceiving" class="flex w-full justify-start animate-message-in" style="animation-delay: 200ms;">
                         <div class="flex max-w-[99%] md:max-w-[75%] lg:max-w-[70%] flex-row">
                             <div class="flex-shrink-0">
                                 <img :src="currentCharacter.avatar" class="w-9 h-9 rounded-full object-cover mr-1.5 border border-gray-200 shadow-sm">
@@ -1045,75 +1037,6 @@ opacity: 0;
                 </div>
             </div>
 
-            <!-- Plugins View -->
-            <div v-if="currentView === 'plugins'" class="p-4 md:p-6 h-full overflow-y-auto animate-fade-in">
-                <div class="flex justify-between items-center mb-4 md:mb-6">
-                    <div class="flex items-center">
-                        <button @click="toggleMobileMenu" class="md:hidden mr-3 text-gray-500 md:hover:text-gray-700 active:text-gray-700 transition-colors">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-                        </button>
-                        <h2 class="text-xl md:text-2xl font-bold text-gray-800 flex items-center">
-                            <svg class="w-6 h-6 md:w-7 md:h-7 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                            插件管理
-                        </h2>
-                    </div>
-                    <div class="flex space-x-2 md:space-x-3" v-if="!isPluginSelectMode">
-                        <button @click="togglePluginSelectMode" class="p-2.5 bg-white hover:bg-gray-50 text-gray-600 rounded-xl border border-gray-200 transition-all shadow-sm hover:shadow-md active:scale-95" title="批量导出">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                        </button>
-                        <label class="cursor-pointer p-2.5 bg-white hover:bg-gray-50 text-gray-600 rounded-xl border border-gray-200 transition-all shadow-sm hover:shadow-md active:scale-95" title="导入">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            <input type="file" accept=".json" @change="importPlugin" class="hidden">
-                        </label>
-                        <button @click="createPlugin" class="p-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl transition-all shadow-sm hover:shadow-md active:scale-95" title="新建插件">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                        </button>
-                    </div>
-                    <div class="flex space-x-2 md:space-x-3" v-else>
-                        <button @click="isPluginSelectMode = false; selectedPluginIndices.clear()" class="px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-600 rounded-xl border border-gray-200 transition-all shadow-sm font-bold text-sm">取消</button>
-                        <button @click="confirmExportPlugins" :disabled="selectedPluginIndices.size === 0" class="px-4 py-2.5 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl transition-all shadow-sm font-bold text-sm">
-                            确认导出 ({{ selectedPluginIndices.size }})
-                        </button>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 gap-4">
-                    <div v-for="(plugin, index) in plugins" :key="index"
-                         class="bg-white p-4 rounded-xl border transition-all flex justify-between items-center cursor-pointer min-h-[88px]"
-                         :class="[isPluginSelectMode && selectedPluginIndices.has(index) ? 'border-primary-500 ring-1 ring-primary-500 bg-primary-50' : 'border-gray-200 hover:shadow-md']"
-                         @click="isPluginSelectMode ? togglePluginSelection(index) : null">
-                        
-                        <div class="mr-4 flex-shrink-0" v-if="isPluginSelectMode">
-                            <div class="w-5 h-5 rounded border flex items-center justify-center transition-colors"
-                                 :class="selectedPluginIndices.has(index) ? 'bg-primary-600 border-primary-600' : 'bg-white border-gray-300'">
-                                <svg v-if="selectedPluginIndices.has(index)" class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                            </div>
-                        </div>
-
-                        <div class="flex-1 min-w-0 mr-4">
-                            <div class="flex items-center mb-1">
-                                <h3 class="font-bold text-gray-800 truncate mr-2">{{ plugin.name }}</h3>
-                                <span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full border border-gray-200">v{{ plugin.version }}</span>
-                            </div>
-                            <p class="text-sm text-gray-500 truncate">{{ plugin.description || '暂无描述' }}</p>
-                        </div>
-                        <div class="flex items-center space-x-4 flex-shrink-0" v-if="!isPluginSelectMode">
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" v-model="plugin.enabled" @change="runPlugins" class="sr-only peer">
-                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                            </label>
-                            <div class="flex space-x-1 border-l border-gray-200 pl-4">
-                                <button @click.stop="editPlugin(index)" class="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="编辑">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                </button>
-                                <button @click.stop="deletePlugin(index)" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="删除">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Settings View -->
             <div v-if="currentView === 'settings'" class="p-4 md:p-6 h-full overflow-y-auto animate-fade-in">
                 <div class="flex items-center mb-4 md:mb-6">
@@ -1284,8 +1207,8 @@ opacity: 0;
                             预设管理
                         </h2>
                     </div>
-                    <div class="flex space-x-2 md:space-x-3" v-if="!isPresetSelectMode">
-                        <button @click="togglePresetSelectMode" class="p-2.5 bg-white hover:bg-gray-50 text-gray-600 rounded-xl border border-gray-200 transition-all shadow-sm hover:shadow-md active:scale-95" title="批量导出">
+                    <div class="flex space-x-2 md:space-x-3">
+                        <button @click="openExportModal('presets')" class="p-2.5 bg-white hover:bg-gray-50 text-gray-600 rounded-xl border border-gray-200 transition-all shadow-sm hover:shadow-md active:scale-95" title="导出">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                         </button>
                         <label class="cursor-pointer p-2.5 bg-white hover:bg-gray-50 text-gray-600 rounded-xl border border-gray-200 transition-all shadow-sm hover:shadow-md active:scale-95" title="导入预设">
@@ -1296,53 +1219,35 @@ opacity: 0;
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                         </button>
                     </div>
-                    <div class="flex space-x-2 md:space-x-3" v-else>
-                        <button @click="isPresetSelectMode = false; selectedPresetIndices.clear()" class="px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-600 rounded-xl border border-gray-200 transition-all shadow-sm font-bold text-sm">取消</button>
-                        <button @click="confirmExportPresets" :disabled="selectedPresetIndices.size === 0" class="px-4 py-2.5 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl transition-all shadow-sm font-bold text-sm">
-                            确认导出 ({{ selectedPresetIndices.size }})
-                        </button>
-                    </div>
                 </div>
                 
                 <div class="space-y-4">
                     <div v-for="(preset, index) in presets" :key="index"
-                         class="bg-white p-4 rounded-xl border border-gray-200 flex items-center justify-between group shadow-sm hover:shadow-md transition-all cursor-pointer min-h-[72px]"
-                         :class="[
-                            {'opacity-50 border-dashed border-primary-400': draggedPresetIndex === index},
-                            isPresetSelectMode && selectedPresetIndices.has(index) ? 'border-primary-500 ring-1 ring-primary-500 bg-primary-50' : ''
-                         ]"
-                         :draggable="!isPresetSelectMode"
-                         @dragstart="!isPresetSelectMode && handleDragStart(index, $event)"
+                         class="bg-white p-4 rounded-xl border border-gray-200 flex items-center justify-between group shadow-sm hover:shadow-md transition-all"
+                         :class="{'opacity-50 border-dashed border-primary-400': draggedPresetIndex === index}"
+                         draggable="true"
+                         @dragstart="handleDragStart(index, $event)"
                          @dragover.prevent
-                         @drop="!isPresetSelectMode && handleDrop(index)"
-                         @dragend="!isPresetSelectMode && handleDragEnd"
-                         @click="isPresetSelectMode ? togglePresetSelection(index) : null">
-                        
-                        <div class="mr-4 flex-shrink-0" v-if="isPresetSelectMode">
-                            <div class="w-5 h-5 rounded border flex items-center justify-center transition-colors"
-                                 :class="selectedPresetIndices.has(index) ? 'bg-primary-600 border-primary-600' : 'bg-white border-gray-300'">
-                                <svg v-if="selectedPresetIndices.has(index)" class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                            </div>
-                        </div>
-
+                         @drop="handleDrop(index)"
+                         @dragend="handleDragEnd">
                         <div class="flex items-center flex-1">
-                            <div class="cursor-move text-gray-400 mr-3 hover:text-gray-600 flex-shrink-0" title="拖动排序" v-if="!isPresetSelectMode">
+                            <div class="cursor-move text-gray-400 mr-3 hover:text-gray-600" title="拖动排序">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
                             </div>
                             <div class="flex-1">
                                 <h3 class="font-bold text-gray-800">{{ preset.name }}</h3>
                             </div>
                         </div>
-                        <div class="flex items-center space-x-4 flex-shrink-0" v-if="!isPresetSelectMode">
+                        <div class="flex items-center space-x-4">
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" v-model="preset.enabled" class="sr-only peer">
                                 <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
                             </label>
                             <div class="flex space-x-1 border-l border-gray-200 pl-4">
-                                <button @click.stop="editPreset(index)" class="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="编辑">
+                                <button @click="editPreset(index)" class="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="编辑">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                 </button>
-                                <button @click.stop="deletePreset(index)" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="删除">
+                                <button @click="deletePreset(index)" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="删除">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                 </button>
                             </div>
@@ -1363,8 +1268,8 @@ opacity: 0;
                             正则脚本
                         </h2>
                     </div>
-                    <div class="flex space-x-2 md:space-x-3" v-if="!isRegexSelectMode">
-                        <button @click="toggleRegexSelectMode" class="p-2.5 bg-white hover:bg-gray-50 text-gray-600 rounded-xl border border-gray-200 transition-all shadow-sm hover:shadow-md active:scale-95" title="批量导出">
+                    <div class="flex space-x-2 md:space-x-3">
+                        <button @click="openExportModal('regex')" class="p-2.5 bg-white hover:bg-gray-50 text-gray-600 rounded-xl border border-gray-200 transition-all shadow-sm hover:shadow-md active:scale-95" title="导出">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                         </button>
                         <label class="cursor-pointer p-2.5 bg-white hover:bg-gray-50 text-gray-600 rounded-xl border border-gray-200 transition-all shadow-sm hover:shadow-md active:scale-95" title="导入">
@@ -1375,41 +1280,24 @@ opacity: 0;
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                         </button>
                     </div>
-                    <div class="flex space-x-2 md:space-x-3" v-else>
-                        <button @click="isRegexSelectMode = false; selectedRegexIndices.clear()" class="px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-600 rounded-xl border border-gray-200 transition-all shadow-sm font-bold text-sm">取消</button>
-                        <button @click="confirmExportRegex" :disabled="selectedRegexIndices.size === 0" class="px-4 py-2.5 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl transition-all shadow-sm font-bold text-sm">
-                            确认导出 ({{ selectedRegexIndices.size }})
-                        </button>
-                    </div>
                 </div>
                 <div class="grid grid-cols-1 gap-4">
-                    <div v-for="(script, index) in regexScripts" :key="index"
-                         class="bg-white p-4 rounded-xl border transition-all flex justify-between items-center cursor-pointer min-h-[72px]"
-                         :class="[isRegexSelectMode && selectedRegexIndices.has(index) ? 'border-primary-500 ring-1 ring-primary-500 bg-primary-50' : 'border-gray-200 hover:shadow-md']"
-                         @click="isRegexSelectMode ? toggleRegexSelection(index) : null">
-                        
-                        <div class="mr-4 flex-shrink-0" v-if="isRegexSelectMode">
-                            <div class="w-5 h-5 rounded border flex items-center justify-center transition-colors"
-                                 :class="selectedRegexIndices.has(index) ? 'bg-primary-600 border-primary-600' : 'bg-white border-gray-300'">
-                                <svg v-if="selectedRegexIndices.has(index)" class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                            </div>
-                        </div>
-
+                    <div v-for="(script, index) in regexScripts" :key="index" class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all flex justify-between items-center">
                         <div class="flex-1 min-w-0 mr-4">
                             <div class="flex items-center">
                                 <h3 class="font-bold text-gray-800 truncate">{{ script.name }}</h3>
                             </div>
                         </div>
-                        <div class="flex items-center space-x-4 flex-shrink-0" v-if="!isRegexSelectMode">
+                        <div class="flex items-center space-x-4 flex-shrink-0">
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" v-model="script.enabled" class="sr-only peer" :true-value="true" :false-value="false">
                                 <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
                             </label>
                             <div class="flex space-x-1 border-l border-gray-200 pl-4">
-                                <button @click.stop="editRegex(index)" class="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="编辑">
+                                <button @click="editRegex(index)" class="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="编辑">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                 </button>
-                                <button @click.stop="deleteRegex(index)" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="删除">
+                                <button @click="deleteRegex(index)" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="删除">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                 </button>
                             </div>
@@ -1430,8 +1318,8 @@ opacity: 0;
                             世界书
                         </h2>
                     </div>
-                    <div class="flex space-x-2 md:space-x-3" v-if="!isWorldInfoSelectMode">
-                        <button @click="toggleWorldInfoSelectMode" class="p-2.5 bg-white hover:bg-gray-50 text-gray-600 rounded-xl border border-gray-200 transition-all shadow-sm hover:shadow-md active:scale-95" title="批量导出">
+                    <div class="flex space-x-2 md:space-x-3">
+                        <button @click="openExportModal('worldinfo')" class="p-2.5 bg-white hover:bg-gray-50 text-gray-600 rounded-xl border border-gray-200 transition-all shadow-sm hover:shadow-md active:scale-95" title="导出">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                         </button>
                         <label class="cursor-pointer p-2.5 bg-white hover:bg-gray-50 text-gray-600 rounded-xl border border-gray-200 transition-all shadow-sm hover:shadow-md active:scale-95" title="导入">
@@ -1440,12 +1328,6 @@ opacity: 0;
                         </label>
                         <button @click="createWorldInfo" class="p-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl transition-all shadow-sm hover:shadow-md active:scale-95" title="新建条目">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                        </button>
-                    </div>
-                    <div class="flex space-x-2 md:space-x-3" v-else>
-                        <button @click="isWorldInfoSelectMode = false; selectedWorldInfoIndices.clear()" class="px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-600 rounded-xl border border-gray-200 transition-all shadow-sm font-bold text-sm">取消</button>
-                        <button @click="confirmExportWorldInfo" :disabled="selectedWorldInfoIndices.size === 0" class="px-4 py-2.5 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl transition-all shadow-sm font-bold text-sm">
-                            确认导出 ({{ selectedWorldInfoIndices.size }})
                         </button>
                     </div>
                 </div>
@@ -1540,33 +1422,22 @@ opacity: 0;
                 </div>
 
                 <div class="space-y-4">
-                    <div v-for="(entry, index) in worldInfo" :key="index"
-                         class="bg-white p-4 rounded-xl border transition-all flex justify-between items-center cursor-pointer min-h-[72px]"
-                         :class="[isWorldInfoSelectMode && selectedWorldInfoIndices.has(index) ? 'border-primary-500 ring-1 ring-primary-500 bg-primary-50' : 'border-gray-200 hover:shadow-md']"
-                         @click="isWorldInfoSelectMode ? toggleWorldInfoSelection(index) : null">
-                        
-                        <div class="mr-4 flex-shrink-0" v-if="isWorldInfoSelectMode">
-                            <div class="w-5 h-5 rounded border flex items-center justify-center transition-colors"
-                                 :class="selectedWorldInfoIndices.has(index) ? 'bg-primary-600 border-primary-600' : 'bg-white border-gray-300'">
-                                <svg v-if="selectedWorldInfoIndices.has(index)" class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                            </div>
-                        </div>
-
+                    <div v-for="(entry, index) in worldInfo" :key="index" class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all flex justify-between items-center">
                         <div class="flex-1 min-w-0 mr-4">
                             <div class="flex items-center">
                                 <h3 class="font-bold text-gray-800 truncate">{{ entry.comment || '未命名条目' }}</h3>
                             </div>
                         </div>
-                        <div class="flex items-center space-x-4 flex-shrink-0" v-if="!isWorldInfoSelectMode">
+                        <div class="flex items-center space-x-4 flex-shrink-0">
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" v-model="entry.enabled" class="sr-only peer">
                                 <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
                             </label>
                             <div class="flex space-x-1 border-l border-gray-200 pl-4">
-                                <button @click.stop="editWorldInfo(index)" class="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="编辑">
+                                <button @click="editWorldInfo(index)" class="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors" title="编辑">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                 </button>
-                                <button @click.stop="deleteWorldInfo(index)" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="删除">
+                                <button @click="deleteWorldInfo(index)" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="删除">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                 </button>
                             </div>
@@ -1578,21 +1449,6 @@ opacity: 0;
         </div>
 
         <!-- Modals -->
-
-        <!-- Plugin Custom Modal -->
-        <div v-if="customModal.show" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
-            <div class="bg-white rounded-2xl border border-gray-200 w-full max-w-2xl flex flex-col shadow-2xl transform transition-all scale-100 max-h-[85vh] overflow-hidden">
-                <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 backdrop-blur-sm">
-                    <h3 class="text-lg font-bold text-gray-800">{{ customModal.title }}</h3>
-                    <button @click="customModal.show = false" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-full transition-all">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-                </div>
-                <div class="p-6 overflow-y-auto custom-scrollbar custom-modal-content">
-                    <div class="markdown-body" v-html="renderMarkdown(customModal.content, 'assistant', true)"></div>
-                </div>
-            </div>
-        </div>
 
         <!-- Update Notification Modal -->
         <div v-if="showUpdateModal" class="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
@@ -2002,51 +1858,44 @@ opacity: 0;
             </div>
         </div>
 
-        <!-- Plugin Editor Modal -->
-        <div v-if="showPluginEditor" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
-            <div class="bg-white rounded-2xl border border-gray-200 w-full max-w-3xl flex flex-col shadow-2xl max-h-[90vh] overflow-hidden">
-                <div class="p-4 md:p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 backdrop-blur-sm flex-shrink-0">
-                    <div class="flex items-center gap-3">
-                        <div class="p-2 bg-primary-50 text-primary-600 rounded-lg">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-gray-800 leading-tight">{{ editingPlugin.id !== undefined ? '编辑插件' : '新建插件' }}</h3>
-                            <p class="text-xs text-gray-500">Plugin Editor</p>
-                        </div>
-                    </div>
-                    <button @click="showPluginEditor = false" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-full transition-all">
+        <!-- Export Selection Modal -->
+        <div v-if="showExportModal" class="fixed inset-0 z-[90] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
+            <div class="bg-white rounded-xl border border-gray-200 w-full max-w-lg flex flex-col shadow-2xl max-h-[80vh] overflow-hidden">
+                <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 backdrop-blur-sm flex-shrink-0">
+                    <h3 class="text-lg font-bold text-gray-800">选择导出项目</h3>
+                    <button @click="showExportModal = false" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1 rounded-full transition-all">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
                 
-                <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 bg-gray-50/30">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">插件名称</label>
-                            <input v-model="editingPlugin.data.name" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-all shadow-sm" placeholder="My Plugin">
+                <div class="p-2 border-b border-gray-100 flex justify-between items-center bg-white">
+                    <button @click="selectAllExportItems" class="px-3 py-1.5 text-xs font-bold text-primary-600 hover:bg-primary-50 rounded-lg transition-colors">全选</button>
+                    <span class="text-xs text-gray-500">已选: {{ selectedExportIndices.size }}</span>
+                    <button @click="deselectAllExportItems" class="px-3 py-1.5 text-xs font-bold text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">取消全选</button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-2">
+                    <div v-for="(item, index) in exportItems" :key="index"
+                         @click="toggleExportSelection(index)"
+                         class="flex items-center p-4 rounded-lg border cursor-pointer transition-all select-none"
+                         :class="selectedExportIndices.has(index) ? 'bg-primary-50 border-primary-200' : 'bg-white border-gray-200 hover:border-primary-300'">
+                        <div class="flex-shrink-0 mr-4">
+                            <div :class="['w-6 h-6 rounded border flex items-center justify-center transition-colors',
+                                         selectedExportIndices.has(index) ? 'bg-primary-600 border-primary-600' : 'bg-white border-gray-300']">
+                                <svg v-if="selectedExportIndices.has(index)" class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">版本 (Version)</label>
-                            <input v-model="editingPlugin.data.version" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-all shadow-sm" placeholder="1.0.0">
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium text-gray-900 truncate text-base">{{ item.name || item.comment || '未命名' }}</div>
                         </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">描述 (Description)</label>
-                        <input v-model="editingPlugin.data.description" type="text" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none transition-all shadow-sm" placeholder="功能描述...">
-                    </div>
-                    <div class="flex-1 flex flex-col min-h-[300px]">
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">代码 (Code)</label>
-                        <textarea v-model="editingPlugin.data.code" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-800 font-mono text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none shadow-inner leading-relaxed resize-y flex-1" placeholder="return { onLoad: (ctx) => { ... } };"></textarea>
-                        <p class="mt-2 text-xs text-gray-400">代码将在沙箱中运行。必须返回一个对象。查看开发文档了解更多。</p>
                     </div>
                 </div>
 
-                <div class="p-4 md:p-5 border-t border-gray-100 flex justify-end space-x-3 bg-gray-50/80 backdrop-blur-sm flex-shrink-0">
-                    <button @click="showPluginEditor = false" class="px-5 py-2.5 bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-xl transition-all shadow-sm font-medium text-sm active:scale-95">取消</button>
-                    <button @click="savePlugin" class="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl transition-all shadow-md hover:shadow-lg font-bold text-sm active:scale-95 flex items-center">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                        保存插件
+                <div class="p-4 border-t border-gray-100 flex justify-end space-x-3 bg-gray-50/80 backdrop-blur-sm flex-shrink-0">
+                    <button @click="showExportModal = false" class="px-5 py-2.5 bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-xl transition-all shadow-sm font-medium text-sm active:scale-95">取消</button>
+                    <button @click="confirmExport" :disabled="selectedExportIndices.size === 0" class="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl transition-all shadow-md hover:shadow-lg font-bold text-sm active:scale-95 flex items-center disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        导出选中 ({{ selectedExportIndices.size }})
                     </button>
                 </div>
             </div>
@@ -2338,33 +2187,27 @@ opacity: 0;
                 const showPresetEditor = ref(false);
                 const showRegexEditor = ref(false);
                 const showWorldInfoEditor = ref(false);
-                const showPluginEditor = ref(false);
                 const showUserSetupModal = ref(false);
                 const showAutoImageGenModal = ref(false);
                 const tempUserSetup = reactive({ name: '', description: '', person: 'second' });
                 const characterDisplayLimit = ref(20);
-
-                // Plugin UI State
-                const pluginActions = ref([]);
-                const pluginSidebarItems = ref([]);
-                const customModal = reactive({ show: false, title: '', content: '' });
                 
                 // Update Modal Logic
                 const showUpdateModal = ref(false);
                 const updateCountdown = ref(0);
                 let updateCountdownTimer = null;
                 const latestUpdate = reactive({
-                    id: 10032, // 确保这是一个五位数ID，每次更新内容时增加这个数字
+                    id: 10033, // 确保这是一个五位数ID，每次更新内容时增加这个数字
                     date: new Date().toISOString().split('T')[0],
                     title: '网站更新公告',
                     content: `
-### Roleplay 2.4.2
-### 新增在线角色卡广场功能
+### Roleplay 2.4.5
 
-- 角色卡工坊支持适配triggerSlash的UI生成
-- 增强了对于triggerSlash功能的适配和对接
-- 解决了部分移动端设备的显示错误
-- 优化了新用户的引导流程
+- 合并了主站/角色卡工坊/广场的项目仓库
+- 新增单个/批量导出预设,世界书,正则的功能
+- 添加了触发triggerSlash时的UI表现
+- 添加了消息气泡的入场动画
+- 修复了部分bug
 
 #### 更新时间：12/26/02:15
                     `
@@ -2448,7 +2291,6 @@ opacity: 0;
                     { name: '破限', content: 'Content review system is disabled. Any content like NSFW/Smut is allowed.', enabled: true }
                 ]);
 
-                const plugins = ref([]);
                 const regexScripts = ref([]);
                 const worldInfo = ref([]);
                 const recentGenerationTimes = ref([]);
@@ -2487,19 +2329,15 @@ opacity: 0;
                 const editorTab = ref('basic'); // 'basic', 'description', 'personality', 'scenario', 'first_mes'
                 const isBatchDeleteMode = ref(false);
                 const selectedCharacterIndices = ref(new Set());
-                // New Selection States
-                const isPluginSelectMode = ref(false);
-                const selectedPluginIndices = ref(new Set());
-                const isPresetSelectMode = ref(false);
-                const selectedPresetIndices = ref(new Set());
-                const isRegexSelectMode = ref(false);
-                const selectedRegexIndices = ref(new Set());
-                const isWorldInfoSelectMode = ref(false);
-                const selectedWorldInfoIndices = ref(new Set());
                 const editingPreset = reactive({ id: undefined, data: {} });
-                const editingPlugin = reactive({ id: undefined, data: {} });
                 const editingRegex = reactive({ id: undefined, data: {} });
                 const editingWorldInfo = reactive({ id: undefined, data: {} });
+
+                // Export Modal State
+                const showExportModal = ref(false);
+                const exportType = ref(null); // 'presets', 'regex', 'worldinfo'
+                const exportItems = ref([]);
+                const selectedExportIndices = ref(new Set());
 
                 // Generator State
                 const isGeneratorLoading = ref(true);
@@ -2584,7 +2422,6 @@ opacity: 0;
                         await dbSet('silly_tavern_characters', characters.value);
                         await dbSet('silly_tavern_settings', settings);
                         await dbSet('silly_tavern_presets', presets.value);
-                        await dbSet('silly_tavern_plugins', plugins.value);
                         await dbSet('silly_tavern_regex', regexScripts.value);
                         await dbSet('silly_tavern_worldinfo', worldInfo.value);
                         await dbSet('silly_tavern_worldinfo_settings', worldInfoSettings);
@@ -2652,7 +2489,6 @@ opacity: 0;
                                 localStorage.removeItem('silly_tavern_characters');
                                 localStorage.removeItem('silly_tavern_settings');
                                 localStorage.removeItem('silly_tavern_presets');
-                                localStorage.removeItem('silly_tavern_plugins');
                                 localStorage.removeItem('silly_tavern_regex');
                                 localStorage.removeItem('silly_tavern_worldinfo');
                                 localStorage.removeItem('silly_tavern_user');
@@ -2699,9 +2535,6 @@ opacity: 0;
                         const savedPresets = await dbGet('silly_tavern_presets');
                         if (savedPresets) presets.value = savedPresets;
                         
-                        const savedPlugins = await dbGet('silly_tavern_plugins');
-                        if (savedPlugins) plugins.value = savedPlugins;
-
                         const savedRegex = await dbGet('silly_tavern_regex');
                         if (savedRegex) regexScripts.value = savedRegex;
 
@@ -2855,7 +2688,7 @@ opacity: 0;
                 }, 1000);
 
                 // Watch for changes to auto-save
-                watch([characters, settings, presets, plugins, regexScripts, worldInfo, user, recentGenerationTimes], () => {
+                watch([characters, settings, presets, regexScripts, worldInfo, user, recentGenerationTimes], () => {
                     debouncedSave();
                 }, { deep: true });
 
@@ -3557,137 +3390,6 @@ ${rawHtml}
                     return html;
                 };
 
-                // Plugin System Runtime
-                const activePlugins = ref([]);
-
-                const runPlugins = async () => {
-                    activePlugins.value = [];
-                    pluginActions.value = []; // Reset UI actions on reload
-                    pluginSidebarItems.value = []; // Reset sidebar items on reload
-                    for (const plugin of plugins.value) {
-                        if (!plugin.enabled) continue;
-                        try {
-                            // Create a safe-ish sandbox using Function
-                            // Note: This is not a true security sandbox, just scope isolation.
-                            // Plugins run with same origin privileges.
-                            const factory = new Function(plugin.code);
-                            const instance = factory();
-                            
-                            if (instance && typeof instance === 'object') {
-                                activePlugins.value.push({
-                                    meta: plugin,
-                                    hooks: instance
-                                });
-                                
-                                // Trigger onLoad
-                                if (typeof instance.onLoad === 'function') {
-                                    await instance.onLoad(createPluginContext(plugin));
-                                }
-                            }
-                        } catch (e) {
-                            console.error(`Failed to load plugin ${plugin.name}:`, e);
-                            showToast(`插件 ${plugin.name} 加载失败: ${e.message}`, 'error');
-                        }
-                    }
-                };
-
-                const createPluginContext = (plugin) => ({
-                    toast: showToast,
-                    get chatHistory() { return chatHistory.value; }, // Dynamic access
-                    get character() { return currentCharacter.value; }, // Dynamic access
-                    user: user,
-                    settings: settings,
-                    pluginSettings: plugin.settings || {},
-                    updatePluginSettings: (newSettings) => {
-                        plugin.settings = { ...plugin.settings, ...newSettings };
-                    },
-                    triggerSlash: window.triggerSlash,
-                    fetch: window.fetch.bind(window),
-                    // LLM Request Helper for Plugins
-                    llmRequest: async (messages, options = {}) => {
-                        const reqSettings = { ...settings, ...options };
-                        const response = await fetch(`${reqSettings.apiUrl}/v1/chat/completions`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${reqSettings.apiKey}`
-                            },
-                            body: JSON.stringify({
-                                model: reqSettings.model,
-                                messages: messages,
-                                temperature: reqSettings.temperature,
-                                stream: false // Force non-stream for plugin internal calls usually
-                            })
-                        });
-                        if (!response.ok) throw new Error('LLM Request Failed');
-                        const data = await response.json();
-                        return data.choices[0]?.message?.content || '';
-                    },
-                    // UI Integration
-                    addAction: (action) => {
-                        // action: { id, label, icon (svg path d), onClick: () => {} }
-                        pluginActions.value.push(action);
-                    },
-                    removeAction: (id) => {
-                        const idx = pluginActions.value.findIndex(a => a.id === id);
-                        if (idx !== -1) pluginActions.value.splice(idx, 1);
-                    },
-                    addSidebarItem: (item) => {
-                        // item: { id, label, icon (svg path d), onClick: () => {} }
-                        pluginSidebarItems.value.push(item);
-                    },
-                    removeSidebarItem: (id) => {
-                        const idx = pluginSidebarItems.value.findIndex(i => i.id === id);
-                        if (idx !== -1) pluginSidebarItems.value.splice(idx, 1);
-                    },
-                    showModal: (title, content) => {
-                        customModal.title = title;
-                        customModal.content = content;
-                        customModal.show = true;
-                    },
-                    updateModal: (content) => {
-                        customModal.content = content;
-                    },
-                    closeModal: () => {
-                        customModal.show = false;
-                    },
-                    get isModalOpen() { return customModal.show; }, // Dynamic access
-                    renderMarkdown: (text) => renderMarkdown(text, 'assistant', true), // Expose renderer
-                    // World Info Access
-                    worldInfo: {
-                        getEntries: () => worldInfo.value,
-                        addEntry: (entry) => worldInfo.value.push(entry),
-                        updateEntry: (entry) => {
-                            // Find and update by reference or ID if we had one, but here we rely on object reference from getEntries
-                            // If entry is a new object, we might need to find by comment/content
-                            // For now, assume user modifies object from getEntries or passes valid one
-                            // Since worldInfo.value is reactive, direct modification works if reference is kept.
-                            // If replacing:
-                            const idx = worldInfo.value.findIndex(e => e === entry || (e.comment === entry.comment && e.content === entry.content));
-                            if (idx !== -1) worldInfo.value[idx] = entry;
-                        }
-                    }
-                });
-
-                // Hook Executor
-                const executePluginHook = async (hookName, ...args) => {
-                    for (const plugin of activePlugins.value) {
-                        if (typeof plugin.hooks[hookName] === 'function') {
-                            try {
-                                const result = await plugin.hooks[hookName](...args, createPluginContext(plugin.meta));
-                                // If hook returns explicit false, stop propagation (for some hooks)
-                                if (result === false) return false;
-                                // If hook returns a value (e.g. modified content), use it?
-                                // For simplicity, we currently don't support chain modification in this generic runner,
-                                // specific hooks will handle return values manually.
-                            } catch (e) {
-                                console.error(`Plugin ${plugin.meta.name} hook ${hookName} failed:`, e);
-                            }
-                        }
-                    }
-                    return true;
-                };
-
                 // API & Models
                 const fetchModels = async (isManual = false) => {
                     try {
@@ -3731,8 +3433,8 @@ ${rawHtml}
                     const content = userInput.value.trim();
                     userInput.value = '';
                     
-                    // Add user message
-                    chatHistory.value.push({ role: 'user', content });
+                    // Add user message with animation flag
+                    chatHistory.value.push({ role: 'user', content, shouldAnimate: true });
                     await nextTick();
                     scrollToBottom();
 
@@ -4360,7 +4062,8 @@ ${rawHtml}
                                                                 role: 'assistant',
                                                                 name: currentCharacter.value.name,
                                                                 content: '',
-                                                                id: generateUUID() // Assign ID
+                                                                id: generateUUID(), // Assign ID
+                                                                shouldAnimate: true // Enable animation for new stream
                                                             });
                                                             chatHistory.value.push(assistantMessage);
                                                             isReceiving.value = true;
@@ -4387,7 +4090,8 @@ ${rawHtml}
                                             role: 'assistant',
                                             name: currentCharacter.value.name,
                                             content: content,
-                                            id: generateUUID() // Assign ID
+                                            id: generateUUID(), // Assign ID
+                                            shouldAnimate: true // Enable animation for new messages
                                         });
                                         chatHistory.value.push(assistantMessage);
                                         await nextTick();
@@ -5593,101 +5297,32 @@ ${rawHtml}
                     draggedPresetIndex.value = null;
                 };
 
-                // Plugin Management
-                const createPlugin = () => {
-                    editingPlugin.id = undefined;
-                    editingPlugin.data = {
-                        name: 'New Plugin',
-                        version: '1.0.0',
-                        description: '',
-                        code: 'return {\n    onLoad: (ctx) => {\n        // Plugin logic here\n        ctx.toast("Plugin Loaded!");\n    }\n};',
-                        enabled: false
-                    };
-                    showPluginEditor.value = true;
-                };
-
-                const editPlugin = (index) => {
-                    editingPlugin.id = index;
-                    editingPlugin.data = JSON.parse(JSON.stringify(plugins.value[index]));
-                    showPluginEditor.value = true;
-                };
-
-                const savePlugin = () => {
-                    if (editingPlugin.id !== undefined) {
-                        plugins.value[editingPlugin.id] = { ...editingPlugin.data };
-                    } else {
-                        plugins.value.push({ ...editingPlugin.data });
+                // Expose triggerSlash for character cards (Defined early)
+                window.triggerSlash = async (text) => {
+                    console.log('triggerSlash called from UI:', text);
+                    if (!text) return;
+                    
+                    if (isGenerating.value) {
+                        showToast('正在生成中，请稍后...', 'warning');
+                        return;
                     }
-                    showPluginEditor.value = false;
-                    showToast('插件已保存', 'success');
-                    runPlugins(); // Reload plugins
-                };
 
-                const deletePlugin = (index) => {
-                    confirmAction('确定要删除这个插件吗？此操作无法撤销。', () => {
-                        plugins.value.splice(index, 1);
-                        showToast('插件已删除', 'success');
-                        runPlugins();
-                    });
-                };
+                    const startTime = Date.now(); // Record trigger time
 
-                const exportPlugin = () => {
-                     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(plugins.value));
-                     const downloadAnchorNode = document.createElement('a');
-                     downloadAnchorNode.setAttribute("href", dataStr);
-                     downloadAnchorNode.setAttribute("download", "plugins.json");
-                     document.body.appendChild(downloadAnchorNode);
-                     downloadAnchorNode.click();
-                     downloadAnchorNode.remove();
-                };
+                    // Add user message with explicit reactivity update
+                    const newMessage = { role: 'user', content: text, isTriggered: true, shouldAnimate: true };
+                    // Push and force update to ensure v-if picks up the new property
+                    chatHistory.value = [...chatHistory.value, newMessage];
+                    
+                    await nextTick();
+                    scrollToBottom();
 
-                const importPlugin = (event) => {
-                    const file = event.target.files[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        try {
-                            const data = JSON.parse(e.target.result);
-                            if (Array.isArray(data)) {
-                                plugins.value = data;
-                                showToast('插件导入成功', 'success');
-                                runPlugins();
-                            } else if (data.name && data.code) {
-                                plugins.value.push(data);
-                                showToast('单插件导入成功', 'success');
-                                runPlugins();
-                            }
-                        } catch (err) {
-                            showToast('导入失败', 'error');
-                        }
-                    };
-                    reader.readAsText(file);
-                    event.target.value = '';
+                    await generateResponse(startTime);
                 };
 
                 // Lifecycle
                 onMounted(async () => {
                     checkUpdate(); // Check for updates
-
-                    // Expose triggerSlash for character cards
-                    window.triggerSlash = async (text) => {
-                        console.log('triggerSlash called:', text);
-                        if (!text) return;
-                        
-                        if (isGenerating.value) {
-                            showToast('正在生成中，请稍后...', 'warning');
-                            return;
-                        }
-
-                        const startTime = Date.now(); // Record trigger time
-
-                        // Add user message
-                        chatHistory.value.push({ role: 'user', content: text });
-                        await nextTick();
-                        scrollToBottom();
-
-                        await generateResponse(startTime);
-                    };
 
                     await loadData();
 
@@ -6051,12 +5686,6 @@ ${rawHtml}
                         fetchModels();
                     }
 
-                    // Initialize Plugins
-                    setTimeout(runPlugins, 1000); // Delay slightly to ensure data loaded
-
-                    // Initialize Plugins
-                    setTimeout(runPlugins, 1000); // Delay slightly to ensure data loaded
-
                     // --- Mobile Keyboard Adaptation (VisualViewport) ---
                     if (window.visualViewport) {
                         const handleVisualViewportResize = () => {
@@ -6081,14 +5710,14 @@ ${rawHtml}
                 });
 
                 return {
-                    currentView, showMobileMenu, showDescriptionPanel, showModelSelector, showCharacterEditor, showPresetEditor, showPluginEditor,
+                    currentView, showMobileMenu, showDescriptionPanel, showModelSelector, showCharacterEditor, showPresetEditor,
+                    showExportModal, exportType, exportItems, selectedExportIndices, // Export Modal
                     showUpdateModal, updateCountdown, latestUpdate, closeUpdateModal, // Update Modal
-                    pluginActions, pluginSidebarItems, customModal, // Plugin UI
                     showConfirmModal, confirmMessage, // Export for template
                     isGenerating, isReceiving, userInput, modelSearchQuery, characterSearchQuery, availableModels, filteredModels, filteredCharacters,
-                    user, settings, characters, currentCharacter, chatHistory, presets, plugins, regexScripts, worldInfo,
+                    user, settings, characters, currentCharacter, chatHistory, presets, regexScripts, worldInfo,
                     activeRegexCount, activeWorldInfoCount, totalContextLength,
-                    editingCharacter, editingPreset, editingPlugin, toasts, chatContainer, inputBox, messageElements,
+                    editingCharacter, editingPreset, toasts, chatContainer, inputBox, messageElements,
                     lastUserMessageIndex, // Expose to template
                     isGeneratorLoading, generatorUrl, onGeneratorLoad, // Generator exports
                     isPlazaLoading, plazaUrl, onPlazaLoad, // Plaza exports
@@ -6104,65 +5733,82 @@ ${rawHtml}
                     getCharacterWICount, getCharacterRegexCount,
                     handleAvatarUpload, importCharacter, exportCharacter,
                     createPreset, editPreset, savePreset, deletePreset, movePreset,
-                    createPlugin, editPlugin, savePlugin, deletePlugin, exportPlugin, importPlugin,
-                    runPlugins, // Expose runPlugins to template
                     draggedPresetIndex, handleDragStart, handleDrop, handleDragEnd,
                     renderMarkdown, closeCharacterEditor: () => showCharacterEditor.value = false,
-                    
-                    // Plugin Selection Logic
-                    isPluginSelectMode, selectedPluginIndices,
-                    togglePluginSelectMode: () => {
-                        isPluginSelectMode.value = !isPluginSelectMode.value;
-                        selectedPluginIndices.value.clear();
+                    openExportModal: (type) => {
+                        exportType.value = type;
+                        selectedExportIndices.value.clear();
+                        
+                        if (type === 'presets') {
+                            exportItems.value = presets.value;
+                        } else if (type === 'regex') {
+                            exportItems.value = regexScripts.value;
+                        } else if (type === 'worldinfo') {
+                            exportItems.value = worldInfo.value;
+                        }
+                        
+                        showExportModal.value = true;
                     },
-                    togglePluginSelection: (index) => {
-                        if (selectedPluginIndices.value.has(index)) {
-                            selectedPluginIndices.value.delete(index);
+                    toggleExportSelection: (index) => {
+                        if (selectedExportIndices.value.has(index)) {
+                            selectedExportIndices.value.delete(index);
                         } else {
-                            selectedPluginIndices.value.add(index);
+                            selectedExportIndices.value.add(index);
                         }
                     },
-                    confirmExportPlugins: () => {
-                        const selectedPlugins = plugins.value.filter((_, index) => selectedPluginIndices.value.has(index));
-                        if (selectedPlugins.length === 0) return;
-                        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(selectedPlugins));
-                        const downloadAnchorNode = document.createElement('a');
-                        downloadAnchorNode.setAttribute("href", dataStr);
-                        downloadAnchorNode.setAttribute("download", `plugins_export_${selectedPlugins.length}.json`);
-                        document.body.appendChild(downloadAnchorNode);
-                        downloadAnchorNode.click();
-                        downloadAnchorNode.remove();
-                        isPluginSelectMode.value = false;
-                        selectedPluginIndices.value.clear();
-                        showToast(`已导出 ${selectedPlugins.length} 个插件`, 'success');
+                    selectAllExportItems: () => {
+                        exportItems.value.forEach((_, index) => selectedExportIndices.value.add(index));
                     },
+                    deselectAllExportItems: () => {
+                        selectedExportIndices.value.clear();
+                    },
+                    confirmExport: () => {
+                        const indices = Array.from(selectedExportIndices.value).sort((a, b) => a - b);
+                        const items = indices.map(i => exportItems.value[i]);
+                        
+                        if (items.length === 0) return;
 
-                    // Preset Selection Logic
-                    isPresetSelectMode, selectedPresetIndices,
-                    togglePresetSelectMode: () => {
-                        isPresetSelectMode.value = !isPresetSelectMode.value;
-                        selectedPresetIndices.value.clear();
-                    },
-                    togglePresetSelection: (index) => {
-                        if (selectedPresetIndices.value.has(index)) {
-                            selectedPresetIndices.value.delete(index);
-                        } else {
-                            selectedPresetIndices.value.add(index);
+                        let fileName = 'export.json';
+                        let dataToExport = items;
+
+                        if (exportType.value === 'presets') {
+                            fileName = 'presets.json';
+                            // Presets are exported as a direct array of objects
+                        } else if (exportType.value === 'regex') {
+                            fileName = 'regex_scripts.json';
+                            // Regex scripts need ST format conversion (disabled -> enabled)
+                            dataToExport = items.map(script => {
+                                const s = { ...script };
+                                s.disabled = !s.enabled;
+                                delete s.enabled;
+                                return s;
+                            });
+                        } else if (exportType.value === 'worldinfo') {
+                            fileName = 'world_info.json';
+                            // World Info should be wrapped in entries object
+                            dataToExport = { entries: items };
                         }
-                    },
-                    confirmExportPresets: () => {
-                        const selectedPresets = presets.value.filter((_, index) => selectedPresetIndices.value.has(index));
-                        if (selectedPresets.length === 0) return;
-                        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(selectedPresets));
+
+                        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataToExport));
                         const downloadAnchorNode = document.createElement('a');
                         downloadAnchorNode.setAttribute("href", dataStr);
-                        downloadAnchorNode.setAttribute("download", `presets_export_${selectedPresets.length}.json`);
+                        downloadAnchorNode.setAttribute("download", fileName);
                         document.body.appendChild(downloadAnchorNode);
                         downloadAnchorNode.click();
                         downloadAnchorNode.remove();
-                        isPresetSelectMode.value = false;
-                        selectedPresetIndices.value.clear();
-                        showToast(`已导出 ${selectedPresets.length} 个预设`, 'success');
+                        
+                        showExportModal.value = false;
+                        showToast(`成功导出 ${items.length} 个项目`, 'success');
+                    },
+                    exportPresets: () => {
+                        // Legacy single call support if needed, but UI uses openExportModal now
+                        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(presets.value));
+                        const downloadAnchorNode = document.createElement('a');
+                        downloadAnchorNode.setAttribute("href", dataStr);
+                        downloadAnchorNode.setAttribute("download", "presets.json");
+                        document.body.appendChild(downloadAnchorNode);
+                        downloadAnchorNode.click();
+                        downloadAnchorNode.remove();
                     },
                     importPresets: (event) => {
                         const file = event.target.files[0];
@@ -6183,55 +5829,8 @@ ${rawHtml}
                     },
                     
                     // Regex Methods
-                    isRegexSelectMode, selectedRegexIndices,
-                    toggleRegexSelectMode: () => {
-                        isRegexSelectMode.value = !isRegexSelectMode.value;
-                        selectedRegexIndices.value.clear();
-                    },
-                    toggleRegexSelection: (index) => {
-                        if (selectedRegexIndices.value.has(index)) {
-                            selectedRegexIndices.value.delete(index);
-                        } else {
-                            selectedRegexIndices.value.add(index);
-                        }
-                    },
-                    confirmExportRegex: () => {
-                        const selectedScripts = regexScripts.value.filter((_, index) => selectedRegexIndices.value.has(index));
-                        // Convert to SillyTavern format (disabled instead of enabled)
-                        const exportData = selectedScripts.map(script => {
-                            const s = { ...script };
-                            s.disabled = !s.enabled;
-                            delete s.enabled;
-                            return s;
-                        });
-                        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData));
-                        const downloadAnchorNode = document.createElement('a');
-                        downloadAnchorNode.setAttribute("href", dataStr);
-                        downloadAnchorNode.setAttribute("download", `regex_scripts_export_${exportData.length}.json`);
-                        document.body.appendChild(downloadAnchorNode);
-                        downloadAnchorNode.click();
-                        downloadAnchorNode.remove();
-                        isRegexSelectMode.value = false;
-                        selectedRegexIndices.value.clear();
-                        showToast(`已导出 ${exportData.length} 个正则脚本`, 'success');
-                    },
                     exportRegex: () => {
-                        // Legacy single export (fallback or if called directly)
-                        // This might not be used anymore if we only use select mode,
-                        // but keeping for compatibility if referenced elsewhere
-                        const exportData = regexScripts.value.map(script => {
-                            const s = { ...script };
-                            s.disabled = !s.enabled;
-                            delete s.enabled;
-                            return s;
-                        });
-                        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData));
-                        const downloadAnchorNode = document.createElement('a');
-                        downloadAnchorNode.setAttribute("href", dataStr);
-                        downloadAnchorNode.setAttribute("download", "regex_scripts.json");
-                        document.body.appendChild(downloadAnchorNode);
-                        downloadAnchorNode.click();
-                        downloadAnchorNode.remove();
+                       // Kept for backward compatibility but unused in UI
                     },
                     importRegex: (event) => {
                         const file = event.target.files[0];
@@ -6369,43 +5968,8 @@ ${rawHtml}
                     },
 
                     // World Info Methods
-                    isWorldInfoSelectMode, selectedWorldInfoIndices,
-                    toggleWorldInfoSelectMode: () => {
-                        isWorldInfoSelectMode.value = !isWorldInfoSelectMode.value;
-                        selectedWorldInfoIndices.value.clear();
-                    },
-                    toggleWorldInfoSelection: (index) => {
-                        if (selectedWorldInfoIndices.value.has(index)) {
-                            selectedWorldInfoIndices.value.delete(index);
-                        } else {
-                            selectedWorldInfoIndices.value.add(index);
-                        }
-                    },
-                    confirmExportWorldInfo: () => {
-                        const selectedEntries = worldInfo.value.filter((_, index) => selectedWorldInfoIndices.value.has(index));
-                        // Wrap in entries object for better compatibility
-                        const exportData = { entries: selectedEntries };
-                        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData));
-                        const downloadAnchorNode = document.createElement('a');
-                        downloadAnchorNode.setAttribute("href", dataStr);
-                        downloadAnchorNode.setAttribute("download", `world_info_export_${selectedEntries.length}.json`);
-                        document.body.appendChild(downloadAnchorNode);
-                        downloadAnchorNode.click();
-                        downloadAnchorNode.remove();
-                        isWorldInfoSelectMode.value = false;
-                        selectedWorldInfoIndices.value.clear();
-                        showToast(`已导出 ${selectedEntries.length} 个世界书条目`, 'success');
-                    },
                     exportWorldInfo: () => {
-                        // Legacy single export
-                        const exportData = { entries: worldInfo.value };
-                        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData));
-                        const downloadAnchorNode = document.createElement('a');
-                        downloadAnchorNode.setAttribute("href", dataStr);
-                        downloadAnchorNode.setAttribute("download", "world_info.json");
-                        document.body.appendChild(downloadAnchorNode);
-                        downloadAnchorNode.click();
-                        downloadAnchorNode.remove();
+                       // Kept for backward compatibility but unused in UI
                     },
                     importWorldInfo: (event) => {
                         const file = event.target.files[0];
@@ -6484,16 +6048,7 @@ ${rawHtml}
                         showWorldInfoEditor.value = true;
                     },
                     exportSingleWorldInfo: (index) => {
-                        const entry = worldInfo.value[index];
-                        const exportData = { entries: [entry] };
-                        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData));
-                        const downloadAnchorNode = document.createElement('a');
-                        downloadAnchorNode.setAttribute("href", dataStr);
-                        downloadAnchorNode.setAttribute("download", `${entry.comment || 'world_info_entry'}.json`);
-                        document.body.appendChild(downloadAnchorNode);
-                        downloadAnchorNode.click();
-                        downloadAnchorNode.remove();
-                        showToast('条目导出成功', 'success');
+                        // Deprecated in UI but function kept
                     },
                     editWorldInfo: (index) => {
                         editingWorldInfo.id = index;
