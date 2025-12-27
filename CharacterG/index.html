@@ -1431,7 +1431,7 @@
     - **背景**：使用 CSS 创建动态或复杂的背景，避免纯色背景。
 - **核心功能模块 (Mandatory Modules)**：
   - **多标签页导航 (Tab System)**：**必须实现**。使用类似 iOS Segmented Control 或底部 TabBar 的设计。切换时内容区应有平滑的过渡动画。
-  - **动态仪表盘**：必须包含可视化的状态条（HP/MP/好感度等）。使用带有动画的进度条（Progress Bar）或环形图（Ring Chart）。
+  - **动态仪表盘**：顶部或侧边必须包含可视化的状态条（HP/MP/好感度等）。使用带有动画的进度条（Progress Bar）或环形图（Ring Chart）。
   - **详情子界面与弹窗 (Sub-views & Modals)**：**必须实现**。点击详情时，使用 **模态窗口 (Modal)** 或 **侧边抽屉 (Drawer)** 滑出，背景带有模糊遮罩（Backdrop Blur）。
 - **交互逻辑规范 (Interaction Logic)**：
   - **UI 内部交互 (Local)**：标签页切换、弹窗展开、详情显示，**必须**编写完整的内联 JavaScript (\`document.getElementById(...)\`) 直接操作 DOM，**严禁**使用 \`triggerSlash\`。
@@ -1443,7 +1443,7 @@
 - **沉浸式容器（优先级最高）**：
   - 生成一个正则脚本，匹配整个正文内容（**注意：绝对不能包含末尾的 HTML UI 代码**）。
   - 将正文包裹在一个带有特定背景和边框的 \`div\` 容器中（如：信纸背景、终端显示屏背景）。
-  - 样式要求：必须设置 \`white-space: pre-wrap\` 以保留换行，\`margin-bottom: 0\` 消除下边距。
+  - 样式要求：注意添加pre-wrap，以确保内容能够正确换行,margin-bottom必须设定为0px
   - **必须**将此正则脚本放在 \`Regex Scripts\` 数组的第一位。
 - **语法高亮与修饰**：
   - **对话高亮**：识别双引号内的对话内容（如 \`“.*?”\`），应用与角色印象色相符的高亮颜色。
@@ -2056,7 +2056,7 @@ ${options.generateExtra ? `### World Info
        - **背景**：使用 CSS 创建动态或复杂的背景，避免纯色背景。
    - **核心功能模块 (Mandatory Modules)**：
      - **多标签页导航 (Tab System)**：**必须实现**。使用类似 iOS Segmented Control 或底部 TabBar 的设计。切换时内容区应有平滑的过渡动画。
-     - **动态仪表盘**：必须包含可视化的状态条（HP/MP/好感度等）。使用带有动画的进度条（Progress Bar）或环形图（Ring Chart）。
+     - **动态仪表盘**：顶部或侧边必须包含可视化的状态条（HP/MP/好感度等）。使用带有动画的进度条（Progress Bar）或环形图（Ring Chart）。
      - **详情子界面与弹窗 (Sub-views & Modals)**：**必须实现**。点击详情时，使用 **模态窗口 (Modal)** 或 **侧边抽屉 (Drawer)** 滑出，背景带有模糊遮罩（Backdrop Blur）。
    - **交互逻辑规范 (Interaction Logic)**：
      - **UI 内部交互 (Local)**：标签页切换、弹窗展开、详情显示，**必须**编写完整的内联 JavaScript (\`document.getElementById(...)\`) 直接操作 DOM，**严禁**使用 \`triggerSlash\`。
@@ -2068,7 +2068,7 @@ ${options.generateExtra ? `### World Info
    - **沉浸式容器（优先级最高）**：
      - 生成一个正则脚本，匹配整个正文内容（**注意：绝对不能包含末尾的 HTML UI 代码**）。
      - 将正文包裹在一个带有特定背景和边框的 \`div\` 容器中（如：信纸背景、终端显示屏背景）。
-     - 样式要求：必须设置 \`white-space: pre-wrap\` 以保留换行，\`margin-bottom: 0\` 消除下边距。
+     - 样式要求：注意添加pre-wrap，以确保内容能够正确换行,margin-bottom必须设定为0px
      - **必须**将此正则脚本放在 \`Regex Scripts\` 数组的第一位。
    - **语法高亮与修饰**：
      - **对话高亮**：识别双引号内的对话内容（如 \`“.*?”\`），应用与角色印象色相符的高亮颜色。
