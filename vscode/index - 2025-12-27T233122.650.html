@@ -1,0 +1,1829 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <!-- 禁止缓存，确保用户始终加载最新的 UI 逻辑 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>角色卡广场</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['PingFang SC', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'Noto Sans', 'sans-serif', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'],
+                    },
+                    colors: {
+                        gray: {
+                            50: '#f9fafb',
+                            100: '#f3f4f6',
+                            200: '#e5e7eb',
+                            300: '#d1d5db',
+                            400: '#9ca3af',
+                            500: '#6b7280',
+                            600: '#4b5563',
+                            700: '#374151',
+                            800: '#1f2937',
+                            900: '#111827',
+                        },
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'slide-down': 'slideDown 0.3s ease-out',
+                        'scale-in': 'scaleIn 0.2s ease-out',
+                        'slide-up-mobile': 'slideUpMobile 0.5s cubic-bezier(0.32, 0.72, 0, 1)',
+                        'zoom-in': 'zoomIn 0.3s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        slideDown: {
+                            '0%': { transform: 'translateY(-20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        scaleIn: {
+                            '0%': { transform: 'scale(0.95)', opacity: '0' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        },
+                        slideUpMobile: {
+                            '0%': { transform: 'translateY(100%)' },
+                            '100%': { transform: 'translateY(0)' },
+                        },
+                        zoomIn: {
+                            '0%': { transform: 'scale(0.9)', opacity: '0' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        }
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                        'card': '0 0 0 1px rgba(0,0,0,0.03), 0 2px 8px rgba(0,0,0,0.04)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [v-cloak] { display: none !important; }
+
+        /* Hide scrollbar globally but keep functionality */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        * {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
+        html {
+            -webkit-text-size-adjust: 100% !important;
+            -moz-text-size-adjust: 100% !important;
+            -ms-text-size-adjust: 100% !important;
+            text-size-adjust: 100% !important;
+            font-size: 100% !important;
+        }
+
+        html, body {
+            overscroll-behavior-y: none;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #f9fafb;
+            color: #1f2937;
+            font-family: 'PingFang SC', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .card-gradient {
+            background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.8) 100%);
+        }
+
+        /* Toast Transitions */
+        .list-enter-active,
+        .list-leave-active {
+            transition: all 0.4s ease;
+        }
+        .list-enter-from,
+        .list-leave-to {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        /* Fade Animation */
+        .fade-enter-active,
+        .fade-leave-active {
+            transition: opacity 0.3s ease;
+        }
+        .fade-enter-from,
+        .fade-leave-to {
+            opacity: 0;
+        }
+
+        /* Typography Improvements for Markdown */
+        .prose {
+            color: #374151;
+            max-width: none;
+        }
+        
+        /* Mobile Bottom Sheet Smoothness */
+        .scroll-smooth-mobile {
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+        }
+
+        /* Sticky header effect for mobile modal content */
+        .sticky-trigger-zone {
+            position: sticky;
+            top: 0;
+            height: 1px;
+            width: 100%;
+        }
+        .prose p {
+            margin-top: 0.75em;
+            margin-bottom: 0.75em;
+            line-height: 1.75;
+        }
+        .prose p:first-child {
+            margin-top: 0;
+        }
+        .prose strong {
+            color: #111827;
+            font-weight: 700;
+        }
+        .prose em {
+            color: #4b5563;
+        }
+        .prose blockquote {
+            font-style: italic;
+            border-left-width: 0.25rem;
+            border-left-color: #e5e7eb;
+            margin-top: 1.6em;
+            margin-bottom: 1.6em;
+            padding-left: 1em;
+            color: #6b7280;
+            background: #f9fafb;
+            padding-top: 0.5em;
+            padding-bottom: 0.5em;
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+        .prose ul {
+            margin-top: 1.25em;
+            margin-bottom: 1.25em;
+            list-style-type: disc;
+            padding-left: 1.625em;
+        }
+        .prose li {
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+        }
+        .prose code {
+            color: #111827;
+            font-weight: 600;
+            font-size: 0.875em;
+            background-color: #f3f4f6;
+            padding: 0.2em 0.4em;
+            border-radius: 0.25rem;
+        }
+        .prose h1, .prose h2, .prose h3, .prose h4 {
+            color: #111827;
+            font-weight: 700;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            line-height: 1.3;
+        }
+        .prose h1 { font-size: 1.5em; }
+        .prose h2 { font-size: 1.25em; }
+        .prose h3 { font-size: 1.125em; }
+
+        /* HTML Card Container Styles */
+        .html-card-container {
+            width: 100%;
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: none;
+            overflow: hidden !important;
+        }
+        .html-card-container iframe {
+            width: 100%;
+            border: none;
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans selection:bg-primary-200 selection:text-primary-900">
+    <div id="app" v-cloak class="min-h-screen flex flex-col">
+        <!-- Toast Notification Container -->
+        <div class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-2 pointer-events-none items-center">
+            <transition-group name="list" tag="div" class="flex flex-col items-center">
+                <div v-for="toast in toasts" :key="toast.id"
+                     class="pointer-events-auto flex items-center px-6 py-3 mb-2 rounded-full shadow-lg border bg-white text-gray-800 min-w-[300px] transform transition-all duration-300 backdrop-blur-sm bg-opacity-95"
+                     :class="{
+                        'border-green-200 text-green-800 bg-green-50': toast.type === 'success',
+                        'border-red-200 text-red-800 bg-red-50': toast.type === 'error',
+                        'border-blue-200 text-blue-800 bg-blue-50': toast.type === 'info',
+                        'border-yellow-200 text-yellow-800 bg-yellow-50': toast.type === 'warning'
+                     }">
+                    <div class="mr-3">
+                        <svg v-if="toast.type === 'success'" class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        <svg v-if="toast.type === 'error'" class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        <svg v-if="toast.type === 'info'" class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <svg v-if="toast.type === 'warning'" class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    </div>
+                    <div class="flex-1 text-sm font-medium">{{ toast.message }}</div>
+                </div>
+            </transition-group>
+        </div>
+
+        <!-- Header -->
+        <header class="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-30 transition-all duration-300">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-3 select-none">
+                    <div @click="handleLogoClick"
+                         class="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary-200 transform transition-all active:scale-90 hover:scale-105 cursor-pointer overflow-hidden relative">
+                        <svg class="w-6 h-6 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        <div v-if="isAdmin" class="absolute inset-0 bg-yellow-400 opacity-20 animate-pulse"></div>
+                    </div>
+                    <!-- Tabs in Header -->
+                    <div class="flex bg-gray-100 p-1 rounded-xl gap-1 ml-1">
+                        <button @click="currentTab = 'all'"
+                                class="px-3 py-1.5 rounded-lg text-sm font-bold transition-all"
+                                :class="currentTab === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
+                            广场
+                        </button>
+                        <button @click="currentTab = 'mine'"
+                                class="px-3 py-1.5 rounded-lg text-sm font-bold transition-all"
+                                :class="currentTab === 'mine' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
+                            我的
+                        </button>
+                    </div>
+                    <span v-if="isAdmin" class="hidden sm:inline-block text-[10px] font-bold text-yellow-600 bg-yellow-50 px-2 py-1 rounded-full border border-yellow-100 ml-2">ADMIN</span>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <button @click="showSearchModal = true" class="text-gray-500 hover:text-gray-900 hover:bg-gray-50 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl text-sm font-bold transition-all active:scale-95 flex items-center gap-2 group">
+                        <svg class="w-5 h-5 text-gray-500 group-hover:text-primary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <span class="hidden sm:inline">搜索</span>
+                    </button>
+                    <button @click="showUploadModal = true" class="bg-primary-600 hover:bg-primary-700 text-white px-5 sm:px-6 py-2 sm:py-2.5 rounded-2xl text-sm font-bold transition-all shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        上传
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <!-- Main Content -->
+        <main class="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 w-full">
+            
+            <!-- Credits Banner (Only in Mine Tab) -->
+            <div v-if="currentTab === 'mine'" class="mb-6 bg-white border border-blue-100 rounded-2xl p-5 flex flex-row items-center justify-between shadow-sm shadow-blue-100 animate-fade-in gap-4 relative overflow-hidden group">
+                <!-- Decorative Elements -->
+                <div class="absolute right-0 top-0 w-32 h-32 bg-blue-50 rounded-full -mr-10 -mt-10 blur-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <div class="flex items-center gap-4 relative z-10">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-50 text-primary-600 flex items-center justify-center flex-shrink-0 border border-blue-100 shadow-sm">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold text-blue-400 uppercase tracking-wider mb-0.5">下载额度</div>
+                        <div class="flex items-baseline gap-1.5">
+                            <span v-if="isAdmin" class="text-3xl font-black text-gray-800">∞</span>
+                            <span v-else class="text-3xl font-black text-gray-800 font-mono tracking-tight">{{ downloadCredits }}</span>
+                            <span v-if="!isAdmin" class="text-sm font-bold text-gray-400">次</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-end justify-center gap-2 relative z-10">
+                    <div class="flex items-center gap-2">
+                        <div class="px-3 py-1.5 bg-blue-50 text-primary-600 border border-blue-100 text-xs font-bold rounded-xl whitespace-nowrap flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            上传 +2
+                        </div>
+                        <div class="px-3 py-1.5 bg-green-50 text-green-600 border border-green-100 text-xs font-bold rounded-xl whitespace-nowrap flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                            评论 +1
+                        </div>
+                    </div>
+                    <p class="text-[11px] font-medium text-gray-400 hidden sm:block">每一次分享都在让社区变得更好</p>
+                </div>
+            </div>
+
+            <!-- Popular Tags -->
+            <!-- Popular Tags -->
+            <div v-if="popularTags.length > 0 && !loading && currentTab !== 'mine'" class="mb-6 animate-fade-in">
+                <div class="flex items-center justify-between gap-2 mb-3 px-1">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">热门标签</span>
+                    </div>
+                    <span class="text-xs font-bold text-gray-400">
+                        共 {{ filteredCards.length }} 张
+                    </span>
+                </div>
+                <div class="flex flex-wrap gap-2 max-h-[72px] sm:max-h-[80px] overflow-hidden">
+                    <button v-for="tag in popularTags" :key="tag"
+                            @click="searchTag(tag)"
+                            class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 border active:scale-95"
+                            :class="searchQuery === tag
+                                ? 'bg-primary-500 text-white border-primary-500 shadow-md shadow-primary-200'
+                                : 'bg-white text-gray-500 border-gray-200 hover:border-primary-300 hover:text-primary-600 hover:bg-primary-50'">
+                        #{{ tag }}
+                    </button>
+                </div>
+            </div>
+            <!-- Loading State -->
+            <div v-if="loading" class="fixed inset-0 z-50 flex flex-col items-center justify-center pointer-events-none animate-fade-in">
+                <div class="relative">
+                    <div class="w-16 h-16 border-4 border-primary-100 rounded-full"></div>
+                    <div class="w-16 h-16 border-4 border-primary-600 border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
+                </div>
+                <p class="mt-6 text-gray-500 font-medium">正在加载角色卡...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div v-else-if="filteredCards.length === 0" class="text-center py-32 animate-fade-in">
+                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-300">
+                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">没有找到匹配的角色卡</h3>
+                <p class="text-gray-500 max-w-xs mx-auto mb-8">换个关键词试试，或上传您的第一个角色卡！</p>
+                <button @click="searchQuery = ''" class="px-6 py-2 bg-primary-50 text-primary-600 rounded-xl font-bold hover:bg-primary-100 transition-colors">
+                    清除搜索条件
+                </button>
+            </div>
+
+            <!-- Card List -->
+            <div v-else class="flex flex-col gap-4 animate-fade-in">
+
+                <div v-for="card in filteredCards" :key="card.id"
+                     @click="previewCard(card)"
+                     class="group relative flex bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-lg hover:shadow-primary-500/5 transition-all duration-300 cursor-pointer hover:border-primary-100 min-h-[12rem] sm:min-h-[16rem] h-auto overflow-hidden">
+                    
+                    <!-- Avatar (3:4 Ratio, Zero Padding) -->
+                    <div class="relative w-[7.5rem] sm:w-48 flex-shrink-0 bg-gray-100">
+                        <img :src="card.avatar_url || card.avatar || defaultAvatar" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700" loading="lazy">
+                        
+                        <!-- Download Count (Admin Only) - Moved to Avatar Bottom Right -->
+                        <div v-if="isAdmin" class="absolute bottom-2 right-2 bg-black/50 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-1 border border-white/20 shadow-lg">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            {{ card.downloads_count || 0 }}
+                        </div>
+                    </div>
+
+                    <!-- Info -->
+                    <div class="flex-1 p-3 sm:p-5 flex flex-col min-w-0">
+                        <div class="flex flex-col gap-2">
+                            <div class="flex justify-between items-start gap-2">
+                                <h3 class="flex-1 min-w-0 font-bold text-lg sm:text-xl text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2 leading-tight break-words">{{ card.name }}</h3>
+                                
+                                <div class="flex items-center gap-1 flex-shrink-0 ml-1">
+                                    <!-- Move Up/Down (Admin Only) -->
+                                    <div v-if="isAdmin" class="flex items-center gap-0.5">
+                                        <button @click.stop="moveCard(card, -1)"
+                                                class="p-1 text-gray-300 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 flex-shrink-0"
+                                                title="上移">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                                        </button>
+                                        <button @click.stop="moveCard(card, 1)"
+                                                class="p-1 text-gray-300 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 flex-shrink-0"
+                                                title="下移">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        </button>
+                                    </div>
+
+                                    <!-- Delete Button (Only for my uploads or Admin) -->
+                                    <button v-if="myUploadedIds.includes(card.id) || isAdmin"
+                                            @click.stop="deleteCard(card)"
+                                            class="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 flex-shrink-0 -mt-1 -mr-1"
+                                            title="删除">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Creator Note & Tags -->
+                            <div class="flex flex-col gap-1 mt-1.5">
+                                <!-- Tags -->
+                                <div v-if="card.tags && card.tags.length > 0" class="flex flex-nowrap sm:flex-wrap overflow-x-auto gap-1 no-scrollbar">
+                                    <span v-for="tag in card.tags" :key="tag"
+                                          class="px-1.5 py-0.5 rounded text-[10px] font-bold border border-blue-100 bg-blue-50 text-blue-600 leading-none flex-shrink-0">
+                                        {{ tag }}
+                                    </span>
+                                </div>
+                                <!-- Text Note -->
+                                <div v-if="card.clean_notes" class="flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5 text-primary-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
+                                    <p class="text-xs font-medium text-primary-600 line-clamp-1">{{ card.clean_notes }}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Description -->
+                            <div class="text-xs sm:text-sm text-gray-500 mt-2 leading-relaxed break-words prose prose-sm max-w-none [&_*]:inline [&_p]:my-0 [&_h1]:text-sm [&_h2]:text-sm [&_h3]:text-sm [&_ul]:my-0 [&_li]:my-0 [&_strong]:font-medium [&_strong]:text-black overflow-hidden relative" :class="card.creator_notes ? 'line-clamp-5 sm:line-clamp-6' : 'line-clamp-6 sm:line-clamp-[8]'" v-html="renderMarkdown(card.description || '暂无描述')"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!-- Search Modal -->
+        <div v-if="showSearchModal" class="fixed inset-0 z-50 flex items-start justify-center pt-24 px-4 bg-gray-900/60 backdrop-blur-sm animate-fade-in" @click.self="showSearchModal = false">
+            <div class="w-full max-w-xl bg-white rounded-[2rem] shadow-2xl overflow-hidden animate-slide-down">
+                <div class="p-5 sm:p-6">
+                    <div class="relative flex items-center">
+                        <svg class="w-5 h-5 text-gray-400 absolute left-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input v-model="searchQuery" ref="searchInput" autofocus type="text" placeholder="搜索角色卡名称、描述或标签..." class="w-full bg-gray-50 border-2 border-transparent focus:bg-white focus:border-primary-500 rounded-2xl py-3 pl-12 pr-12 text-base outline-none transition-all placeholder-gray-400 font-medium">
+                        <button v-if="searchQuery" @click="searchQuery = ''" class="absolute right-4 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200 transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+
+                    <!-- Popular Tags in Modal -->
+                    <div v-if="modalPopularTags.length > 0" class="mt-6">
+                        <div class="flex items-center gap-2 mb-3 px-1">
+                            <svg class="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">热门标签</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 max-h-[144px] sm:max-h-[160px] overflow-hidden">
+                            <button v-for="tag in modalPopularTags" :key="tag"
+                                    @click="searchTag(tag); showSearchModal = false"
+                                    class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 border active:scale-95"
+                                    :class="searchQuery === tag
+                                        ? 'bg-primary-500 text-white border-primary-500 shadow-md shadow-primary-200'
+                                        : 'bg-white text-gray-500 border-gray-200 hover:border-primary-300 hover:text-primary-600 hover:bg-primary-50'">
+                                #{{ tag }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-end">
+                    <button @click="showSearchModal = false" class="text-sm font-bold text-gray-500 hover:text-gray-800 px-4 py-2 rounded-xl hover:bg-gray-200 transition-all">关闭</button>
+                    <button @click="showSearchModal = false" class="ml-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold px-6 py-2 rounded-xl shadow-lg shadow-primary-200 transition-all active:scale-95">
+                        查看结果
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Modal -->
+        <div v-if="showUploadModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div class="bg-white rounded-[2rem] w-full max-w-md shadow-2xl transform transition-all scale-100 flex flex-col max-h-[90vh] overflow-hidden">
+                <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 flex-shrink-0">
+                    <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        上传角色卡
+                    </h3>
+                    <button @click="showUploadModal = false" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200/50 rounded-full transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="p-5 sm:p-6 overflow-y-auto custom-scrollbar flex flex-col h-full">
+                    <div v-if="!uploadingCard"
+                         @click="$refs.fileInput.click()"
+                         class="border-2 border-dashed border-gray-200 rounded-3xl p-8 sm:p-12 text-center hover:border-primary-500 hover:bg-primary-50/50 transition-all cursor-pointer group relative overflow-hidden flex-1 flex flex-col items-center justify-center min-h-[300px]">
+                        <div class="relative z-10">
+                            <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:bg-primary-100 group-hover:text-primary-600 transition-all transform group-hover:scale-110 group-hover:rotate-3">
+                                <svg class="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                            </div>
+                            <p class="text-base sm:text-lg font-bold text-gray-700">点击上传角色卡</p>
+                            <p class="text-xs sm:text-sm text-gray-400 mt-2">支持 .png 或 .json 格式</p>
+                        </div>
+                        <input type="file" ref="fileInput" accept=".png,.json" @change="handleFileSelect" class="hidden">
+                    </div>
+
+                    <div v-else class="flex flex-col h-full animate-slide-up">
+                        <!-- Compact Preview -->
+                        <div class="flex flex-col items-center gap-4 p-4 bg-gray-50 rounded-3xl border border-gray-100 shadow-inner mb-4 flex-1 justify-center min-h-0">
+                            <!-- Image -->
+                            <div class="relative w-40 sm:w-48 flex-shrink-0 aspect-[3/4] rounded-2xl overflow-hidden shadow-lg ring-4 ring-white">
+                                <img :src="uploadingCard.avatar" class="w-full h-full object-cover">
+                                <div class="absolute top-2 right-2 bg-green-500 text-white p-1.5 rounded-full shadow-md animate-scale-in">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </div>
+                            </div>
+                            
+                            <!-- Info -->
+                            <div class="text-center w-full px-4">
+                                <h4 class="font-bold text-xl text-gray-900 truncate mb-2">{{ uploadingCard.name }}</h4>
+                                <div class="text-sm text-gray-500 flex items-center justify-center bg-white/60 py-1.5 px-3 rounded-xl inline-flex">
+                                    <span class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+                                    解析成功，准备发布
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex flex-col gap-2 mt-auto">
+                            <button @click="confirmUpload" :disabled="isUploading" class="w-full bg-primary-600 hover:bg-primary-700 text-white py-3.5 rounded-2xl font-bold transition-all shadow-lg shadow-primary-100 disabled:opacity-50 flex items-center justify-center gap-2 active:scale-[0.98]">
+                                <span v-if="isUploading" class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></span>
+                                {{ isUploading ? '正在发布中...' : '确认发布到广场' }}
+                            </button>
+                            <button @click="uploadingCard = null" :disabled="isUploading" class="w-full text-gray-400 text-sm font-bold py-2 hover:text-gray-600 transition-colors">重新选择文件</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview Modal (Full Screen Mobile Scroll & Parallax) -->
+        <div v-if="selectedCard" class="fixed inset-0 z-50 flex md:items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in md:p-4 transition-all duration-300">
+            
+            <!-- Mobile Container (Parallax Scroll) -->
+            <div class="md:hidden w-full h-full relative overflow-y-auto scroll-smooth-mobile no-scrollbar animate-slide-up-mobile"
+                 @scroll="handleMobileScroll"
+                 style="scroll-snap-type: y proximity;">
+                
+                <!-- Close Button -->
+                <button @click="selectedCard = null" class="fixed top-4 right-4 z-50 bg-black/30 text-white p-2.5 rounded-full backdrop-blur-md border border-white/20 active:scale-95 transition-transform">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+
+                <!-- Fixed Background Image -->
+                <div class="fixed top-0 left-0 w-full h-[80vh] z-0 overflow-hidden">
+                    <img :src="selectedCard.avatar_url || selectedCard.avatar || defaultAvatar"
+                         class="w-full h-full object-cover object-top transition-all duration-200 ease-out"
+                         :style="{ filter: `blur(${mobileScrollBlur}px)`, transform: `scale(${1 + mobileScrollBlur/150})` }">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20"></div>
+                </div>
+
+                <!-- Content Layer (Pushes up content) -->
+                <div class="relative z-10 w-full flex flex-col min-h-screen pt-[62vh]" style="scroll-snap-align: start;">
+                    <div class="flex-1 bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.2)] px-6 py-4 pb-32 flex flex-col min-h-[80vh]">
+                        
+                        <!-- Pull Bar & Hint -->
+                        <div class="flex flex-col items-center gap-2 mb-6 flex-shrink-0">
+                            <div class="w-12 h-1.5 bg-gray-200 rounded-full"></div>
+                            <div class="flex flex-col items-center animate-bounce text-gray-400 text-[10px] font-medium tracking-wider uppercase opacity-80">
+                                <svg class="w-4 h-4 -mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                                上滑查看详情
+                            </div>
+                        </div>
+
+                        <!-- Title & Meta -->
+                        <div class="mb-8">
+                            <h2 class="text-3xl font-black text-gray-900 tracking-tight leading-tight">{{ selectedCard.name }}</h2>
+                            <div v-if="selectedCard.creator_notes" class="mt-4 p-4 bg-blue-50/50 rounded-2xl border border-blue-100 text-blue-800 text-sm leading-relaxed flex items-start gap-3">
+                                <svg class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <div class="flex-1 flex flex-col gap-2">
+                                    <div v-if="selectedCard.clean_notes">{{ selectedCard.clean_notes }}</div>
+                                    <div v-if="selectedCard.tags && selectedCard.tags.length > 0" class="flex flex-nowrap overflow-x-auto gap-2 no-scrollbar">
+                                        <span v-for="tag in selectedCard.tags" :key="tag"
+                                              class="px-2 py-1 rounded-lg text-xs font-bold border border-blue-200 bg-blue-50 text-blue-600 flex-shrink-0">
+                                            {{ tag }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Content Sections -->
+                        <div class="space-y-10 flex-1">
+                            <section>
+                                <h4 class="text-base font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-4">
+                                    <span class="w-8 h-0.5 bg-primary-200 rounded-full"></span>
+                                    简要描述
+                                    <span class="w-8 h-0.5 bg-primary-200 rounded-full"></span>
+                                </h4>
+                                <div class="text-gray-700 prose prose-lg max-w-none leading-[2] tracking-wide break-words" v-html="renderMarkdown(selectedCard.description || '暂无描述')"></div>
+                            </section>
+
+                            <section v-if="selectedCard._display.personality">
+                                <h4 class="text-base font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-4">
+                                    <span class="w-8 h-0.5 bg-primary-200 rounded-full"></span>
+                                    设定
+                                    <span class="w-8 h-0.5 bg-primary-200 rounded-full"></span>
+                                </h4>
+                                <div class="text-gray-700 prose prose-lg max-w-none leading-[2] tracking-wide break-words" v-html="renderMarkdown(selectedCard._display.personality)"></div>
+                            </section>
+
+                            <section v-if="selectedCard._display.first_mes">
+                                <h4 class="text-base font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-4">
+                                    <span class="w-8 h-0.5 bg-primary-200 rounded-full"></span>
+                                    开场白
+                                    <span class="w-8 h-0.5 bg-primary-200 rounded-full"></span>
+                                </h4>
+                                <!-- 添加 key 强制重新渲染，确保每次打开都重新加载 iframe -->
+                                <div :key="selectedCard.renderId" class="text-gray-700 prose prose-lg max-w-none leading-relaxed tracking-normal break-words" v-html="renderMarkdown(selectedCard._display.first_mes)"></div>
+                            </section>
+
+                            <!-- Comments Section -->
+                            <section>
+                                <h4 class="text-base font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-4">
+                                    <span class="w-8 h-0.5 bg-primary-200 rounded-full"></span>
+                                    评论 ({{ comments.length }})
+                                    <span class="w-8 h-0.5 bg-primary-200 rounded-full"></span>
+                                </h4>
+                                
+                                <div class="bg-gray-50 rounded-2xl p-4 mb-6 border border-gray-100">
+                                    <div class="flex flex-col gap-3">
+                                        <textarea v-model="newComment.content" rows="3" placeholder="写下你的评论..." class="bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-primary-500 outline-none transition-colors resize-none"></textarea>
+                                        <button @click="submitComment" class="self-end bg-primary-600 text-white px-6 py-2 rounded-xl text-sm font-bold shadow-md shadow-primary-200 active:scale-95 transition-all">发布</button>
+                                    </div>
+                                </div>
+
+                                <div v-if="loadingComments" class="flex justify-center py-4">
+                                    <div class="animate-spin rounded-full h-6 w-6 border-2 border-primary-500 border-t-transparent"></div>
+                                </div>
+                                <div v-else-if="comments.length === 0" class="text-center py-8 text-gray-400 text-sm">
+                                    暂无评论，快来抢沙发吧~
+                                </div>
+                                <div v-else class="space-y-4">
+                                    <div v-for="comment in comments" :key="comment.id" class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                                        <div class="flex justify-between items-start mb-1">
+                                            <span class="text-xs font-bold text-gray-400 bg-gray-200/50 px-2 py-0.5 rounded-md">{{ formatDate(comment.created_at) }}</span>
+                                            <button v-if="isAdmin" @click="deleteComment(comment.id)" class="text-xs text-red-400 hover:text-red-600">删除</button>
+                                        </div>
+                                        <p class="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap mt-1">{{ comment.content }}</p>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Fixed Footer Actions (Mobile) -->
+                <div class="fixed bottom-0 left-0 w-full p-4 bg-white/90 backdrop-blur-md border-t border-gray-100 z-50 flex gap-3 safe-area-pb">
+                     <button @click="downloadCard(selectedCard)" class="flex-1 bg-gray-900 hover:bg-black text-white py-3.5 rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2 active:scale-[0.98]">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        下载角色卡
+                    </button>
+                    <button v-if="myUploadedIds.includes(selectedCard.id) || isAdmin" @click="deleteCard(selectedCard); selectedCard = null" class="w-14 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Desktop Container (Unchanged) -->
+            <div class="hidden md:flex bg-white w-full h-auto max-h-[90vh] max-w-6xl rounded-[2.5rem] flex-row shadow-2xl overflow-hidden animate-scale-in relative">
+                
+                <!-- Left: Image Section -->
+                <div class="relative w-2/5 h-auto flex-shrink-0 bg-gray-100 group/img">
+                    <img :src="selectedCard.avatar_url || selectedCard.avatar || defaultAvatar" class="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 group-hover/img:scale-105">
+                </div>
+
+                <!-- Right: Content Section -->
+                <div class="flex-1 flex flex-col min-h-0 bg-white p-10 lg:p-12">
+                    
+                    <!-- Close Button -->
+                    <button @click="selectedCard = null" class="absolute top-8 right-8 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all z-20">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+
+                    <!-- Scrollable Content -->
+                    <div class="flex-1 overflow-y-auto custom-scrollbar pr-4">
+                        
+                        <!-- Title & Meta -->
+                        <div class="mb-8">
+                            <h2 class="text-3xl md:text-4xl font-black text-gray-900 tracking-tight leading-tight">{{ selectedCard.name }}</h2>
+                            
+                            <!-- Creator Notes Content (Visible in Preview) -->
+                            <div v-if="selectedCard.creator_notes" class="mt-4 p-4 bg-blue-50/50 rounded-2xl border border-blue-100 text-blue-800 text-sm leading-relaxed flex items-start gap-3">
+                                <svg class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <div class="flex-1 flex flex-col gap-2">
+                                    <div v-if="selectedCard.clean_notes">{{ selectedCard.clean_notes }}</div>
+                                    <div v-if="selectedCard.tags && selectedCard.tags.length > 0" class="flex flex-wrap gap-2">
+                                        <span v-for="tag in selectedCard.tags" :key="tag"
+                                              class="px-2 py-1 rounded-lg text-xs font-bold border border-blue-200 bg-blue-50 text-blue-600">
+                                            {{ tag }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Content Sections -->
+                        <div class="space-y-10 pb-4">
+                            <section>
+                                <h4 class="text-base font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-4">
+                                    <span class="w-8 h-0.5 bg-primary-200 rounded-full"></span>
+                                    简要描述
+                                    <span class="w-8 h-0.5 bg-primary-200 rounded-full"></span>
+                                </h4>
+                                <div class="text-gray-700 prose prose-lg max-w-none leading-[2] tracking-wide break-words" v-html="renderMarkdown(selectedCard.description || '暂无描述')"></div>
+                            </section>
+
+                            <section v-if="selectedCard._display.personality">
+                                <h4 class="text-base font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-4">
+                                    <span class="w-8 h-0.5 bg-primary-200 rounded-full"></span>
+                                    设定
+                                    <span class="w-8 h-0.5 bg-primary-200 rounded-full"></span>
+                                </h4>
+                                <div class="text-gray-700 prose prose-lg max-w-none leading-[2] tracking-wide break-words" v-html="renderMarkdown(selectedCard._display.personality)"></div>
+                            </section>
+
+                            <section v-if="selectedCard._display.first_mes">
+                                <h4 class="text-base font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-4">
+                                    <span class="w-8 h-0.5 bg-primary-200 rounded-full"></span>
+                                    开场白
+                                    <span class="w-8 h-0.5 bg-primary-200 rounded-full"></span>
+                                </h4>
+                                <!-- 添加 key 强制重新渲染，确保每次打开都重新加载 iframe -->
+                                <div :key="selectedCard.renderId" class="text-gray-700 prose prose-lg max-w-none leading-relaxed tracking-normal break-words" v-html="renderMarkdown(selectedCard._display.first_mes)"></div>
+                            </section>
+
+                            <!-- Comments Section -->
+                            <section>
+                                <h4 class="text-base font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-4">
+                                    <span class="w-8 h-0.5 bg-primary-200 rounded-full"></span>
+                                    评论 ({{ comments.length }})
+                                    <span class="w-8 h-0.5 bg-primary-200 rounded-full"></span>
+                                </h4>
+                                
+                                <div class="bg-gray-50 rounded-2xl p-4 mb-6 border border-gray-100">
+                                    <div class="flex flex-col gap-3">
+                                        <textarea v-model="newComment.content" rows="3" placeholder="写下你的评论..." class="bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-primary-500 outline-none transition-colors resize-none"></textarea>
+                                        <button @click="submitComment" class="self-end bg-primary-600 text-white px-6 py-2 rounded-xl text-sm font-bold shadow-md shadow-primary-200 active:scale-95 transition-all">发布</button>
+                                    </div>
+                                </div>
+
+                                <div v-if="loadingComments" class="flex justify-center py-4">
+                                    <div class="animate-spin rounded-full h-6 w-6 border-2 border-primary-500 border-t-transparent"></div>
+                                </div>
+                                <div v-else-if="comments.length === 0" class="text-center py-8 text-gray-400 text-sm">
+                                    暂无评论，快来抢沙发吧~
+                                </div>
+                                <div v-else class="space-y-4">
+                                    <div v-for="comment in comments" :key="comment.id" class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                                        <div class="flex justify-between items-start mb-1">
+                                            <span class="text-xs font-bold text-gray-400 bg-gray-200/50 px-2 py-0.5 rounded-md">{{ formatDate(comment.created_at) }}</span>
+                                            <button v-if="isAdmin" @click="deleteComment(comment.id)" class="text-xs text-red-400 hover:text-red-600">删除</button>
+                                        </div>
+                                        <p class="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap mt-1">{{ comment.content }}</p>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <!-- Footer Actions -->
+                    <div class="pt-6 mt-4 border-t border-gray-100 md:pt-8 md:mt-0 flex gap-4 p-6 md:p-0 bg-white md:static sticky bottom-0 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] md:shadow-none pb-8 md:pb-0 safe-area-pb flex-shrink-0">
+                        <button @click="downloadCard(selectedCard)" class="flex-1 bg-gray-900 hover:bg-black text-white py-4 md:py-5 rounded-2xl font-bold transition-all shadow-xl shadow-gray-200 flex items-center justify-center gap-3 active:scale-[0.98] group">
+                            <svg class="w-5 h-5 md:w-6 md:h-6 transform transition-transform group-hover:translate-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            下载角色卡
+                        </button>
+                        <button v-if="myUploadedIds.includes(selectedCard.id) || isAdmin" @click="deleteCard(selectedCard); selectedCard = null" class="w-14 bg-red-50 hover:bg-red-100 text-red-500 rounded-2xl flex items-center justify-center transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const { createApp, ref, computed, onMounted, reactive } = Vue;
+
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://ghswjgxrblpdklukxjnq.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_rIc2MYg6kaGIQcddDgVKYw_uLkWaY4E';
+        // 这里的变量名改为 supabaseClient 以避免与全局 supabase 对象冲突
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        createApp({
+            setup() {
+                const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2U1ZTdlYiIvPjwvc3ZnPg==';
+                
+                const cards = ref([]);
+                const loading = ref(true);
+                const searchQuery = ref('');
+                const currentTab = ref('all');
+                const myUploadedIds = ref(JSON.parse(localStorage.getItem('my_uploaded_ids') || '[]'));
+                const downloadCredits = ref(parseInt(localStorage.getItem('download_credits') || '0'));
+                const showUploadModal = ref(false);
+                const showSearchModal = ref(false);
+                const uploadingCard = ref(null);
+                const isUploading = ref(false);
+                const selectedCard = ref(null);
+                const toasts = ref([]);
+                const mobileScrollBlur = ref(0);
+
+                const handleMobileScroll = (e) => {
+                    const scrollTop = e.target.scrollTop;
+                    // 调优：滚动 400px 时达到最大 8px 模糊，变化更缓和
+                    mobileScrollBlur.value = Math.min(8, scrollTop / 50);
+                };
+
+                // Comments Logic
+                const comments = ref([]);
+                const loadingComments = ref(false);
+                const newComment = reactive({
+                    content: ''
+                });
+
+                // Admin Logic
+                const isAdmin = ref(false);
+                const adminClickCount = ref(0);
+                const lastClickTime = ref(0);
+
+                const handleLogoClick = () => {
+                    const now = Date.now();
+                    if (now - lastClickTime.value > 1000) {
+                        adminClickCount.value = 0; // Reset if too slow
+                    }
+                    lastClickTime.value = now;
+                    adminClickCount.value++;
+
+                    if (adminClickCount.value >= 7) {
+                        if (!isAdmin.value) {
+                            isAdmin.value = true;
+                            showToast('已进入管理员模式', 'success');
+                            // 可选：保存到 localStorage 以便持久化
+                            // localStorage.setItem('is_admin', 'true');
+                        }
+                        adminClickCount.value = 0;
+                    }
+                };
+
+                const saveMyCardId = (id) => {
+                    if (!myUploadedIds.value.includes(id)) {
+                        myUploadedIds.value.push(id);
+                        localStorage.setItem('my_uploaded_ids', JSON.stringify(myUploadedIds.value));
+                    }
+                };
+
+                const updateCredits = (amount) => {
+                    downloadCredits.value += amount;
+                    localStorage.setItem('download_credits', downloadCredits.value.toString());
+                };
+
+                const popularTags = computed(() => {
+                    const tagCounts = {};
+                    cards.value.forEach(card => {
+                        if (card.tags && Array.isArray(card.tags)) {
+                            card.tags.forEach(tag => {
+                                if (tag) tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+                            });
+                        }
+                    });
+                    // Convert to array, sort by count (desc), take top 50 for main view (limited by CSS to 2 rows)
+                    return Object.entries(tagCounts)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 50)
+                        .map(entry => entry[0]);
+                });
+
+                const modalPopularTags = computed(() => {
+                    const tagCounts = {};
+                    cards.value.forEach(card => {
+                        if (card.tags && Array.isArray(card.tags)) {
+                            card.tags.forEach(tag => {
+                                if (tag) tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+                            });
+                        }
+                    });
+                    // Take top 50 for search modal (limited by CSS to 4 rows)
+                    return Object.entries(tagCounts)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 50)
+                        .map(entry => entry[0]);
+                });
+
+                const searchTag = (tag) => {
+                    if (searchQuery.value === tag) {
+                        searchQuery.value = '';
+                    } else {
+                        searchQuery.value = tag;
+                    }
+                };
+
+                const filteredCards = computed(() => {
+                    let result = [...cards.value];
+
+                    // Tab filter
+                    if (currentTab.value === 'mine') {
+                        result = result.filter(c => myUploadedIds.value.includes(c.id));
+                    }
+
+                    if (searchQuery.value) {
+                        const q = searchQuery.value.toLowerCase();
+                        result = result.filter(c =>
+                            c.name.toLowerCase().includes(q) ||
+                            (c.description && c.description.toLowerCase().includes(q)) ||
+                            (c.tags && c.tags.some(t => t.toLowerCase().includes(q)))
+                        );
+                    }
+
+                    // Sorting (Default to newest/created_at)
+                    result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                    return result;
+                });
+
+                const showToast = (message, type = 'info', duration = 3000) => {
+                    const id = Date.now();
+                    toasts.value.push({ id, message, type });
+                    setTimeout(() => {
+                        toasts.value = toasts.value.filter(t => t.id !== id);
+                    }, duration);
+                };
+
+                const parseCreatorNotes = (card) => {
+                    if (!card.creator_notes) {
+                        card.tags = [];
+                        card.clean_notes = '';
+                        return;
+                    }
+                    // Extract tags starting with # (e.g. #Tag)
+                    const regex = /#(\S+)/g;
+                    const tags = [];
+                    let match;
+                    const text = card.creator_notes;
+                    
+                    while ((match = regex.exec(text)) !== null) {
+                        tags.push(match[1]);
+                    }
+                    
+                    card.tags = tags;
+                    // Remove tags from text for clean display
+                    card.clean_notes = text.replace(regex, '').trim();
+                };
+
+                const fetchCards = async () => {
+                    loading.value = true;
+                    try {
+                        const { data, error } = await supabaseClient
+                            .from('character_cards')
+                            .select('*')
+                            .order('created_at', { ascending: false });
+                        
+                        if (error) throw error;
+                        
+                        // Process tags for each card
+                        cards.value = (data || []).map(card => {
+                            parseCreatorNotes(card);
+                            return card;
+                        });
+                    } catch (err) {
+                        console.error('Fetch error:', err);
+                        showToast('加载失败，请检查数据库配置', 'error');
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+
+                // --- Parsing Logic from Reference (Robust Version) ---
+                const readPngChunks = (buffer) => {
+                    const view = new DataView(buffer);
+                    const chunks = {};
+                    let offset = 8; // Skip PNG signature
+
+                    try {
+                        while (offset < view.byteLength) {
+                            // 安全检查：防止读取超出边界
+                            if (offset + 8 > view.byteLength) break;
+
+                            const length = view.getUint32(offset);
+                            const type = String.fromCharCode(
+                                view.getUint8(offset + 4),
+                                view.getUint8(offset + 5),
+                                view.getUint8(offset + 6),
+                                view.getUint8(offset + 7)
+                            );
+                            
+                            // 安全检查：防止数据长度超出边界
+                            if (offset + 8 + length > view.byteLength) break;
+
+                            if (type === 'tEXt') {
+                                const data = new Uint8Array(buffer, offset + 8, length);
+                                let splitIndex = -1;
+                                for (let i = 0; i < data.length; i++) {
+                                    if (data[i] === 0) {
+                                        splitIndex = i;
+                                        break;
+                                    }
+                                }
+                                if (splitIndex !== -1) {
+                                    const key = new TextDecoder().decode(data.slice(0, splitIndex));
+                                    const value = new TextDecoder().decode(data.slice(splitIndex + 1));
+                                    chunks[key] = value;
+                                }
+                            } else if (type === 'iTXt') {
+                                const data = new Uint8Array(buffer, offset + 8, length);
+                                let p = 0;
+                                while (p < data.length && data[p] !== 0) p++;
+                                const keyword = new TextDecoder().decode(data.slice(0, p));
+                                p++;
+                                
+                                if (p + 2 <= data.length) {
+                                    const compressionFlag = data[p];
+                                    p += 2; // skip method too
+                                    
+                                    // Skip Language tag
+                                    while (p < data.length && data[p] !== 0) p++;
+                                    p++;
+                                    
+                                    // Skip Translated keyword
+                                    while (p < data.length && data[p] !== 0) p++;
+                                    p++;
+                                    
+                                    if (p < data.length) {
+                                        if (compressionFlag === 0) {
+                                            const value = new TextDecoder().decode(data.slice(p));
+                                            chunks[keyword] = value;
+                                        } else {
+                                            console.warn('Compressed iTXt chunks not fully supported yet:', keyword);
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            offset += 12 + length; // Length (4) + Type (4) + Data (length) + CRC (4)
+                        }
+                    } catch (e) {
+                        console.error("Error reading PNG chunks:", e);
+                    }
+                    return chunks;
+                };
+
+                const decodeBase64Utf8 = (str) => {
+                    try {
+                        const binaryString = atob(str);
+                        const bytes = new Uint8Array(binaryString.length);
+                        for (let i = 0; i < binaryString.length; i++) {
+                            bytes[i] = binaryString.charCodeAt(i);
+                        }
+                        return new TextDecoder('utf-8').decode(bytes);
+                    } catch (e) {
+                        console.error('Base64 decode error:', e);
+                        return str;
+                    }
+                };
+
+                const handleFileSelect = (event) => {
+                    const file = event.target.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = async (e) => {
+                        try {
+                            let charData = null;
+                            let avatar = defaultAvatar;
+
+                            if (file.type === 'image/png' || file.name.endsWith('.png')) {
+                                const buffer = e.target.result;
+                                const chunks = readPngChunks(buffer);
+                                // Try standard 'chara' key first
+                                let rawDataStr = chunks['chara'];
+                                
+                                // If not found, try searching for any large text chunk that looks like JSON/Base64
+                                if (!rawDataStr) {
+                                    // Some cards use 'ccv3' or other keys
+                                    for (const key in chunks) {
+                                        if (chunks[key].length > 100) { // Arbitrary threshold for "content"
+                                            try {
+                                                // Check if it's base64 encoded json
+                                                if (chunks[key].trim().startsWith('ey') || chunks[key].trim().startsWith('{')) {
+                                                    rawDataStr = chunks[key];
+                                                    console.log("Found potential data in chunk:", key);
+                                                    break;
+                                                }
+                                            } catch (e) {}
+                                        }
+                                    }
+                                }
+
+                                if (rawDataStr) {
+                                    try {
+                                        // Try decoding as base64 first
+                                        const decoded = decodeBase64Utf8(rawDataStr);
+                                        charData = JSON.parse(decoded);
+                                    } catch (e) {
+                                        try {
+                                            // Try parsing directly (if not base64)
+                                            charData = JSON.parse(rawDataStr);
+                                        } catch (e2) {
+                                            throw new Error("Unable to decode or parse character data.");
+                                        }
+                                    }
+                                }
+                                const blob = new Blob([buffer], { type: 'image/png' });
+                                avatar = await new Promise(resolve => {
+                                    const r = new FileReader();
+                                    r.onloadend = () => resolve(r.result);
+                                    r.readAsDataURL(blob);
+                                });
+                            } else {
+                                charData = JSON.parse(e.target.result);
+                            }
+
+                            if (!charData) throw new Error('无法解析角色卡数据');
+
+                            // Normalize
+                            const data = charData.data || charData;
+                            uploadingCard.value = {
+                                name: data.name || data.char_name || '未命名',
+                                description: data.description || data.char_persona || '',
+                                avatar: avatar,
+                                full_data: charData,
+                                creator_notes: data.creator_notes || ''
+                            };
+                        } catch (err) {
+                            showToast('解析失败: ' + err.message, 'error');
+                        }
+                    };
+
+                    if (file.type === 'image/png' || file.name.endsWith('.png')) {
+                        reader.readAsArrayBuffer(file);
+                    } else {
+                        reader.readAsText(file);
+                    }
+                };
+                const confirmUpload = async () => {
+                    if (!uploadingCard.value || isUploading.value) return;
+                    isUploading.value = true;
+                    try {
+                        const { data, error } = await supabaseClient
+                            .from('character_cards')
+                            .insert([{
+                                name: uploadingCard.value.name,
+                                description: uploadingCard.value.description,
+                                avatar_url: uploadingCard.value.avatar,
+                                data: uploadingCard.value.full_data,
+                                creator_notes: uploadingCard.value.creator_notes
+                            }])
+                            .select();
+                        
+                        if (error) throw error;
+                        
+                        if (data && data.length > 0) {
+                            saveMyCardId(data[0].id);
+                        }
+
+                        updateCredits(2);
+                        showToast('发布成功！获得 2 次下载机会，感谢您的无私奉献！', 'success');
+                        showUploadModal.value = false;
+                        uploadingCard.value = null;
+                        
+                        // Switch to 'mine' tab to show the new card
+                        currentTab.value = 'mine';
+                        
+                        fetchCards();
+                    } catch (err) {
+                        showToast('上传失败: ' + err.message, 'error');
+                    } finally {
+                        isUploading.value = false;
+                    }
+                };
+
+                const moveCard = async (card, direction) => {
+                    if (!isAdmin.value) return;
+                    
+                    const list = filteredCards.value;
+                    const index = list.findIndex(c => c.id === card.id);
+                    const targetIndex = index + direction;
+                    
+                    if (targetIndex < 0 || targetIndex >= list.length) return;
+                    
+                    const targetCard = list[targetIndex];
+                    const time1 = card.created_at;
+                    const time2 = targetCard.created_at;
+
+                    // If times are identical, we need to nudge one slightly to ensure order
+                    let newTime1 = time2;
+                    let newTime2 = time1;
+                    if (time1 === time2) {
+                        const d = new Date(time1);
+                        d.setMilliseconds(d.getMilliseconds() + (direction < 0 ? 1 : -1));
+                        newTime1 = d.toISOString();
+                    }
+
+                    try {
+                        // 改回使用两个独立的 update 操作，避免 upsert 触发非空约束 (Error 23502)
+                        const [res1, res2] = await Promise.all([
+                            supabaseClient.from('character_cards').update({ created_at: newTime1 }).eq('id', card.id).select(),
+                            supabaseClient.from('character_cards').update({ created_at: newTime2 }).eq('id', targetCard.id).select()
+                        ]);
+                        
+                        if (res1.error) throw res1.error;
+                        if (res2.error) throw res2.error;
+                        
+                        if (!res1.data?.length || !res2.data?.length) {
+                            throw new Error('权限不足，无法更新排序（请检查 RLS 策略）');
+                        }
+
+                        // Update local state
+                        const c1 = cards.value.find(c => c.id === card.id);
+                        const c2 = cards.value.find(c => c.id === targetCard.id);
+                        if (c1) c1.created_at = newTime1;
+                        if (c2) c2.created_at = newTime2;
+
+                        showToast('排序已更新', 'success');
+                    } catch (err) {
+                        console.error('Move error:', err);
+                        showToast('排序失败: ' + err.message, 'error');
+                        // Refresh to sync with DB if something went wrong
+                        fetchCards();
+                    }
+                };
+
+                const deleteCard = async (card) => {
+                    if (!confirm(`确定要删除角色卡 "${card.name}" 吗？此操作无法撤销。`)) return;
+                    
+                    try {
+                        // 使用 .select() 来获取被删除的记录，以此判断是否真的删除了
+                        const { data, error } = await supabaseClient
+                            .from('character_cards')
+                            .delete()
+                            .eq('id', card.id)
+                            .select();
+                            
+                        if (error) throw error;
+
+                        // 如果返回的 data 为空，说明数据库层面没有执行删除（通常是 RLS 权限拦截）
+                        if (!data || data.length === 0) {
+                            throw new Error('权限不足，无法删除此卡片（请检查 Supabase RLS 策略）');
+                        }
+
+                        // Remove from local list if successful
+                        cards.value = cards.value.filter(c => c.id !== card.id);
+
+                        // Remove from myUploadedIds and deduct credits
+                        if (myUploadedIds.value.includes(card.id)) {
+                            myUploadedIds.value = myUploadedIds.value.filter(id => id !== card.id);
+                            localStorage.setItem('my_uploaded_ids', JSON.stringify(myUploadedIds.value));
+
+                            // Deduct credits (revert upload reward), min 0
+                            if (!isAdmin.value) {
+                                const current = downloadCredits.value;
+                                const toDeduct = 2;
+                                const newValue = Math.max(0, current - toDeduct);
+                                const diff = newValue - current;
+                                updateCredits(diff);
+                                showToast(`删除成功，已扣除 ${Math.abs(diff)} 点上传额度`, 'success');
+                                return;
+                            }
+                        }
+                        
+                        showToast('删除成功', 'success');
+                    } catch (err) {
+                        console.error('Delete error:', err);
+                        showToast('删除失败: ' + err.message, 'error');
+                    }
+                };
+
+                const applyRegexScripts = (text, content, raw) => {
+                    if (!text) return '';
+                    
+                    const charName = content.name || content.char_name || 'Character';
+                    
+                    // 识别 HTML 文档块 (<!DOCTYPE html> ... </html>)
+                    const htmlDocPattern = /(<!doctype html>|<html\b[^>]*>)/i;
+                    const trimmed = text.trim();
+                    const htmlMatch = trimmed.match(htmlDocPattern);
+                    
+                    let mainText = text;
+                    let protectedHtml = '';
+                    let hasProtectedHtml = false;
+                    let preText = '', postText = '';
+
+                    if (htmlMatch) {
+                        const startIndex = text.indexOf(htmlMatch[0]);
+                        const closeTag = '</html>';
+                        const closeIndex = text.toLowerCase().lastIndexOf(closeTag);
+                        
+                        if (closeIndex !== -1 && closeIndex > startIndex) {
+                            const endIndex = closeIndex + closeTag.length;
+                            protectedHtml = text.substring(startIndex, endIndex);
+                            preText = text.substring(0, startIndex);
+                            postText = text.substring(endIndex);
+                            hasProtectedHtml = true;
+                            // 宏替换依然应用于 HTML 块
+                            protectedHtml = protectedHtml.replace(/\{\{char\}\}/gi, charName);
+                        }
+                    }
+
+                    // 如果有受保护的 HTML，我们只对 preText 和 postText 进行正则脚本替换
+                    // 如果没有，则对全文进行替换
+                    let result = hasProtectedHtml ? (preText + "___HTML_BLOCK_PLACEHOLDER___" + postText) : text;
+
+                    // 1. 基本宏替换 (对非 HTML 部分)
+                    result = result.replace(/\{\{char\}\}/gi, charName);
+                    
+                    // 2. 正则脚本替换 (Regex Scripts)
+                    // 按照 index.html 的 importCharacter 逻辑进行多路径查找和字段映射
+                    let scripts = [];
+                    
+                    // 路径 1: V2/ST 标准 (content.extensions.regex_scripts)
+                    if (content.extensions && content.extensions.regex_scripts) {
+                        scripts = content.extensions.regex_scripts;
+                    }
+                    // 路径 2: Raw 上的 extensions (raw.extensions.regex_scripts)
+                    else if (raw.extensions && raw.extensions.regex_scripts) {
+                        scripts = raw.extensions.regex_scripts;
+                    }
+                    // 路径 3: V1/Legacy 直接字段
+                    else if (content.regex_scripts || raw.regex_scripts) {
+                        scripts = content.regex_scripts || raw.regex_scripts;
+                    }
+                    // 路径 4: 嵌套 data (某些异常结构)
+                    else if (content.data && content.data.extensions && content.data.extensions.regex_scripts) {
+                        scripts = content.data.extensions.regex_scripts;
+                    }
+
+                    if (scripts) {
+                        // 兼容对象或数组格式
+                        const scriptList = Array.isArray(scripts) ? scripts : Object.values(scripts);
+                        console.log('[Regex] Found scripts count:', scriptList.length);
+                        
+                        scriptList.forEach(script => {
+                            try {
+                                // 标准化字段 (参考 index.html)
+                                // ST uses 'disabled', we might use 'enabled' in some contexts, but ST cards usually have 'disabled'
+                                // Default is enabled if disabled is undefined or false
+                                const isDisabled = script.disabled === true;
+                                if (isDisabled) return;
+
+                                // 模式检查：plaza.html 是显示模式 (isDisplay=true)
+                                // 如果脚本指定了 promptOnly (仅用于 Prompt)，则跳过
+                                if (script.promptOnly) return;
+
+                                // 字段映射
+                                let regexPattern = script.regex || script.findRegex;
+                                let flags = script.flags || script.regexFlags || 'g';
+                                const replacement = script.hasOwnProperty('replacement')
+                                    ? script.replacement
+                                    : (script.replaceString || '');
+
+                                if (!regexPattern) return;
+
+                                // 解析 /pattern/flags 字符串格式
+                                if (typeof regexPattern === 'string' && regexPattern.startsWith('/') && regexPattern.lastIndexOf('/') > 0) {
+                                    const lastSlash = regexPattern.lastIndexOf('/');
+                                    const potentialFlags = regexPattern.substring(lastSlash + 1);
+                                    // 简单的 flags 验证
+                                    if (/^[gimsuy]*$/.test(potentialFlags)) {
+                                        flags = potentialFlags;
+                                        regexPattern = regexPattern.substring(1, lastSlash);
+                                    }
+                                }
+                                
+                                // 处理 ST 常见的内联修饰符 (?s), (?i), (?m)
+                                if (regexPattern.includes('(?s)')) {
+                                    regexPattern = regexPattern.replace(/\(\?s\)/g, '');
+                                    if (!flags.includes('s')) flags += 's';
+                                }
+                                if (regexPattern.includes('(?i)')) {
+                                    regexPattern = regexPattern.replace(/\(\?i\)/g, '');
+                                    if (!flags.includes('i')) flags += 'i';
+                                }
+                                if (regexPattern.includes('(?m)')) {
+                                    regexPattern = regexPattern.replace(/\(\?m\)/g, '');
+                                    if (!flags.includes('m')) flags += 'm';
+                                }
+
+                                const re = new RegExp(regexPattern, flags);
+                                const oldResult = result;
+                                
+                                // 简单保护逻辑：防止破坏HTML标签结构（如果替换内容包含HTML，或者是特定UI脚本，则不保护）
+                                // 这里为了兼容 plaza 的渲染，直接替换通常是可以的，因为 renderMarkdown 会再次清洗
+                                result = result.replace(re, replacement);
+                                
+                                if (oldResult !== result) {
+                                    console.log('[Regex] Applied:', script.scriptName || script.name || regexPattern, '=>', replacement);
+                                }
+                            } catch (e) {
+                                console.warn('应用正则脚本失败:', e, script);
+                            }
+                        });
+                    } else {
+                        console.log('[Regex] No scripts found in card data');
+                    }
+                    
+                    // 还原受保护的 HTML 块
+                    if (hasProtectedHtml) {
+                        result = result.replace("___HTML_BLOCK_PLACEHOLDER___", protectedHtml);
+                    }
+                    
+                    return result;
+                };
+
+                const previewCard = (card) => {
+                    mobileScrollBlur.value = 0; // 重置模糊度
+                    const raw = card.data || {};
+                    // 兼容处理：如果数据在 raw.data (V2) 中，则取 raw.data，否则取 raw (V1)
+                    const content = raw.data || raw;
+                    
+                    // 应用正则替换
+                    const processedFirstMes = applyRegexScripts(content.first_mes || '', content, raw);
+
+                    // 创建一个带 _display 属性的新对象，不污染原始数据结构（因为下载需要原始结构）
+                    selectedCard.value = {
+                        ...card,
+                        renderId: Date.now(), // 添加时间戳作为唯一ID，强制 UI 重新渲染
+                        _display: {
+                            personality: content.personality || '',
+                            first_mes: processedFirstMes,
+                            description: card.description || content.description || content.char_persona || '',
+                            name: card.name || content.name || content.char_name || ''
+                        }
+                    };
+                    
+                    // Load comments
+                    fetchComments(card.id);
+                };
+
+                const formatDate = (dateStr) => {
+                    const date = new Date(dateStr);
+                    return date.toLocaleString('zh-CN', {
+                        year: 'numeric',
+                        month: 'numeric',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                };
+
+                // Configure marked to disable indented code blocks for better HTML support
+                marked.use({
+                    breaks: true,
+                    tokenizer: {
+                        code(src) { return undefined; }
+                    }
+                });
+
+                const createIframe = (rawHtml) => {
+                    const iframe = document.createElement('iframe');
+                    iframe.className = 'w-full border-t border-gray-200 bg-white shadow-sm block';
+                    iframe.style.height = 'auto';
+                    iframe.style.overflow = 'hidden';
+                    iframe.style.transition = 'height 0.2s ease-out';
+                    iframe.style.marginBottom = '0';
+                    iframe.setAttribute('scrolling', 'no');
+                    iframe.sandbox = 'allow-scripts allow-forms allow-popups allow-modals allow-same-origin';
+                    
+                    iframe.onload = function() {
+                        try {
+                            setTimeout(() => {
+                                if (this.contentWindow && this.contentWindow.document) {
+                                    const doc = this.contentWindow.document;
+                                    const height = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight);
+                                    this.style.height = height + 'px';
+                                }
+                            }, 100);
+                        } catch (e) {
+                            console.warn('Failed to resize iframe:', e);
+                        }
+                    };
+
+                    const hudCSS = '.sinan-hud{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;padding:12px;background:linear-gradient(to bottom right,rgba(255,255,255,0.9),rgba(255,255,255,0.6));border-radius:12px;border:1px solid rgba(0,0,0,0.08);backdrop-filter:blur(4px)}.char-card{flex:1 1 140px;background:#fff;padding:10px;border-radius:8px;border-left:4px solid #ddd;box-shadow:0 2px 6px rgba(0,0,0,0.04);display:flex;flex-direction:column;gap:4px;font-size:12px;position:relative;overflow:hidden;transition:transform 0.2s}.char-card:hover{transform:translateY(-2px);box-shadow:0 4px 8px rgba(0,0,0,0.1)}.char-name{font-weight:700;font-size:14px;color:#374151;display:flex;justify-content:space-between;align-items:center}.char-mood{color:#6b7280;font-size:12px}.char-loc{color:#9ca3af;font-size:11px;margin-top:auto;padding-top:4px}.bar-bg{height:4px;background:#f3f4f6;border-radius:2px;overflow:hidden;margin-top:6px}.bar-fill{height:100%;background:#10b981;border-radius:2px}.c-tongqiu{border-left-color:#f59e0b}.c-tongqiu .bar-fill{background:#f59e0b}.c-yufan{border-left-color:#3b82f6}.c-yufan .bar-fill{background:#3b82f6}.c-linghu{border-left-color:#8b5cf6}.c-linghu .bar-fill{background:#8b5cf6}.c-chongtian{border-left-color:#ef4444}.c-chongtian .bar-fill{background:#ef4444}';
+                    const resetStyle = '<style>html,body{margin:0 !important;padding:0 !important;width:100% !important;word-wrap:break-word !important;box-sizing:border-box !important;overflow:hidden !important;} ::-webkit-scrollbar{display:none;} *,*::before,*::after{box-sizing:inherit !important;} img,video,canvas,svg{max-width:100% !important;height:auto !important;} table{display:block !important;overflow-x:auto !important;max-width:100% !important;} pre{white-space:pre-wrap !important;word-wrap:break-word !important;max-width:100% !important;} .container, .reality-panel {max-width:100% !important; width:100% !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important; border: none !important;} body > div:first-child { margin: 0 !important; max-width: 100% !important; }' + hudCSS + '</style>';
+                    const metaViewport = '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">';
+                    const jqueryScript = '<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js" defer><\/script>';
+                    const scriptShim = `
+                        <script>
+                            window.triggerSlash = function(text) {
+                                console.log('Slash triggered:', text);
+                                try {
+                                    window.parent.postMessage({ type: 'slash_command', content: text }, '*');
+                                } catch (e) {
+                                    console.error('TriggerSlash error:', e);
+                                }
+                            };
+                            let lastHeight = 0;
+                            let isUpdating = false;
+                            function updateHeight() {
+                                if (!window.frameElement || isUpdating) return;
+                                isUpdating = true;
+                                requestAnimationFrame(() => {
+                                    const body = document.body;
+                                    const html = document.documentElement;
+                                    if (!body || !html) { isUpdating = false; return; }
+                                    let maxBottom = 0;
+                                    for (let i = 0; i < body.children.length; i++) {
+                                        const child = body.children[i];
+                                        if (['SCRIPT','STYLE','LINK'].includes(child.tagName)) continue;
+                                        
+                                        // 忽略 fixed 元素，防止底部固定的模态框导致无限拉长
+                                        const style = window.getComputedStyle(child);
+                                        if (style.position === 'fixed') continue;
+
+                                        const rect = child.getBoundingClientRect();
+                                        const offsetBottom = child.offsetTop + child.offsetHeight;
+                                        const itemMax = Math.max(rect.bottom, offsetBottom);
+                                        if (itemMax > maxBottom) maxBottom = itemMax;
+                                    }
+                                    const style = window.getComputedStyle(body);
+                                    const marginBottom = parseFloat(style.marginBottom) || 0;
+                                    const finalMaxBottom = maxBottom + marginBottom;
+                                    const scrollHeight = body.scrollHeight;
+                                    let newHeight = Math.max(finalMaxBottom, scrollHeight) + 4;
+                                    if (Math.abs(newHeight - lastHeight) > 0) {
+                                        lastHeight = newHeight;
+                                        window.frameElement.style.height = newHeight + 'px';
+                                    }
+                                    isUpdating = false;
+                                });
+                            }
+                            window.addEventListener('load', () => { updateHeight(); setTimeout(updateHeight, 200); });
+                            window.addEventListener('resize', updateHeight);
+                            window.addEventListener('click', () => { setTimeout(updateHeight, 100); setTimeout(updateHeight, 300); });
+                            window.addEventListener('DOMContentLoaded', () => {
+                                document.querySelectorAll('img').forEach(img => img.addEventListener('load', updateHeight));
+                                updateHeight();
+                            });
+                            if (window.ResizeObserver) {
+                                const ro = new ResizeObserver(entries => { for(let e of entries) if(e.target===document.body) updateHeight(); });
+                                if (document.body) ro.observe(document.body);
+                                else window.addEventListener('DOMContentLoaded', () => ro.observe(document.body));
+                            } else { setInterval(updateHeight, 1000); }
+                        <\/script>
+                    `;
+                    
+                    let content = rawHtml;
+                    const trimmed = content.trim();
+                    const isStandardDoc = /^\s*(<!doctype|<html)/i.test(trimmed);
+
+                    if (isStandardDoc) {
+                        const headRegex = /<head(\s[^>]*)?>/i;
+                        const htmlRegex = /<html(\s[^>]*)?>/i;
+                        if (headRegex.test(content)) {
+                            content = content.replace(headRegex, (match) => match + metaViewport + resetStyle + jqueryScript + scriptShim);
+                        } else if (htmlRegex.test(content)) {
+                            content = content.replace(htmlRegex, (match) => match + '<head>' + metaViewport + resetStyle + jqueryScript + scriptShim + '</head>');
+                        } else {
+                            content = metaViewport + resetStyle + jqueryScript + scriptShim + content;
+                        }
+                    } else {
+                        content = `<!DOCTYPE html><html><head>${metaViewport}${resetStyle}${jqueryScript}${scriptShim}</head><body>${rawHtml}</body></html>`;
+                    }
+
+                    iframe.srcdoc = content;
+                    return iframe;
+                };
+
+                const fetchComments = async (cardId) => {
+                    loadingComments.value = true;
+                    comments.value = [];
+                    try {
+                        const { data, error } = await supabaseClient
+                            .from('character_comments')
+                            .select('*')
+                            .eq('card_id', cardId)
+                            .order('created_at', { ascending: true });
+                        
+                        if (error) throw error;
+                        comments.value = data || [];
+                    } catch (err) {
+                        console.error('Error fetching comments:', err);
+                        // Don't show toast for this to avoid spamming if table doesn't exist yet
+                    } finally {
+                        loadingComments.value = false;
+                    }
+                };
+
+                const submitComment = async () => {
+                    if (!newComment.content.trim()) {
+                        showToast('请输入评论内容', 'warning');
+                        return;
+                    }
+                    if (!selectedCard.value) return;
+
+                    const commentData = {
+                        card_id: selectedCard.value.id,
+                        nickname: '匿名用户',
+                        content: newComment.content.trim()
+                    };
+
+                    try {
+                        const { data, error } = await supabaseClient
+                            .from('character_comments')
+                            .insert([commentData])
+                            .select();
+
+                        if (error) throw error;
+
+                        if (data && data.length > 0) {
+                            comments.value.push(data[0]);
+                        }
+                        
+                        updateCredits(1);
+                        newComment.content = ''; // Clear input
+                        showToast('评论发布成功！获得 1 次下载机会', 'success');
+                    } catch (err) {
+                        console.error('Error submitting comment:', err);
+                        showToast('评论失败: ' + err.message, 'error');
+                    }
+                };
+
+                const deleteComment = async (commentId) => {
+                    if (!confirm('确定要删除这条评论吗？')) return;
+                    try {
+                        const { error } = await supabaseClient
+                            .from('character_comments')
+                            .delete()
+                            .eq('id', commentId);
+                        
+                        if (error) throw error;
+                        
+                        comments.value = comments.value.filter(c => c.id !== commentId);
+                        showToast('评论已删除', 'success');
+                    } catch (err) {
+                        console.error('Delete comment error:', err);
+                        showToast('删除失败: ' + err.message, 'error');
+                    }
+                };
+
+                const renderMarkdown = (text) => {
+                    if (!text) return '';
+                    const trimmed = text.trim();
+                    
+                    const cleanConfig = {
+                        ADD_TAGS: ['details', 'summary', 'iframe', 'svg', 'path', 'g', 'circle', 'rect', 'defs', 'linearGradient', 'stop', 'style', 'div', 'span', 'script', 'button', 'input'],
+                        ADD_ATTR: ['style', 'open', 'srcdoc', 'sandbox', 'frameborder', 'allow', 'allowfullscreen', 'class', 'id', 'viewBox', 'fill', 'stroke', 'stroke-width', 'd', 'stroke-linecap', 'stroke-linejoin', 'x1', 'y1', 'x2', 'y2', 'offset', 'stop-color', 'stop-opacity', 'width', 'height', 'onclick', 'type', 'value', 'checked'],
+                        FORBID_ATTR: ['onmouseover', 'onload'],
+                        FORCE_BODY: true
+                    };
+
+                    // Check for HTML Document
+                    const htmlDocPattern = /(<!doctype html>|<html\b[^>]*>)/i;
+                    const htmlMatch = trimmed.match(htmlDocPattern);
+                    
+                    if (htmlMatch && !trimmed.includes('```')) {
+                        const startIndex = htmlMatch.index;
+                        const closeTag = '</html>';
+                        const closeIndex = trimmed.toLowerCase().lastIndexOf(closeTag);
+                        
+                        let htmlContent, preText, postText;
+                        if (closeIndex !== -1 && closeIndex > startIndex) {
+                            const endIndex = closeIndex + closeTag.length;
+                            htmlContent = trimmed.substring(startIndex, endIndex);
+                            preText = trimmed.substring(0, startIndex);
+                            postText = trimmed.substring(endIndex);
+                        } else {
+                            htmlContent = trimmed.substring(startIndex);
+                            preText = trimmed.substring(0, startIndex);
+                            postText = '';
+                        }
+
+                        let resultHtml = '';
+                        if (preText.trim()) resultHtml += DOMPurify.sanitize(marked.parse(preText), cleanConfig);
+                        
+                        const container = document.createElement('div');
+                        container.className = 'html-card-container';
+                        container.style.marginBottom = '-1px';
+                        container.appendChild(createIframe(htmlContent));
+                        resultHtml += container.outerHTML;
+                        
+                        if (postText.trim()) resultHtml += DOMPurify.sanitize(marked.parse(postText), cleanConfig);
+                        return resultHtml;
+                    }
+
+                    // Smart detection for block HTML (without standard doc tags)
+                    const startsWithBlockHtml = /^\s*<(div|table|section|article|aside|header|footer|style|script)/i.test(trimmed);
+                    if (startsWithBlockHtml && !trimmed.includes('```')) {
+                        // 使用 iframe 渲染 HTML 片段，避免 DOMPurify 破坏 onclick 事件，同时隔离样式
+                        const container = document.createElement('div');
+                        container.className = 'html-card-container';
+                        container.style.marginBottom = '-1px';
+                        container.appendChild(createIframe(text));
+                        return container.outerHTML;
+                    }
+
+                    // Standard Markdown
+                    return DOMPurify.sanitize(marked.parse(text), cleanConfig);
+                };
+
+                // --- Export Logic from Reference ---
+                const crc32Table = new Uint32Array(256);
+                for (let i = 0; i < 256; i++) {
+                    let c = i;
+                    for (let k = 0; k < 8; k++) { c = ((c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1)); }
+                    crc32Table[i] = c;
+                }
+                const crc32 = (buf) => {
+                    let crc = 0xFFFFFFFF;
+                    for (let i = 0; i < buf.length; i++) { crc = (crc >>> 8) ^ crc32Table[(crc ^ buf[i]) & 0xFF]; }
+                    return (crc ^ 0xFFFFFFFF) >>> 0;
+                };
+
+                const downloadCard = async (card) => {
+                    // Credit Check
+                    const isOwner = myUploadedIds.value.includes(card.id);
+                    if (!isAdmin.value && !isOwner) {
+                        if (downloadCredits.value <= 0) {
+                            showToast('下载次数不足！请前往“我的”界面获取更多下载次数。感谢您对社区的支持！', 'warning', 4000);
+                            return;
+                        }
+                        updateCredits(-1);
+                    }
+
+                    // Increment download count (Optimistic update)
+                    if (card.downloads_count === undefined) card.downloads_count = 0;
+                    card.downloads_count++;
+
+                    // Update Supabase
+                    // Update Supabase
+                    try {
+                        const { error } = await supabaseClient.rpc('increment_download_count', { row_id: card.id });
+                        
+                        if (error) {
+                            console.error('Failed to increment download count:', error);
+                            // 如果 RPC 失败（例如函数不存在），回滚本地计数
+                            card.downloads_count--;
+                            // 提示用户
+                            // showToast('下载统计同步失败，请联系管理员运行 SQL 脚本', 'warning');
+                        }
+                    } catch (err) {
+                        console.error('Error in download count update:', err);
+                        card.downloads_count--;
+                    }
+                    const img = new Image();
+                    img.crossOrigin = "Anonymous";
+                    img.src = card.avatar_url || card.avatar;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width; canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        canvas.toBlob(async (blob) => {
+                            const arrayBuffer = await blob.arrayBuffer();
+                            const uint8Array = new Uint8Array(arrayBuffer);
+                            const jsonStr = JSON.stringify(card.data);
+                            const base64Str = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (m, p1) => String.fromCharCode('0x' + p1)));
+                            
+                            const encoder = new TextEncoder();
+                            const keyData = encoder.encode("chara");
+                            const textData = encoder.encode(base64Str);
+                            const chunkData = new Uint8Array(keyData.length + 1 + textData.length);
+                            chunkData.set(keyData, 0); chunkData[keyData.length] = 0; chunkData.set(textData, keyData.length + 1);
+                            
+                            const type = encoder.encode("tEXt");
+                            const crcCheckData = new Uint8Array(type.length + chunkData.length);
+                            crcCheckData.set(type, 0); crcCheckData.set(chunkData, type.length);
+                            const crcVal = crc32(crcCheckData);
+                            
+                            const fullChunk = new Uint8Array(4 + 4 + chunkData.length + 4);
+                            const view = new DataView(fullChunk.buffer);
+                            view.setUint32(0, chunkData.length, false);
+                            fullChunk.set(type, 4); fullChunk.set(chunkData, 8);
+                            view.setUint32(8 + chunkData.length, crcVal, false);
+                            
+                            const finalPng = new Uint8Array(uint8Array.length + fullChunk.length);
+                            finalPng.set(uint8Array.slice(0, 33), 0);
+                            finalPng.set(fullChunk, 33);
+                            finalPng.set(uint8Array.slice(33), 33 + fullChunk.length);
+                            
+                            const url = URL.createObjectURL(new Blob([finalPng], { type: 'image/png' }));
+                            const a = document.createElement('a');
+                            a.href = url; a.download = card.name + '.png';
+                            a.click();
+                        }, 'image/png');
+                    };
+                };
+
+                onMounted(() => {
+                    fetchCards();
+                    window.addEventListener('message', (event) => {
+                        if (event.data && event.data.type === 'slash_command') {
+                            showToast(`触发指令：${event.data.content}`, 'success');
+                        }
+                    });
+                });
+
+                return {
+                    cards, loading, searchQuery, filteredCards, defaultAvatar,
+                    showUploadModal, showSearchModal, uploadingCard, isUploading, handleFileSelect, confirmUpload,
+                    selectedCard, previewCard, formatDate, downloadCard, deleteCard, moveCard,
+                    toasts, currentTab, myUploadedIds, popularTags, modalPopularTags, searchTag,
+                    mobileScrollBlur, handleMobileScroll,
+                    isAdmin, handleLogoClick, renderMarkdown,
+                    comments, loadingComments, newComment, submitComment, deleteComment,
+                    downloadCredits
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
