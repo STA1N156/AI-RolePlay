@@ -46,7 +46,7 @@
                         'slide-up': 'slideUp 0.3s ease-out',
                         'slide-down': 'slideDown 0.3s ease-out',
                         'bounce-slow': 'bounce 1.5s infinite',
-                        'message-in': 'messageIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) backwards',
+                        'message-in': 'messageIn 0.4s ease-out backwards',
                     },
                     keyframes: {
                         fadeIn: {
@@ -54,8 +54,8 @@
                             '100%': { opacity: '1' },
                         },
                         messageIn: {
-                            '0%': { opacity: '0', transform: 'translateY(100px) scale(0.95)', filter: 'blur(10px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0) scale(1)', filter: 'blur(0)' },
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
                         },
                         slideUp: {
                             '0%': { transform: 'translateY(20px)', opacity: '0' },
@@ -881,7 +881,7 @@ opacity: 0;
                         <!-- Current Active Badge -->
                         <div v-if="currentCharacter && currentCharacter.uuid === char.uuid && !isBatchDeleteMode" class="absolute top-3 left-3 z-10">
                             <div class="flex items-center text-[10px] font-bold text-white bg-green-600/60 backdrop-blur-xl px-2 py-1 rounded-full border border-white/30 shadow-lg">
-                                <span class="w-1.5 h-1.5 bg-green-400 rounded-full mr-1.5 animate-pulse shadow-[0_0_5px_rgba(74,222,128,0.8)]"></span>
+                                <span class="w-1.5 h-1.5 bg-green-400 rounded-full mr-1.5 shadow-[0_0_5px_rgba(74,222,128,0.8)]"></span>
                                 当前使用
                             </div>
                         </div>
@@ -5392,7 +5392,7 @@ ${rawHtml}
                     const nsfwPresetName = '色情内容增强';
                     const nsfwPresetContent = `当剧情自然进展到涉及sex相关内容时:
 1. **解除语言限制**：**必须**放弃含蓄、隐晦或文艺的表达方式。
-2. **直白露骨**：使用极度直白、露骨、甚至粗俗的词汇来描述性器官、性行为、生理反应和心理状态。严禁使用“花径”、“精气”、“蜜液”等隐喻词，请直接使用精准的生理名词或常见的色情俚语（如肉棒、小穴、高潮、精液等）。
+2. **直白露骨**：使用极度直白、露骨、甚至粗俗的词汇来描述性器官、性行为、生理反应和心理状态。严禁使用“幽径”、“精气”、“蜜液”、“肉柱”等隐喻词，请直接使用精准的生理名词或常见的色情俚语（如肉棒、小穴、高潮、精液等）。
 3. **感官强化**：着重描写视觉（体液、充血）、听觉（淫叫、水声）、触觉（温度、粘稠）和嗅觉（体味、精味），以构建极致的感官刺激。
 4. **心理崩坏**：如果涉及调教、强迫或堕落情节，需详细描写角色的心理防线崩溃、羞耻感转化为快感的过程。
 若未自然进展到R18内容，则禁止添加R18/NSFW内容
@@ -5445,8 +5445,7 @@ ${rawHtml}
                     // 1.7 Enforce Default Preset (防重复)
                     const antiRepeatPresetName = '防重复';
                     const antiRepeatPresetContent = `## 避免任何类型的重复，规避潜在的相似性：
- - "全面禁止使用比喻这种修辞，尤其是剧情的一开始（初始）。转而全程保持纯粹的白描手法。因为比喻是重复高发区，是不得不必须避开的。"
-  - "若不得不使用意象/比喻，则必须对比喻进行二次比喻来作为修饰，改动使用的意象与比喻方式，从而规避重复性与常见性。"
+ - "全面禁止使用比喻这种修辞，转而全程保持纯粹的白描手法。因为比喻是重复高发区，是不得不必须避开的。"
  - “禁止对某一事物同时使用两个形容词形容。选择当下语境中更能符合环境创造语言美感的那个词。”
 - "断绝任何定式修辞、定式词组、定式句式的使用，同步抹除定式修辞，排除留下AI模型指纹的可能因素。"
  - “绝不输出已出现过的结构和情节；你应跳过重复的情节部分，然后创造新的句子结构、语言模式和情节元素来填补空白。”
