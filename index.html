@@ -2202,21 +2202,20 @@ opacity: 0;
                 const updateCountdown = ref(0);
                 let updateCountdownTimer = null;
                 const latestUpdate = reactive({
-                    id: 10033, // 确保这是一个五位数ID，每次更新内容时增加这个数字
+                    id: 10035, // 确保这是一个五位数ID，每次更新内容时增加这个数字
                     date: new Date().toISOString().split('T')[0],
                     title: '网站更新公告',
                     content: `
-### Roleplay 2.4.5
+### Roleplay 2.4.7
+### 修复了自动生图的“炸图”问题
 
-- 角色卡工坊新增“重ROLL头像”功能
-- 大幅度增强了角色卡工坊中UI的可玩性
-- 增强了角色卡工坊/主站中对于R18内容的角色卡/内容生成
-- 新增单个/批量导出预设,世界书,正则的功能
-- 添加了触发triggerSlash时的UI表现
-- 添加了消息气泡的入场动画
-- 修复了部分bug
+- 优化了角色卡工坊生成的质量，并默认不生成UI
+- 修复了世界书按深度(Depth)插入时出现的问题
+- 重写了预设的各条内容，并添加了xml标签以增强AI回复体验
+- 修复了自动生图的“炸图”问题
+- 修复了其他已知bug
 
-#### 更新时间：12/28/06:15
+#### 更新时间：12/30/03:15
                     `
                 });
 
