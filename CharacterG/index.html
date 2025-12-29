@@ -2405,6 +2405,13 @@ ${options.generateExtra ? `### World Info
                 };
             };
 
+            // 文件名净化函数
+            const sanitizeFilename = (name, defaultName = 'character') => {
+                if (!name) return defaultName;
+                // 替换 Windows/Unix 文件系统非法字符
+                return name.replace(/[<>:"/\\|?*\x00-\x1F]/g, '_').trim() || defaultName;
+            };
+
             // 通用下载函数，解决部分浏览器（如 Via）不兼容 Blob URL 下载的问题
             const downloadFile = (blob, filename) => {
                 const reader = new FileReader();
@@ -2425,7 +2432,8 @@ ${options.generateExtra ? `### World Info
             const exportJSON = () => {
                 const data = getCardData();
                 const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                downloadFile(blob, `${currentCharacter.value.name || 'character'}.json`);
+                const filename = sanitizeFilename(currentCharacter.value.name) + '.json';
+                downloadFile(blob, filename);
             };
 
             const exportPNG = async () => {
@@ -2463,7 +2471,8 @@ ${options.generateExtra ? `### World Info
                 const newPng = injectPngChunk(array, 'chara', jsonBase64);
                 
                 const blob = new Blob([newPng], { type: 'image/png' });
-                downloadFile(blob, `${currentCharacter.value.name || 'character'}.png`);
+                const filename = sanitizeFilename(currentCharacter.value.name) + '.png';
+                downloadFile(blob, filename);
             };
 
             const exportWorldInfo = () => {
@@ -2491,7 +2500,8 @@ ${options.generateExtra ? `### World Info
                 });
                 const data = { entries };
                 const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                downloadFile(blob, `${currentCharacter.value.name || 'world_info'}_world.json`);
+                const filename = sanitizeFilename(currentCharacter.value.name, 'world_info') + '_world.json';
+                downloadFile(blob, filename);
             };
 
             const exportRegex = () => {
@@ -2512,7 +2522,8 @@ ${options.generateExtra ? `### World Info
                 }));
                 
                 const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                downloadFile(blob, `${currentCharacter.value.name || 'regex'}_scripts.json`);
+                const filename = sanitizeFilename(currentCharacter.value.name, 'regex') + '_scripts.json';
+                downloadFile(blob, filename);
             };
 
             const injectPngChunk = (pngBuffer, key, value) => {
