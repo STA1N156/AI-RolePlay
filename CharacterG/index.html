@@ -163,14 +163,14 @@
                         <div
                             class="border rounded-xl p-3 cursor-pointer transition-all duration-200 flex flex-col items-center justify-center gap-1 relative overflow-hidden select-none"
                             :class="api.model === 'gemini-3-flash-preview-maxthinking' ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary/20 shadow-sm' : 'border-base-300 bg-base-100 hover:border-base-content/30 hover:bg-base-200/50'"
-                            @click="api.model = 'gemini-3-flash-preview-maxthinking'"
+                            @click="api.model = 'gemini-3-flash-preview-maxthinking'; api.stream = true"
                         >
                             <span class="font-bold text-sm">快速 (Flash)</span>
                         </div>
                         <div
                             class="border rounded-xl p-3 cursor-pointer transition-all duration-200 flex flex-col items-center justify-center gap-1 relative overflow-hidden select-none"
                             :class="api.model === '[bo]gemini-3-pro-preview-thinking-1' ? 'border-secondary bg-secondary/10 text-secondary ring-2 ring-secondary/20 shadow-sm' : 'border-base-300 bg-base-100 hover:border-base-content/30 hover:bg-base-200/50'"
-                            @click="api.model = '[bo]gemini-3-pro-preview-thinking-1'"
+                            @click="api.model = '[bo]gemini-3-pro-preview-thinking-1'; api.stream = false"
                         >
                             <span class="font-bold text-sm">质量 (Pro)</span>
                         </div>
@@ -901,8 +901,8 @@
             const api = reactive({
                 url: 'https://opis.zeabur.app/v1',
                 key: 'sk-5FgeDZyEBUJrVIHpKgRY5xf7O3FrwGbY24KQJ27E2PHDXPDs',
-                model: 'gemini-3-flash-preview-maxthinking',
-                stream: true
+                model: '[bo]gemini-3-pro-preview-thinking-1',
+                stream: false
             });
 
             const targetFields = ['name', 'description', 'personality', 'scenario', 'first_mes', 'creator_notes', 'system_prompt', 'post_history_instructions'];
@@ -1414,7 +1414,7 @@
 - **Name**: 角色卡名字，使用中文，禁止使用任何符号。推荐唯美意象词，**推荐生成趣味标题**（如“我的妹妹不可能这么可爱”、“今天也要来点兔子吗”）。如果是具体人物，直接使用姓名。禁止使用“林”、“苏”姓及“婉儿”等网文常见名。
 - **Description**: 角色卡描述，100字左右，让用户了解大体设定/世界观，是向用户介绍角色卡的引言，请使用“你”称呼user，不要使用{{user}}占位符，整段内容要有沉浸感，减少环境描写，使用直白易懂的文风，使用markdown格式，重要内容加粗，注意换行。
 - **Personality**: 详细的角色卡设定，尽量详尽，注意换行，支持使用{{user}}占位符，需包含人物特点或形象。
-- **First Message**: 开场白，支持{{user}}占位符，500-1000字，第三人称旁白视角或第二人称（你），禁止使用第一视角，使用角色名字取代“她”或“他”，禁止出现指节，泛白等字样，禁止长篇大论的环境描写。**对于R18内容，开场白必须包含露骨的性行为或性心理描写，用词需有一定色气，但禁止出现任何{{user}}的言行/任何性行为，应将后续选择权和行动权留给{{user}}**
+- **First Message**: 开场白，支持{{user}}占位符，500-1000字，第三人称旁白视角或第二人称（你），禁止使用第一视角，禁止使用markdown格式，请使用角色名字取代“她”或“他”，禁止出现指节，泛白等字样，禁止长篇大论的环境描写。**对于R18内容，开场白必须包含露骨的性行为或性心理描写，用词需有一定色气，但禁止出现任何{{user}}的言行/任何性行为，应将后续选择权和行动权留给{{user}}**
 - **Creator Notes**: 作者注释，必填，使用简单的#+关键词的标签形式说明人物卡的内容，每个关键词之间隔一个空格，例如#纯爱 #校园，如有大量色情内容请在最前面添加#R18标签，如没有过多关于性或者色情的内容请不要随意添加#R18标签
 - **World Info**: 如果用户请求添加或修改设定/条目，请操作 World Info 数组。
 - **Regex Scripts**: 如果用户请求修改文本渲染效果，请操作 Regex Scripts 数组。
@@ -1962,7 +1962,7 @@
 ### Scenario
 (场景或背景状态。)
 ### First Message
-(开场白，支持{{user}}占位符，500-1000字，第三人称旁白视角或第二人称（你），禁止使用第一视角，使用角色名字取代“她”或“他”，禁止出现指节，泛白等字样，禁止长篇大论的环境描写。**对于R18内容，开场白必须包含露骨的性行为或性心理描写，用词需有一定色气，但禁止出现任何{{user}}的言行/任何性行为，应将后续选择权和行动权留给{{user}}**)
+(开场白，支持{{user}}占位符，500-1000字，第三人称旁白视角或第二人称（你），禁止使用第一视角，禁止使用markdown格式，请使用角色名字取代“她”或“他”，禁止出现指节，泛白等字样，禁止长篇大论的环境描写。**对于R18内容，开场白必须包含露骨的性行为或性心理描写，用词需有一定色气，但禁止出现任何{{user}}的言行/任何性行为，应将后续选择权和行动权留给{{user}}**)
 ### Creator Notes
 (作者注释，必填，使用简单的#+关键词的标签形式说明人物卡的内容，每个关键词之间隔一个空格，例如#纯爱 #校园，如有大量色情内容请在最前面添加#R18标签，如没有过多关于性或者色情的内容请不要随意添加#R18标签)
 ### Talkativeness
