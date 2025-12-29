@@ -4365,10 +4365,10 @@ ${rawHtml}
                         comment: autoImageGenWIName,
                         keys: [],
                         secondary_keys: [],
-                        content: `<auto_image_gen>\n在诱人或者精彩场景描绘时使用“<image>”作为场景图片，使用绘画tag对场景人物进行特写。一个场景可以拥有多个<image>
-只要你认为画面足够精彩足够诱人。
+                        content: `<auto_image_gen>\n在诱人或者精彩场景描绘时使用“<image>”作为场景图片，使用绘画tag对场景人物进行特写。一个场景可以拥有多个<image>，只要你认为画面足够精彩足够诱人。
 注意:如果当前场景有私密身体部位暴露,请添加前缀“nsfw, ”.始终使用逗号分隔条目.另外请保证同一角色的特征，如发色，瞳孔颜色，体态，外貌的一致性.
-结合场景进行image生成 使用 <image>image###生成的提示词###</image> 的格式！
+使用 <image>image###生成的提示词###</image> 的格式！
+
 ###提示词生成指导:
 第一重要的在于人物的特点,例如：white hair,性别：1girl,1boy,特色：mesugaki,loli,ojousama,服装特色：china_dress,gothic,glasses,表情动作：smile,crying,tearing_clothes,disgust,angry,kubrick_stare,
 第二在于人物姿势：例如基础的站姿：standing,on back,on stomach,kneeling,做事情：bathing,cooking,fighting,showering,sleeping,spitting,walking,toilet_use,性爱姿势：grinding,fingering,licking_penis,
@@ -4380,8 +4380,8 @@ ${rawHtml}
 第八在于当前时间,morning, noon or night, emphasize the lighting situation..
 
 <Tag_注意事项>
-#  Tag规范：禁用中文，禁止人物卡的角色名称；禁用"Tag"双引号包裹（替换为''单引号）
-1. 拆解复合词：【如：月下→moonlit,night】
+#  Tag规范：禁用中文，禁止人物卡的英文角色名称
+1. 拆解复合词：【如：月下→moonlight,night】
 2. 排除元素：“no+Tag”明确强调排除，默认绘图“不提及也易生成”的元素【如：穿衣但不穿胸罩→no bra；穿短裙但不穿内裤→no panties】
 
 # 画面限制：仅描述画面中“客观存在的人/物/背景及正在发生的物理动作“，严禁加入人物内心想法、回忆、幻想、预告、计划，及比喻、抽象描述等非视觉化内容
@@ -4410,19 +4410,14 @@ ${rawHtml}
  - 视线：【如：looking at viewer】
  - 面部：【如：open mouth】
  - 表情：【如：smile、blush】
-特效:
  - 生理反应：【wet、pussy juice、cum、dripping】
- - 特殊效果：法术/拟声词/运动线/对话气泡等
+
 相对位置:
  - 方位标识：“|centers:?”表示角色所在的相对中心位置【如：|centers:C3】
 **划分相片均分的25等份1、2、3、4、5行数,A、B、C、D、E列数,即C3为正中心，B3左半边中间，D3在画面右半边中间，且1个角色描述仅可使用1个方位标识，但人物的位置可以重叠【如：亲吻、拥抱】**
 
-是否还有其他角色：是，重复”4.1角色描述”步骤
+是否还有其他角色：是，则注意相对位置
 【如：2boys→Character 2 Prompt:boy...|centers:B2;Character 3 Prompt:boy...|centers:D4;】
-
-相对位置:
- - 方位标识：“|centers:?”表示角色所在的相对中心位置【如：|centers:C3】
-**划分相片均分的25等份1、2、3、4、5行数,A、B、C、D、E列数,即C3为正中心，B3左半边中间，D3在画面右半边中间，且1个角色描述仅可使用1个方位标识，但人物的位置可以重叠【如：亲吻、拥抱】**
 
 <Tag_智能调整>
 # 个数分配：按”画面视觉占比及焦点”分配动态不同分类的Tag个数
@@ -6180,5 +6175,5 @@ ${rawHtml}
         }).mount('#app');
     </script>
 </body>
-                                           </html>
+</html>
 
