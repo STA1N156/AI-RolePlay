@@ -169,8 +169,8 @@
                         </div>
                         <div
                             class="border rounded-xl p-3 cursor-pointer transition-all duration-200 flex flex-col items-center justify-center gap-1 relative overflow-hidden select-none"
-                            :class="api.model === '[bo]gemini-3-pro-preview-thinking-1' ? 'border-secondary bg-secondary/10 text-secondary ring-2 ring-secondary/20 shadow-sm' : 'border-base-300 bg-base-100 hover:border-base-content/30 hover:bg-base-200/50'"
-                            @click="api.model = '[bo]gemini-3-pro-preview-thinking-1'; api.stream = false"
+                            :class="api.model === 'gemini-3-pro-preview-maxthinking' ? 'border-secondary bg-secondary/10 text-secondary ring-2 ring-secondary/20 shadow-sm' : 'border-base-300 bg-base-100 hover:border-base-content/30 hover:bg-base-200/50'"
+                            @click="api.model = 'gemini-3-pro-preview-maxthinking'; api.stream = false"
                         >
                             <span class="font-bold text-sm">质量 (Pro)</span>
                         </div>
@@ -901,7 +901,7 @@
             const api = reactive({
                 url: 'https://opis.zeabur.app/v1',
                 key: 'sk-s9PWitF01AQpxVFXiDVEgfdBHBGMyKGUjSvEYe8BVjhdykaY',
-                model: '[bo]gemini-3-pro-preview-thinking-1',
+                model: 'gemini-3-pro-preview-maxthinking',
                 stream: false
             });
 
