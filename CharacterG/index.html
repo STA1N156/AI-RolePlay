@@ -1983,6 +1983,10 @@
                 });
 
                 if (applyCount > 0) {
+                    // 清除开场白中的 ** 符号
+                    if (currentCharacter.value.first_mes) {
+                        currentCharacter.value.first_mes = currentCharacter.value.first_mes.replace(/\*\*/g, '');
+                    }
                     showToast(`成功应用 ${applyCount} 处修改`, 'success');
                 }
                 showDiffConfirmation.value = false;
@@ -2453,6 +2457,10 @@ ${options.generateExtra ? `### World Info
 
                         generationProgress.value = 100;
                         generationStatus.value = '生成完成';
+                        // 清除开场白中的 ** 符号
+                        if (currentCharacter.value.first_mes) {
+                            currentCharacter.value.first_mes = currentCharacter.value.first_mes.replace(/\*\*/g, '');
+                        }
                         showToast('角色卡生成完成！', 'success');
                     } catch (error) {
                         throw error;
