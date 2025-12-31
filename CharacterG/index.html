@@ -2126,6 +2126,11 @@
             // Generation Logic
             const generateCharacter = async () => {
                 if (!prompt.value) return;
+
+                // 点击发送后自动收起输入框高度
+                if (promptInput.value) {
+                    promptInput.value.style.height = '';
+                }
                 
                 // Check if current character is blank
                 const char = currentCharacter.value;
