@@ -191,6 +191,11 @@
             color: #ffffff !important;
         }
 
+        /* Generic fix for immersive containers (custom regex outputs) to preserve newlines */
+        .markdown-body div[style] {
+            white-space: pre-wrap;
+        }
+
         .glass-panel {
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(12px);
@@ -785,11 +790,11 @@ opacity: 0;
                                                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                             </svg>
-                                                            <span class="text-xs font-bold">正在思考...</span>
+                                                            <span class="text-xs font-bold">正在分析...</span>
                                                         </div>
                                                         <div v-else class="flex items-center text-gray-500">
                                                             <svg class="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
-                                                            <span class="text-xs font-bold">思考过程</span>
+                                                            <span class="text-xs font-bold">分析过程 (COT)</span>
                                                         </div>
                                                         <svg class="w-3.5 h-3.5 ml-auto text-gray-400 transform transition-transform duration-200 chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                                     </summary>
@@ -6603,7 +6608,7 @@ ${rawHtml}
 
                     // 1.1 Multiplayer Preset
                     const multiplayerPresetName = '多人模式';
-                    const multiplayerPresetContent = `<multiplayer_mode>\n# 多人联机模式指令 (Multiplayer Mode)\n- 房间内有多名玩家参与，请通过消息的 \`name\` 字段区分发言者。\n- 你的回复必须针对所有玩家的最新行动做出反应。\n- 描述互动时，必须使用玩家的姓名指代，严禁仅使用“你”来指代不确定的对象。\n- 严禁扮演、代替或描述任何玩家（User）的言行、决定或心理活动。\n- 保持剧情的连贯性，确保所有在场玩家都能参与到故事中。\n- **私聊功能**：如果你想对某个特定用户说悄悄话，请在回复开头使用 \`@用户名 \` 的格式。例如 \`@Player1 嘿，过来一下。\`。这条消息将仅对该用户可见。\n</multiplayer_mode>`;
+                    const multiplayerPresetContent = `<multiplayer_mode>\n# 多人联机模式指令 (Multiplayer Mode)\n- 房间内有多名玩家参与，请通过消息的 \`name\` 字段区分发言者。\n- 你的回复必须针对所有玩家的最新行动做出反应。\n- 描述互动时，必须使用玩家的姓名指代，严禁仅使用“你”来指代不确定的对象。\n- 严禁扮演、代替或描述任何玩家（User）的言行、决定或心理活动。\n- 保持剧情的连贯性，确保所有在场玩家都能参与到故事中。\n- **私聊功能**：如果你想对某个特定用户说悄悄话或对其他用户隐藏的内容（例如剧本杀发本阶段），请在回复最开头使用 \`@用户名 \` 的格式。例如 \`@Player1 嘿，过来一下。\`。这条消息将仅对该用户可见。若某个用户做出了保密行动或发言，请注意公开内容的保密性（例如狼人杀时某个用户做出了行动，这次行动的具体行动内容和行动人应在公开对话阶段对其他用户保密）\n</multiplayer_mode>`;
                     
                     const existingMultiplayerPreset = presets.value.find(p => p.name === multiplayerPresetName);
                     const breakLimitIndex = presets.value.findIndex(p => p.name === '破限');
