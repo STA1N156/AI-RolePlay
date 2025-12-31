@@ -419,7 +419,7 @@ opacity: 0;
 
         /* Chain of Thought (CoT) UI - Enhanced */
         .cot-ui {
-            background: #f8fafc;
+            background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 0.75rem;
             margin: 0.5rem 0.25rem;
@@ -7568,7 +7568,7 @@ ${rawHtml}
                         return false;
                     },
                     startLongPress: (name) => {
-                        if (!name) return;
+                        if (!name || !multiplayerState.inRoom) return;
                         longPressTimer.value = setTimeout(() => {
                             const atText = `@${name} `;
                             userInput.value += atText;
@@ -7585,7 +7585,7 @@ ${rawHtml}
                         }
                     },
                     insertMention: (name) => {
-                        if (!name) return;
+                        if (!name || !multiplayerState.inRoom) return;
                         const atText = `@${name} `;
                         userInput.value += atText;
                         if (inputBox.value) inputBox.value.focus();
