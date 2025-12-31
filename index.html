@@ -417,28 +417,29 @@ opacity: 0;
             contain-intrinsic-size: 1px 300px; /* Rough estimate of card height */
         }
 
-        /* Chain of Thought (CoT) UI */
+        /* Chain of Thought (CoT) UI - Enhanced */
         .cot-ui {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 0.75rem;
-            margin: 0.5rem;
-            padding: 0 !important; /* Override markdown-body padding */
+            margin: 0.5rem 0.25rem;
+            padding: 0 !important;
             overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-            width: calc(100% - 1rem);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: calc(100% - 0.5rem);
             min-width: 0;
         }
-        .cot-ui[open] {
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        
+        .cot-ui.is-open {
             background: #ffffff;
+            border-color: #bfdbfe;
+            box-shadow: 0 4px 12px -2px rgba(59, 130, 246, 0.1), 0 2px 6px -2px rgba(59, 130, 246, 0.05);
             margin-top: 0.75rem;
             margin-bottom: 0.75rem;
-            border-color: #dbeafe;
         }
-        .cot-summary {
-            padding: 0.5rem 0.75rem;
+
+        .cot-header {
+            padding: 0.6rem 0.8rem;
             cursor: pointer;
             font-size: 0.85rem;
             font-weight: 600;
@@ -447,41 +448,94 @@ opacity: 0;
             align-items: center;
             user-select: none;
             background: transparent;
-            transition: all 0.3s;
+            transition: all 0.2s;
+            border-radius: 0.75rem;
         }
-        .cot-summary:hover {
+
+        .cot-header:hover {
+            background-color: rgba(241, 245, 249, 0.8);
             color: #3b82f6;
         }
-        .cot-ui[open] > .cot-summary {
-            color: #3b82f6;
+
+        .cot-ui.is-open .cot-header {
+            color: #2563eb;
+            background-color: #eff6ff;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
         }
+
+        /* Grid Animation for Smooth Height Transition */
+        .cot-body {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cot-body.is-open {
+            grid-template-rows: 1fr;
+        }
+
+        .cot-inner {
+            overflow: hidden;
+        }
+
         .cot-content {
-            padding: 0.75rem 0;
-            border-top: 1px solid #f1f5f9;
+            padding: 0.5rem 0.5rem;
+            border-top: 1px solid #eff6ff;
             font-size: 0.875rem;
             color: #475569;
             line-height: 1.7;
+            background-color: #ffffff;
         }
+
         .cot-content .markdown-body > * {
-            padding-left: 0.75rem;
-            padding-right: 0.75rem;
             margin-bottom: 0.5em;
+            padding-left: 0.25rem !important;
+            padding-right: 0.25rem !important;
         }
-        /* Fix for summary icons alignment */
-        .cot-summary svg, .cot-summary span {
-            position: relative;
-            top: 0 !important;
+
+        .chevron {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        /* Remove default details marker */
-        details.cot-ui > summary {
-            list-style: none;
-        }
-        details.cot-ui > summary::-webkit-details-marker {
-            display: none;
-        }
-        /* Chevron rotation */
-        details.cot-ui[open] > summary .chevron {
+        
+        .cot-ui.is-open .chevron {
             transform: rotate(180deg);
+        }
+
+        /* CoT Tree List Style */
+        .cot-content .markdown-body ul {
+            list-style: none !important;
+            padding-left: 0.5rem !important;
+            margin-left: 0.25rem !important;
+        }
+        .cot-content .markdown-body ul > li {
+            position: relative;
+            padding-left: 1.25rem;
+            margin-bottom: 0.25rem;
+        }
+        /* Vertical connecting line */
+        .cot-content .markdown-body ul > li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #cbd5e1;
+        }
+        /* Stop vertical line for last item */
+        .cot-content .markdown-body ul > li:last-child::before {
+            height: 0.65em;
+        }
+        /* Horizontal indicator line */
+        .cot-content .markdown-body ul > li::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.65em;
+            width: 0.8rem;
+            height: 2px;
+            background-color: #cbd5e1;
         }
     </style>
 </head>
@@ -783,8 +837,8 @@ opacity: 0;
                                         <div v-else class="message-content-wrapper">
                                             <!-- CoT Part -->
                                             <div v-if="parseCot(msg.content).cot" class="cot-wrapper">
-                                                <details class="cot-ui">
-                                                    <summary class="cot-summary">
+                                                <div class="cot-ui" :class="{ 'is-open': msg.isCotOpen }">
+                                                    <div class="cot-header" @click="msg.isCotOpen = !msg.isCotOpen">
                                                         <div v-if="index === chatHistory.length - 1 && (isGenerating || isRemoteGenerating) && !parseCot(msg.content).isFinished" class="flex items-center text-primary-600">
                                                             <svg class="animate-spin w-3.5 h-3.5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -792,16 +846,20 @@ opacity: 0;
                                                             </svg>
                                                             <span class="text-xs font-bold">正在分析...</span>
                                                         </div>
-                                                        <div v-else class="flex items-center text-gray-500">
-                                                            <svg class="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                                                        <div v-else class="flex items-center">
+                                                            <svg class="w-3.5 h-3.5 mr-2 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
                                                             <span class="text-xs font-bold">分析过程 (COT)</span>
                                                         </div>
-                                                        <svg class="w-3.5 h-3.5 ml-auto text-gray-400 transform transition-transform duration-200 chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                                                    </summary>
-                                                    <div class="cot-content">
-                                                        <div class="markdown-body" v-html="renderMarkdown(parseCot(msg.content).cot, 'assistant', true)"></div>
+                                                        <svg class="w-3.5 h-3.5 ml-auto opacity-50 chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                                                     </div>
-                                                </details>
+                                                    <div class="cot-body" :class="{ 'is-open': msg.isCotOpen }">
+                                                        <div class="cot-inner">
+                                                            <div class="cot-content">
+                                                                <div class="markdown-body" v-html="renderMarkdown(parseCot(msg.content).cot, 'assistant', true)"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <!-- Main Part -->
                                             <div class="markdown-body" v-html="renderMarkdown(parseCot(msg.content).main, msg.role)"></div>
@@ -5056,11 +5114,14 @@ ${rawHtml}
                             return true;
                         })
                         .map((m, index) => {
+                            // Remove CoT content from history messages before sending to AI
+                            // This ensures previous thoughts don't pollute the context
+                            const cleanContent = parseCot(m.content).main;
                             return {
                                 role: m.role === 'user' ? 'user' : 'assistant',
                                 // Fix: Use stored name for user messages to support multiplayer names
                                 name: m.name || (m.role === 'user' ? user.name : currentCharacter.value.name),
-                                content: m.content
+                                content: cleanContent
                             };
                         })
                     );
@@ -5215,7 +5276,8 @@ ${rawHtml}
                                                                 name: currentCharacter.value.name,
                                                                 content: '',
                                                                 id: generateUUID(), // Assign ID
-                                                                shouldAnimate: true // Enable animation for new stream
+                                                                shouldAnimate: true, // Enable animation for new stream
+                                                                isCotOpen: false // Default collapsed for CoT
                                                             });
                                                             chatHistory.value.push(assistantMessage);
                                                             isReceiving.value = true;
@@ -5249,7 +5311,8 @@ ${rawHtml}
                                             name: currentCharacter.value.name,
                                             content: content,
                                             id: generateUUID(), // Assign ID
-                                            shouldAnimate: true // Enable animation for new messages
+                                            shouldAnimate: true, // Enable animation for new messages
+                                            isCotOpen: false // Default collapsed for completed messages
                                         });
                                         chatHistory.value.push(assistantMessage);
                                         await nextTick();
@@ -6773,7 +6836,7 @@ ${rawHtml}
 
                     // 1.10 Enforce Default Preset (COT)
                     const cotPresetName = 'COT';
-                    const cotPresetContent = '请在正文输出前，以 <cot>...思考内容...<cot> 的方式严密，详细地分析提示词，设定，历史对话，用户输入等信息，确保符合设定且符合逻辑，然后再进行正文的输出，规范格式为 <cot>... <cot>，确保开头结尾都有<cot>标签。';
+                    const cotPresetContent = '请在正文输出前，使用markdown格式，以 <cot>...思考内容...<cot> 的方式严密，详细地分析规则，设定，历史对话，用户输入等信息，确保符合设定且符合逻辑后再进行正文的输出，规范格式为 <cot>... <cot>，确保开头结尾都有<cot>标签。';
                     const existingCotPreset = presets.value.find(p => p.name === cotPresetName);
                     
                     if (!existingCotPreset) {
