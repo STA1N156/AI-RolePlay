@@ -784,7 +784,7 @@ opacity: 0;
                     <div v-else v-for="(msg, index) in chatHistory" :key="index" ref="messageElements" :data-role="msg.role"
                          :class="['flex w-full', msg.shouldAnimate ? 'animate-message-in' : '', msg.isSelf ? 'justify-end' : 'justify-start']"
                          :style="{ animationDelay: msg.isSelf ? '0ms' : '0ms' }">
-                        <div :class="['flex max-w-[99%] md:max-w-[75%] lg:max-w-[70%]', parseCot(msg.content).cot ? 'w-full' : '', msg.isSelf ? 'flex-row-reverse' : 'flex-row']">
+                        <div :class="['flex max-w-[99%] md:max-w-[75%] lg:max-w-[70%]', (parseCot(msg.content).cot || !canViewMessage(msg)) ? 'w-full' : '', msg.isSelf ? 'flex-row-reverse' : 'flex-row']">
                             <!-- Avatar -->
                             <div class="flex-shrink-0 select-none"
                                  @mousedown="startLongPress(msg.name || (msg.role === 'user' ? user.name : currentCharacter.name))"
@@ -808,15 +808,15 @@ opacity: 0;
                             </div>
                             
                             <!-- Message Column -->
-                            <div :class="['flex flex-col min-w-0', parseCot(msg.content).cot ? 'w-full' : '', msg.isSelf ? 'items-end' : 'items-start']">
+                            <div :class="['flex flex-col min-w-0', (parseCot(msg.content).cot || !canViewMessage(msg)) ? 'w-full' : '', msg.isSelf ? 'items-end' : 'items-start']">
                                 <!-- Name (Outside Bubble) -->
                                 <div :class="['text-[10px] font-bold text-gray-600 mb-1 select-none px-1.5 py-0.5 rounded-md bg-white/50 backdrop-blur-sm border border-white/20 w-fit shadow-sm truncate max-w-[150px] md:max-w-[250px]', msg.isSelf ? 'ml-auto mr-1' : 'mr-auto ml-1']">
                                     {{ msg.name || (msg.role === 'user' ? user.name : 'Unknown') }}
                                 </div>
                                 <!-- Message Bubble -->
-                                <div class="group relative" :class="{'w-full': parseCot(msg.content).cot}">
+                                <div class="group relative" :class="{'w-full': parseCot(msg.content).cot || !canViewMessage(msg)}">
                                     <div :class="['p-0 rounded-2xl shadow-sm text-sm md:text-base leading-relaxed overflow-hidden',
-                                        parseCot(msg.content).cot ? 'w-full' : '',
+                                        (parseCot(msg.content).cot || !canViewMessage(msg)) ? 'w-full' : '',
                                         msg.role === 'user' ? (msg.isSelf ? 'bg-primary-100 text-gray-900 rounded-tr-none shadow-sm border border-primary-200' : 'bg-white text-gray-800 rounded-tl-none border border-gray-100 shadow-card') :
                                         msg.role === 'system' ? 'bg-red-50 text-red-800 border border-red-200' :
                                         'bg-white text-gray-800 border border-gray-100 shadow-card']">
@@ -835,6 +835,11 @@ opacity: 0;
                                             <div class="markdown-body" v-html="renderMarkdown(msg.content, msg.role)"></div>
                                         </div>
                                         <div v-else class="message-content-wrapper">
+                                            <!-- Private Message Indicator -->
+                                            <div v-if="getAtTarget(msg.content) === user.name" class="mb-2 px-3 py-1.5 bg-blue-50/80 text-blue-600 text-xs rounded-lg flex items-center border border-blue-100/50 w-fit select-none">
+                                                <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.05 0 01-4.132 5.411m0 0L21 21"></path></svg>
+                                                私聊消息 (仅您可见)
+                                            </div>
                                             <!-- CoT Part -->
                                             <div v-if="parseCot(msg.content).cot" class="cot-wrapper">
                                                 <div class="cot-ui" :class="{ 'is-open': msg.isCotOpen }">
@@ -6671,7 +6676,7 @@ ${rawHtml}
 
                     // 1.1 Multiplayer Preset
                     const multiplayerPresetName = '多人模式';
-                    const multiplayerPresetContent = `<multiplayer_mode>\n# 多人联机模式指令 (Multiplayer Mode)\n- 房间内有多名玩家参与，请通过消息的 \`name\` 字段区分发言者。\n- 你的回复必须针对所有玩家的最新行动做出反应。\n- 描述互动时，必须使用玩家的姓名指代，严禁仅使用“你”来指代不确定的对象。\n- 严禁扮演、代替或描述任何玩家（User）的言行、决定或心理活动。\n- 保持剧情的连贯性，确保所有在场玩家都能参与到故事中。\n- **私聊功能**：如果你想对某个特定用户说悄悄话或对其他用户隐藏的内容（例如剧本杀发本阶段），请在回复最开头使用 \`@用户名 \` 的格式。例如 \`@Player1 嘿，过来一下。\`。这条消息将仅对该用户可见。若某个用户做出了保密行动或发言，请注意公开内容的保密性（例如狼人杀时某个用户做出了行动，这次行动的具体行动内容和行动人应在公开对话阶段对其他用户保密）\n</multiplayer_mode>`;
+                    const multiplayerPresetContent = `<multiplayer_mode>\n# 多人联机模式指令 (Multiplayer Mode)\n- 房间内有多名玩家参与，请通过消息的 \`name\` 字段区分发言者。\n- 你的回复必须针对所有玩家的最新行动做出反应。\n- 描述互动时，必须使用玩家的姓名指代，严禁仅使用“你”来指代不确定的对象。\n- 严禁扮演、代替或描述任何玩家（User）的言行、决定或心理活动。\n- 保持剧情的连贯性，确保所有玩家都能在合适的时机参与到剧情中（私聊时的消息只需要注重被私聊玩家的内容，因为其他玩家不可见）。\n- **私聊功能**：如果你想对某个特定用户说悄悄话或一些私密内容（例如剧本杀发本阶段），请在回复最开头使用 \`@用户名 \` 的格式。例如 \`@Player1 嘿，过来一下。\`。注意：这条消息将仅对该用户可见。若某个用户做出了保密行动或发言，请注意公开内容的保密性（例如狼人杀时某个用户做出了行动，这次行动的具体行动内容和行动人应在公开对话阶段对其他用户保密，思考过程也不要出现保密内容）\n</multiplayer_mode>`;
                     
                     const existingMultiplayerPreset = presets.value.find(p => p.name === multiplayerPresetName);
                     const breakLimitIndex = presets.value.findIndex(p => p.name === '破限');
@@ -7571,7 +7576,11 @@ ${rawHtml}
                         if (!name || !multiplayerState.inRoom) return;
                         longPressTimer.value = setTimeout(() => {
                             const atText = `@${name} `;
-                            userInput.value += atText;
+                            // Remove existing mention of the same name if present
+                            let currentInput = userInput.value.replace(new RegExp(`@${name}\\s*`, 'g'), '');
+                            // Prepend new mention
+                            userInput.value = atText + currentInput;
+                            
                             if (inputBox.value) inputBox.value.focus();
                             showToast(`已@ ${name}`, 'info');
                             // Vibrate if supported
@@ -7587,7 +7596,11 @@ ${rawHtml}
                     insertMention: (name) => {
                         if (!name || !multiplayerState.inRoom) return;
                         const atText = `@${name} `;
-                        userInput.value += atText;
+                        // Remove existing mention of the same name if present
+                        let currentInput = userInput.value.replace(new RegExp(`@${name}\\s*`, 'g'), '');
+                        // Prepend new mention
+                        userInput.value = atText + currentInput;
+                        
                         if (inputBox.value) inputBox.value.focus();
                         showToast(`已@ ${name}`, 'info');
                         if (navigator.vibrate) navigator.vibrate(50);
