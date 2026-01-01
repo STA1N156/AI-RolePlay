@@ -845,7 +845,7 @@ opacity: 0;
                                                 私聊消息 (仅您可见)
                                             </div>
                                             <!-- CoT Part -->
-                                            <div v-if="parseCot(msg.content).cot && !multiplayerState.inRoom" class="cot-wrapper">
+                                            <div v-if="parseCot(msg.content).cot && !multiplayerState.inRoom && !msg.isMultiplayerMsg" class="cot-wrapper">
                                                 <div class="cot-ui" :class="{ 'is-open': msg.isCotOpen }">
                                                     <div class="cot-header" @click="msg.isCotOpen = !msg.isCotOpen">
                                                         <div v-if="index === chatHistory.length - 1 && (isGenerating || isRemoteGenerating) && !parseCot(msg.content).isFinished" class="flex items-center text-primary-600">
@@ -4901,7 +4901,8 @@ ${rawHtml}
                             shouldAnimate: true,
                             avatar: payload.avatar,
                             isSelf: false,
-                            senderId: payload.senderId
+                            senderId: payload.senderId,
+                            isMultiplayerMsg: true // Flag as multiplayer message
                         });
                         nextTick(() => scrollToBottom());
                         
@@ -5923,6 +5924,9 @@ ${rawHtml}
                                         
                                         // Broadcast full message if Host
                                         if (multiplayerState.inRoom && multiplayerState.isHost) {
+                                            // Mark local message as multiplayer too if we are broadcasting it
+                                            if (assistantMessage) assistantMessage.isMultiplayerMsg = true;
+
                                             await broadcastMessage({
                                                 type: 'chat',
                                                 senderId: multiplayerState.myId,
@@ -6000,6 +6004,9 @@ ${rawHtml}
                                     
                                     // If streaming ended successfully and I am host, broadcast the full message now
                                     if (settings.stream && multiplayerState.inRoom && multiplayerState.isHost && assistantMessage) {
+                                        // Mark local message as multiplayer too if we are broadcasting it
+                                        assistantMessage.isMultiplayerMsg = true;
+
                                         await broadcastMessage({
                                             type: 'chat',
                                             senderId: multiplayerState.myId,
