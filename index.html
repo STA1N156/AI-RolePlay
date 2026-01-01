@@ -581,8 +581,12 @@ opacity: 0;
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
                     聊天
                 </button>
+                <button @click="currentView = 'friends'; showMobileMenu = false" :class="['w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200 font-medium', currentView === 'friends' ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900']">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    好友
+                </button>
                 <button @click="currentView = 'multiplayer'; showMobileMenu = false" :class="['w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200 font-medium', currentView === 'multiplayer' ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900']">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     多人联机
                 </button>
                 <button @click="currentView = 'characters'; showMobileMenu = false" :class="['w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200 font-medium', currentView === 'characters' ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900']">
@@ -593,21 +597,21 @@ opacity: 0;
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     角色卡生成
                 </button>
-                <button @click="currentView = 'plaza'; showMobileMenu = false" :class="['w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200 font-medium', currentView === 'plaza' ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900']">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                    万相广场
-                </button>
                 <button @click="currentView = 'presets'; showMobileMenu = false" :class="['w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200 font-medium', currentView === 'presets' ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900']">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
                     预设
                 </button>
                 <button @click="currentView = 'worldinfo'; showMobileMenu = false" :class="['w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200 font-medium', currentView === 'worldinfo' ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900']">
-                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                     世界书
                 </button>
                 <button @click="currentView = 'regex'; showMobileMenu = false" :class="['w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200 font-medium', currentView === 'regex' ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900']">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
                     正则脚本
+                </button>
+                <button @click="currentView = 'plaza'; showMobileMenu = false" :class="['w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200 font-medium', currentView === 'plaza' ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900']">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    万相广场
                 </button>
                 <button @click="currentView = 'settings'; showMobileMenu = false" :class="['w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200 font-medium', currentView === 'settings' ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900']">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
@@ -1117,6 +1121,9 @@ opacity: 0;
                             <button @click.stop="exportCharacter(char.originalIndex)" class="p-2 bg-white/20 backdrop-blur-md text-white rounded-full border border-white/20 active:bg-white/40 shadow-lg">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                             </button>
+                            <button @click.stop="openShareModal(char.originalIndex)" class="p-2 bg-white/20 backdrop-blur-md text-white rounded-full border border-white/20 active:bg-white/40 shadow-lg">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                            </button>
                         </div>
 
                         <!-- Info & Actions -->
@@ -1165,6 +1172,9 @@ opacity: 0;
                                 </button>
                                 <button @click.stop="exportCharacter(char.originalIndex)" class="p-2 bg-white/90 backdrop-blur-sm text-gray-700 hover:text-primary-600 rounded-full shadow-lg transition-all hover:scale-110" title="导出角色">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                </button>
+                                <button @click.stop="openShareModal(char.originalIndex)" class="p-2 bg-white/90 backdrop-blur-sm text-blue-500 hover:text-blue-700 rounded-full shadow-lg transition-all hover:scale-110" title="分享角色">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
                                 </button>
                                 <button @click.stop="deleteCharacter(char.originalIndex)" class="p-2 bg-white/90 backdrop-blur-sm text-red-500 hover:text-red-700 rounded-full shadow-lg transition-all hover:scale-110" title="删除角色">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
@@ -1378,6 +1388,16 @@ opacity: 0;
                                     <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-600"></div>
                                     <span class="ml-3 text-sm text-gray-600">使用角色卡作为聊天背景</span>
                                 </label>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" v-model="settings.autoScroll" class="sr-only peer">
+                                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-600"></div>
+                                    <span class="ml-3 text-sm text-gray-600">启用自动滚动功能</span>
+                                </label>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" v-model="settings.friendOnlineNotification" class="sr-only peer">
+                                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-600"></div>
+                                    <span class="ml-3 text-sm text-gray-600">好友上线提醒</span>
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -1492,7 +1512,7 @@ opacity: 0;
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
                         </button>
                         <h2 class="text-xl md:text-2xl font-bold text-gray-800 flex items-center">
-                            <svg class="w-6 h-6 md:w-7 md:h-7 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                            <svg class="w-6 h-6 md:w-7 md:h-7 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             多人联机 (Beta)
                         </h2>
                     </div>
@@ -1742,6 +1762,168 @@ opacity: 0;
                 </div>
             </div>
 
+            <!-- Friends View -->
+            <div v-if="currentView === 'friends'" class="p-4 md:p-6 h-full overflow-y-auto animate-fade-in">
+                <div class="flex justify-between items-center mb-4 md:mb-6">
+                    <div class="flex items-center">
+                        <button @click="toggleMobileMenu" class="md:hidden mr-3 text-gray-500 md:hover:text-gray-700 active:text-gray-700 transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                        </button>
+                        <h2 class="text-xl md:text-2xl font-bold text-gray-800 flex items-center">
+                            <svg class="w-6 h-6 md:w-7 md:h-7 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                            好友列表
+                        </h2>
+                    </div>
+                </div>
+
+                <div class="max-w-4xl mx-auto space-y-6">
+                    <!-- My ID Card & Add Friend -->
+                    <!-- My ID Card & Add Friend -->
+                    <div class="bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300 relative">
+                        <!-- Decorative Background -->
+                        <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-primary-50 to-transparent rounded-bl-full opacity-50 pointer-events-none"></div>
+                        
+                        <div class="p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+                            <div class="flex flex-col md:flex-row items-center gap-5 text-center md:text-left">
+                                <div class="relative group">
+                                    <div class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-white p-1 shadow-md ring-1 ring-gray-100">
+                                        <img v-if="user.avatar" :src="user.avatar" class="w-full h-full rounded-full object-cover">
+                                        <div v-else class="w-full h-full rounded-full bg-gradient-to-br from-primary-100 to-blue-50 flex items-center justify-center text-primary-600 text-3xl font-bold">
+                                            {{ user.name.charAt(0).toUpperCase() }}
+                                        </div>
+                                    </div>
+                                    <div class="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-4 border-white rounded-full shadow-sm" title="在线"></div>
+                                </div>
+                                
+                                <div>
+                                    <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ user.name }}</h3>
+                                    <div class="flex items-center justify-center md:justify-start gap-2 text-sm text-gray-500 bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-gray-100 shadow-sm group cursor-pointer hover:border-primary-200 transition-colors" @click="copyMessage(user.uuid)" title="点击复制 ID">
+                                        <span class="font-mono text-gray-400 select-all">ID:</span>
+                                        <span class="font-mono font-medium text-gray-700 select-all truncate max-w-[180px] md:max-w-none">{{ user.uuid }}</span>
+                                        <svg class="w-4 h-4 text-gray-400 group-hover:text-primary-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                                <button @click="showAddFriendInput = !showAddFriendInput"
+                                        :class="['w-full sm:w-auto px-6 py-3 rounded-xl font-bold transition-all flex items-center justify-center shadow-sm active:scale-95 border',
+                                                 showAddFriendInput ? 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50' : 'bg-primary-600 hover:bg-primary-700 text-white border-transparent shadow-md hover:shadow-lg']">
+                                    <svg class="w-5 h-5 mr-2 transition-transform duration-300" :class="showAddFriendInput ? 'rotate-45' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                    {{ showAddFriendInput ? '取消添加' : '添加好友' }}
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Expandable Input Area -->
+                        <div class="grid transition-[grid-template-rows] duration-300 ease-out" :style="{ 'grid-template-rows': showAddFriendInput ? '1fr' : '0fr' }">
+                            <div class="overflow-hidden">
+                                <div class="px-6 pb-8 pt-0 md:px-8">
+                                    <div class="p-1 bg-gray-100/50 rounded-2xl border border-gray-200/60 p-1.5">
+                                        <div class="flex flex-col sm:flex-row gap-2">
+                                            <div class="relative flex-1">
+                                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                                </div>
+                                                <input v-model="friendInput"
+                                                       @keydown.enter="addFriend"
+                                                       type="text"
+                                                       placeholder="输入好友 ID (UUID)"
+                                                       class="w-full bg-white border-0 rounded-xl pl-10 pr-4 py-3 text-gray-800 focus:ring-2 focus:ring-primary-500 placeholder-gray-400 font-mono text-sm shadow-sm">
+                                            </div>
+                                            <button @click="addFriend" class="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl transition-colors shadow-sm active:scale-95 flex-shrink-0 flex items-center justify-center">
+                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                                                <span>发送请求</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Friend Requests -->
+                    <div v-if="friendRequests.length > 0" class="space-y-3">
+                        <h3 class="text-lg font-bold text-gray-900 flex items-center">
+                            <span class="w-2 h-2 bg-red-500 rounded-full mr-2 animate-pulse"></span>
+                            好友请求
+                        </h3>
+                        <div v-for="req in friendRequests" :key="req.id" class="bg-white p-4 rounded-xl border border-primary-100 shadow-sm flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                                    <img v-if="req.avatar" :src="req.avatar" class="w-full h-full object-cover">
+                                    <div v-else class="w-full h-full flex items-center justify-center text-gray-500 font-bold">{{ req.name.charAt(0) }}</div>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-gray-900">{{ req.name }}</div>
+                                    <div class="text-xs text-gray-500">请求添加你为好友</div>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button @click="rejectFriend(req)" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-sm font-medium transition-colors">拒绝</button>
+                                <button @click="acceptFriend(req)" class="px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">接受</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Friends List -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-bold text-gray-900 flex items-center justify-between">
+                            <span>我的好友 ({{ friends.length }})</span>
+                            <span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{{ friends.filter(f => f.isOnline).length }} 人在线</span>
+                        </h3>
+                        
+                        <div v-if="friends.length === 0" class="text-center py-12 text-gray-400 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center">
+                            <svg class="w-12 h-12 mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            <p>暂无好友，快去添加吧！</p>
+                        </div>
+                        
+                        <div v-else class="grid grid-cols-1 gap-3">
+                            <div v-for="friend in friends" :key="friend.uuid"
+                                 class="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex items-center justify-between group">
+                                
+                                <div class="flex items-center gap-3 overflow-hidden">
+                                    <div class="relative flex-shrink-0">
+                                        <div class="w-12 h-12 rounded-full bg-gray-100 overflow-hidden border border-gray-100">
+                                            <img v-if="friend.avatar" :src="friend.avatar" class="w-full h-full object-cover">
+                                            <div v-else class="w-full h-full flex items-center justify-center text-gray-400 font-bold text-lg">{{ friend.name.charAt(0) }}</div>
+                                        </div>
+                                        <!-- Online Dot -->
+                                        <div v-if="friend.isOnline" class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full shadow-sm animate-pulse"></div>
+                                        <div v-else class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-gray-300 border-2 border-white rounded-full shadow-sm"></div>
+                                    </div>
+                                    
+                                    <div class="min-w-0">
+                                        <div class="font-bold text-gray-900 truncate text-base">{{ friend.name }}</div>
+                                        <div class="text-xs flex items-center mt-0.5">
+                                            <span v-if="friend.isOnline" class="text-green-600 font-medium flex items-center bg-green-50 px-1.5 py-0.5 rounded-md">
+                                                在线
+                                            </span>
+                                            <span v-else class="text-gray-400 flex items-center">
+                                                {{ formatTimeAgo(friend.lastOnline) }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-2 pl-2 flex-shrink-0">
+                                    <button v-if="friend.isOnline" @click="inviteFriend(friend)" class="px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 flex items-center">
+                                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                        邀请
+                                    </button>
+                                    <button v-else class="px-3 py-1.5 bg-gray-100 text-gray-400 rounded-xl text-xs font-bold cursor-not-allowed flex items-center">
+                                        离线
+                                    </button>
+                                    
+                                    <button @click="deleteFriend(friend)" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors" title="删除好友">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+            </div>
+
             <!-- World Info View -->
             <div v-if="currentView === 'worldinfo'" class="p-4 md:p-6 h-full overflow-y-auto animate-fade-in">
                 <div class="flex justify-between items-center mb-4 md:mb-6">
@@ -1750,7 +1932,7 @@ opacity: 0;
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
                         </button>
                         <h2 class="text-xl md:text-2xl font-bold text-gray-800 flex items-center">
-                            <svg class="w-6 h-6 md:w-7 md:h-7 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <svg class="w-6 h-6 md:w-7 md:h-7 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                             世界书
                         </h2>
                     </div>
@@ -2315,6 +2497,36 @@ opacity: 0;
             </div>
         </div>
 
+        <!-- Share Character Modal -->
+        <div v-if="showShareModal" class="fixed inset-0 z-[90] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
+            <div class="bg-white rounded-xl border border-gray-200 w-full max-w-md flex flex-col shadow-2xl overflow-hidden">
+                <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 backdrop-blur-sm">
+                    <h3 class="text-lg font-bold text-gray-800">分享角色卡</h3>
+                    <button @click="showShareModal = false" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1 rounded-full transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="p-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                    <p class="text-sm text-gray-500 mb-4">选择好友分享角色卡</p>
+                    <div v-if="friends.length === 0" class="text-center py-8 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                        暂无好友，请先添加好友
+                    </div>
+                    <div v-else class="space-y-2">
+                        <button v-for="friend in friends" :key="friend.uuid" @click="confirmShare(friend)" class="w-full flex items-center p-3 rounded-xl border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-all group">
+                            <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden mr-3">
+                                <img v-if="friend.avatar" :src="friend.avatar" class="w-full h-full object-cover">
+                                <div v-else class="w-full h-full flex items-center justify-center text-gray-500 font-bold">{{ friend.name.charAt(0) }}</div>
+                            </div>
+                            <div class="flex-1 text-left">
+                                <div class="font-bold text-gray-900">{{ friend.name }}</div>
+                            </div>
+                            <svg class="w-5 h-5 text-gray-300 group-hover:text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Export Selection Modal -->
         <div v-if="showExportModal" class="fixed inset-0 z-[90] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
             <div class="bg-white rounded-xl border border-gray-200 w-full max-w-lg flex flex-col shadow-2xl max-h-[80vh] overflow-hidden">
@@ -2675,27 +2887,37 @@ opacity: 0;
                 const showAutoImageGenModal = ref(false);
                 const tempUserSetup = reactive({ name: '', description: '', person: 'second' });
                 const characterDisplayLimit = ref(20);
+
+                // Friends State
+                const friends = ref([]);
+                const friendRequests = ref([]);
+                const friendInput = ref('');
+                const showAddFriendInput = ref(false);
+                const showShareModal = ref(false);
+                const characterToShare = ref(null);
+                let personalChannel = null;
+                let globalChannel = null;
                 
                 // Update Modal Logic
                 const showUpdateModal = ref(false);
                 const updateCountdown = ref(0);
                 let updateCountdownTimer = null;
                 const latestUpdate = reactive({
-                    id: 10046, // 确保这是一个五位数ID，每次更新内容时增加这个数字
+                    id: 10048, // 确保这是一个五位数ID，每次更新内容时增加这个数字
                     date: new Date().toISOString().split('T')[0],
                     title: '网站更新公告',
                     content: `
 ### Roleplay 2.5.0
-### 优化了“多人联机（BETA）”功能
+### 新增“好友”功能
 
-- 大幅度强化了角色卡的可玩性和人设理解能力
-- 为角色卡新增分析过程展示功能
-- 支持多人模式站内房间聊天功能
+- 新增“好友”功能，支持添加好友，一键邀请好友进入房间/分享角色卡
+- 优化了“多人联机（BETA）”功能
+- 大幅度强化了角色卡的设定遵守能力和RolePlay能力
+- 为角色卡新增分析COT展示功能
 - 优化和修复了角色卡工坊的部分UI
-- 强化了角色卡工坊的提示词，确保了生成质量
-- 修复了部分UI和功能上的bug
+- 强化了角色卡工坊的预设，确保了生成质量
 
-#### 更新时间：1/1/05:51
+#### 更新时间：1/1/10:51
                     `
                 });
 
@@ -2711,7 +2933,7 @@ opacity: 0;
                 };
 
                 const startUpdateCountdown = () => {
-                    updateCountdown.value = 8;
+                    updateCountdown.value = 12;
                     if (updateCountdownTimer) clearInterval(updateCountdownTimer);
                     updateCountdownTimer = setInterval(() => {
                         if (updateCountdown.value > 0) {
@@ -2766,6 +2988,8 @@ opacity: 0;
                     stream: true,
                     autoRestoreDefaultAPI: true,
                     useCharacterBackground: true,
+                    autoScroll: true,
+                    friendOnlineNotification: false,
                     maxRetries: 2,
                     imageStyle: 'vertical',
                     supabaseUrl: 'https://ghswjgxrblpdklukxjnq.supabase.co',
@@ -2950,6 +3174,7 @@ opacity: 0;
                         await dbSet('silly_tavern_worldinfo_settings', worldInfoSettings);
                         // await dbSet('silly_tavern_recent_times', recentGenerationTimes.value); // Deprecated: Saved in character
                         await dbSet('silly_tavern_user', user);
+                        await dbSet('silly_tavern_friends', friends.value);
                         
                         // Save Chat State
                         if (currentCharacterIndex.value >= 0) {
@@ -3072,6 +3297,10 @@ opacity: 0;
 
                         const savedUser = await dbGet('silly_tavern_user');
                         if (savedUser) Object.assign(user, savedUser);
+                        if (!user.uuid) user.uuid = generateUUID(); // Ensure UUID
+
+                        const savedFriends = await dbGet('silly_tavern_friends');
+                        if (savedFriends) friends.value = savedFriends;
                         
                         // Load Last Active Character Index
                         const lastCharIndex = await dbGet('silly_tavern_last_active_char');
@@ -3366,6 +3595,22 @@ opacity: 0;
                 });
 
                 // --- Methods ---
+
+                const formatTimeAgo = (dateString) => {
+                    if (!dateString) return '从未在线';
+                    const date = new Date(dateString);
+                    const now = new Date();
+                    const seconds = Math.floor((now - date) / 1000);
+                    
+                    if (seconds < 60) return '刚刚';
+                    const minutes = Math.floor(seconds / 60);
+                    if (minutes < 60) return `${minutes}分钟前`;
+                    const hours = Math.floor(minutes / 60);
+                    if (hours < 24) return `${hours}小时前`;
+                    const days = Math.floor(hours / 24);
+                    if (days < 30) return `${days}天前`;
+                    return date.toLocaleDateString();
+                };
 
                 // Navigation Methods
                 const scrollToPreviousMessage = () => {
@@ -4022,6 +4267,11 @@ ${rawHtml}
                         
                         // Save settings immediately
                         saveData();
+
+                        // Init Personal Channel for Friends
+                        initPersonalChannel();
+                        // Init Global Presence for Online Status
+                        initGlobalPresence();
                     } catch (e) {
                         console.error('❌ Supabase 初始化失败:', e);
                         showToast('连接失败: ' + e.message, 'error');
@@ -4029,16 +4279,345 @@ ${rawHtml}
                     console.groupEnd();
                 };
 
-                const createRoom = () => {
+                const initPersonalChannel = () => {
+                    if (!supabaseClient || !user.uuid) return;
+                    if (personalChannel) personalChannel.unsubscribe();
+
+                    console.log(`[Friends] Initializing personal channel: personal:${user.uuid}`);
+                    personalChannel = supabaseClient.channel(`personal:${user.uuid}`)
+                        .on('broadcast', { event: 'message' }, ({ payload }) => {
+                            console.log('[Friends] Received signal:', payload);
+                            handlePersonalSignal(payload);
+                        })
+                        .subscribe((status) => {
+                            if (status === 'SUBSCRIBED') {
+                                console.log('[Friends] Personal channel subscribed');
+                            }
+                        });
+                };
+
+                const updateFriendsStatus = () => {
+                    if (!globalChannel) return;
+                    const newState = globalChannel.presenceState();
+                    
+                    const onlineUserIds = new Set();
+                    const onlineUsersMap = new Map();
+
+                    Object.keys(newState).forEach(key => {
+                        newState[key].forEach(presence => {
+                            if (presence.user_id) {
+                                onlineUserIds.add(presence.user_id);
+                                onlineUsersMap.set(presence.user_id, presence);
+                            }
+                        });
+                    });
+
+                    // Update friends list
+                    let hasChanges = false;
+                    friends.value.forEach(friend => {
+                        const presence = onlineUsersMap.get(friend.uuid);
+                        const wasOnline = friend.isOnline;
+                        
+                        if (presence) {
+                            friend.isOnline = true;
+                            friend.lastOnline = new Date().toISOString();
+                            
+                            // 如果好友刚上线（之前是离线），发送关系检查
+                            if (!wasOnline) {
+                                // 如果有 skipNextCheck 标记，跳过此次检查，避免刚加好友就被误删
+                                if (friend.skipNextCheck) {
+                                    console.log(`[Friends] Skipping check_friendship for ${friend.name} due to skipNextCheck`);
+                                } else {
+                                    sendSignal(friend.uuid, 'check_friendship', {});
+                                }
+                                
+                                if (settings.friendOnlineNotification) {
+                                    showToast(`${friend.name} 上线了`, 'info');
+                                }
+                            }
+                            
+                            // Update info if changed
+                            if (presence.name && presence.name !== friend.name) {
+                                friend.name = presence.name;
+                                hasChanges = true;
+                            }
+                            if (presence.avatar && presence.avatar !== friend.avatar) {
+                                friend.avatar = presence.avatar;
+                                hasChanges = true;
+                            }
+                        } else {
+                            friend.isOnline = false;
+                        }
+                    });
+                    
+                    if (hasChanges) {
+                        saveData();
+                    }
+                };
+
+                const initGlobalPresence = () => {
+                    if (!supabaseClient || !user.uuid) return;
+                    if (globalChannel) globalChannel.unsubscribe();
+
+                    console.log('[Presence] Initializing global presence...');
+                    globalChannel = supabaseClient.channel('global_presence', {
+                        config: {
+                            presence: {
+                                key: user.uuid,
+                            },
+                        },
+                    });
+
+                    globalChannel
+                        .on('presence', { event: 'sync' }, updateFriendsStatus)
+                        .subscribe(async (status) => {
+                            if (status === 'SUBSCRIBED') {
+                                await globalChannel.track({
+                                    user_id: user.uuid,
+                                    name: user.name,
+                                    avatar: user.avatar,
+                                    online_at: new Date().toISOString(),
+                                });
+                                
+                                // 上线时，向所有在线好友发送关系检查信号
+                                // 这可以处理离线期间被删除的情况
+                                friends.value.forEach(friend => {
+                                    if (friend.isOnline) {
+                                        sendSignal(friend.uuid, 'check_friendship', {});
+                                    }
+                                });
+                            }
+                        });
+                };
+
+                const handlePersonalSignal = (payload) => {
+                    if (payload.type === 'friend_request') {
+                        // Check if already friends
+                        if (friends.value.some(f => f.uuid === payload.sender.uuid)) {
+                            // If already friends, resend accept signal to ensure sync (in case they lost the previous accept)
+                            console.log(`[Friends] Received request from existing friend ${payload.sender.name}, resending accept signal`);
+                            sendSignal(payload.sender.uuid, 'friend_accept', {});
+                            return;
+                        }
+                        // Check if already requested
+                        if (friendRequests.value.some(r => r.uuid === payload.sender.uuid)) return;
+                        
+                        friendRequests.value.push(payload.sender);
+                        showToast(`${payload.sender.name} 请求添加好友`, 'info');
+                        // Vibrate
+                        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                    } else if (payload.type === 'friend_accept') {
+                        if (!friends.value.some(f => f.uuid === payload.sender.uuid)) {
+                             // 添加 skipNextCheck 保护，防止申请方刚加上好友就被误删
+                             const newFriend = { ...payload.sender, skipNextCheck: true };
+                             
+                             // 设置超时自动清除保护标记 (30秒后)
+                             setTimeout(() => {
+                                 const friend = friends.value.find(f => f.uuid === payload.sender.uuid);
+                                 if (friend && friend.skipNextCheck) {
+                                     delete friend.skipNextCheck;
+                                 }
+                             }, 30000);
+
+                             friends.value.push(newFriend);
+                             saveData();
+                             
+                             // 立即刷新状态，并强制触发一次 UI 更新
+                             nextTick(() => {
+                                 updateFriendsStatus();
+                             });
+                             
+                             showToast(`${payload.sender.name} 接受了好友请求`, 'success');
+                         }
+                     } else if (payload.type === 'friend_delete') {
+                        // 检查是否应该跳过此次删除信号（用于刚添加好友时的保护）
+                        const friendIndex = friends.value.findIndex(f => f.uuid === payload.sender.uuid);
+                        if (friendIndex !== -1) {
+                            const friend = friends.value[friendIndex];
+                            if (friend.skipNextCheck) {
+                                console.log(`[Friends] Skipped friend_delete signal for ${friend.name} due to skipNextCheck protection`);
+                                delete friend.skipNextCheck; // 消耗掉保护标记
+                                return;
+                            }
+                            
+                            friends.value.splice(friendIndex, 1);
+                            saveData();
+                            showToast(`${payload.sender.name} 解除了好友关系`, 'info');
+                        }
+                    } else if (payload.type === 'invite_room') {
+                        confirmAction(`${payload.sender.name} 邀请你加入房间`, () => {
+                            joinRoomId.value = payload.roomId;
+                            currentView.value = 'multiplayer';
+                            joinRoom();
+                        });
+                    } else if (payload.type === 'share_character') {
+                        confirmAction(`${payload.sender.name} 分享了角色卡 "${payload.character.name}"，是否导入？`, () => {
+                            // Import logic
+                            characters.value.push(payload.character);
+                            saveData();
+                            showToast(`已导入角色 ${payload.character.name}`, 'success');
+                            selectCharacter(characters.value.length - 1, true);
+                        });
+                    } else if (payload.type === 'check_friendship') {
+                        // 收到关系检查信号
+                        // 如果对方不在我的好友列表中，说明我可能已经删除了对方，或者数据不一致
+                        // 发送删除信号让对方也删除我，保持状态一致
+                        if (!friends.value.some(f => f.uuid === payload.sender.uuid)) {
+                            console.log(`[Friends] Received check_friendship from non-friend ${payload.sender.name}, sending delete signal`);
+                            sendSignal(payload.sender.uuid, 'friend_delete', {});
+                        }
+                    }
+                };
+
+                const sendSignal = async (targetUuid, type, payload) => {
+                    if (!supabaseClient) {
+                        showToast('请先连接服务器', 'error');
+                        return false;
+                    }
+                    const channel = supabaseClient.channel(`personal:${targetUuid}`);
+                    await channel.subscribe(async (status) => {
+                        if (status === 'SUBSCRIBED') {
+                            await channel.send({
+                                type: 'broadcast',
+                                event: 'message',
+                                payload: {
+                                    type,
+                                    sender: {
+                                        uuid: user.uuid,
+                                        name: user.name,
+                                        avatar: user.avatar
+                                    },
+                                    ...payload
+                                }
+                            });
+                            supabaseClient.removeChannel(channel);
+                        }
+                    });
+                    return true;
+                };
+
+                const addFriend = async () => {
+                    if (!friendInput.value.trim()) return;
+                    const targetUuid = friendInput.value.trim();
+                    if (targetUuid === user.uuid) {
+                        showToast('不能添加自己为好友', 'warning');
+                        return;
+                    }
+                    if (friends.value.some(f => f.uuid === targetUuid)) {
+                        showToast('已经是好友了', 'warning');
+                        return;
+                    }
+                    
+                    showToast('正在发送请求...', 'info');
+                    const success = await sendSignal(targetUuid, 'friend_request', {});
+                    if (success) {
+                        showToast('好友请求已发送', 'success');
+                        friendInput.value = '';
+                    }
+                };
+
+                const acceptFriend = async (req) => {
+                    // 标记该好友跳过下一次关系检查，防止刚添加时因状态同步延迟导致的误删
+                    req.skipNextCheck = true;
+                    
+                    // 设置超时自动清除保护标记 (30秒后)
+                    setTimeout(() => {
+                        const friend = friends.value.find(f => f.uuid === req.uuid);
+                        if (friend && friend.skipNextCheck) {
+                            delete friend.skipNextCheck;
+                        }
+                    }, 30000);
+
+                    friends.value.push(req);
+                    friendRequests.value = friendRequests.value.filter(r => r.uuid !== req.uuid);
+                    saveData();
+                    
+                    // 先发送信号，再刷新状态，确保对方能收到
+                    await sendSignal(req.uuid, 'friend_accept', {});
+                    
+                    nextTick(() => {
+                        updateFriendsStatus(); // 立即刷新状态
+                    });
+                    
+                    showToast(`已添加 ${req.name} 为好友`, 'success');
+                };
+
+                const rejectFriend = (req) => {
+                    friendRequests.value = friendRequests.value.filter(r => r.uuid !== req.uuid);
+                };
+
+                const deleteFriend = (friend) => {
+                    confirmAction(`确定要删除好友 ${friend.name} 吗？`, async () => {
+                        // 先发送删除信号
+                        await sendSignal(friend.uuid, 'friend_delete', {});
+                        
+                        friends.value = friends.value.filter(f => f.uuid !== friend.uuid);
+                        saveData();
+                        showToast('好友已删除', 'success');
+                    });
+                };
+
+                const inviteFriend = async (friend) => {
+                    if (!friend.isOnline) {
+                        showToast('对方不在线，无法邀请', 'warning');
+                        return;
+                    }
+
+                    let roomId = multiplayerState.roomId;
+                    
+                    if (!multiplayerState.inRoom) {
+                        showToast('正在创建房间...', 'info');
+                        roomId = await createRoom();
+                        if (!roomId) {
+                            showToast('创建房间失败，请检查连接', 'error');
+                            return;
+                        }
+                        // Wait a bit for room to be ready
+                        await new Promise(r => setTimeout(r, 500));
+                    }
+                    
+                    const success = await sendSignal(friend.uuid, 'invite_room', { roomId: roomId });
+                    if (success) {
+                        showToast(`已邀请 ${friend.name}`, 'success');
+                    }
+                };
+
+                const openShareModal = (charIndex) => {
+                    characterToShare.value = characters.value[charIndex];
+                    showShareModal.value = true;
+                };
+
+                const confirmShare = async (friend) => {
+                    if (!characterToShare.value) return;
+                    
+                    showToast(`正在发送角色卡给 ${friend.name}...`, 'info');
+                    
+                    // Compress avatar if needed
+                    let charToSend = JSON.parse(JSON.stringify(characterToShare.value));
+                    if (charToSend.avatar && charToSend.avatar.length > 100000) {
+                         try {
+                            charToSend.avatar = await compressImage(charToSend.avatar, 300, 0.7);
+                         } catch(e) {}
+                    }
+
+                    const success = await sendSignal(friend.uuid, 'share_character', { character: charToSend });
+                    if (success) {
+                        showToast('发送成功', 'success');
+                        showShareModal.value = false;
+                    }
+                };
+
+                const createRoom = async () => {
                     if (!supabaseClient) {
                         console.warn('[Multiplayer] 无法创建房间：未连接到服务器');
-                        return;
+                        return null;
                     }
                     const newRoomId = Math.random().toString(36).substring(2, 8).toUpperCase();
                     console.log(`[Multiplayer] 创建新房间: ${newRoomId}`);
                     // 保存房主身份记录
                     localStorage.setItem('roleplay_hosted_room', newRoomId);
-                    joinRoom(newRoomId, true);
+                    await joinRoom(newRoomId, true);
+                    return newRoomId;
                 };
 
                 const joinRoom = async (id = null, asHost = false) => {
@@ -4597,6 +5176,7 @@ ${rawHtml}
                 };
 
                 const scrollToBottom = () => {
+                    if (!settings.autoScroll) return;
                     // Use nextTick to ensure the DOM has been updated before we try to scroll
                     nextTick(() => {
                         if (chatContainer.value) {
@@ -7011,6 +7591,11 @@ ${rawHtml}
                         fetchModels();
                     }
 
+                    // Auto-connect to Supabase if configured
+                    if (settings.supabaseUrl && settings.supabaseKey) {
+                        initSupabase();
+                    }
+
                     // --- Mobile Keyboard Adaptation (VisualViewport) ---
                     if (window.visualViewport) {
                         const handleVisualViewportResize = () => {
@@ -7061,8 +7646,10 @@ ${rawHtml}
                     getCharacterWICount, getCharacterRegexCount,
                     handleAvatarUpload, importCharacter, exportCharacter,
                     createPreset, editPreset, savePreset, deletePreset, movePreset,
+                    friends, friendRequests, friendInput, showAddFriendInput, showShareModal, characterToShare, // Friends Exports
+                    addFriend, acceptFriend, rejectFriend, deleteFriend, inviteFriend, openShareModal, confirmShare,
                     draggedPresetIndex, handleDragStart, handleDrop, handleDragEnd,
-                    renderMarkdown, parseCot, closeCharacterEditor: () => showCharacterEditor.value = false,
+                    renderMarkdown, parseCot, formatTimeAgo, closeCharacterEditor: () => showCharacterEditor.value = false,
                     openExportModal: (type) => {
                         exportType.value = type;
                         selectedExportIndices.value.clear();
