@@ -2981,7 +2981,7 @@ opacity: 0;
                 const settings = reactive({
                     apiUrl: 'https://opis.zeabur.app',
                     apiKey: 'sk-8PZs39TSK9Jde8dpD2IIrJxyAnJQUot7pskCbA4WlyFAwVJd',
-                    model: 'gemini-3-pro-preview-maxthinking',
+                    model: 'gemini-3-pro-high',
                     contextSize: 800000,
                     temperature: 1.0,
                     autoFetchModels: true,
@@ -4240,7 +4240,7 @@ ${rawHtml}
                 const useBackupAPI = () => {
                     settings.apiUrl = 'https://opis.zeabur.app';
                     settings.apiKey = 'sk-8PZs39TSK9Jde8dpD2IIrJxyAnJQUot7pskCbA4WlyFAwVJd';
-                    settings.model = 'gemini-3-pro-high';
+                    settings.model = 'gemini-3-pro-preview-maxthinking';
                     showToast('已切换至备用 API', 'success');
                 };
 
@@ -7278,7 +7278,7 @@ ${rawHtml}
                     if (settings.autoRestoreDefaultAPI) {
                         settings.apiUrl = 'https://opis.zeabur.app';
                         settings.apiKey = 'sk-8PZs39TSK9Jde8dpD2IIrJxyAnJQUot7pskCbA4WlyFAwVJd';
-                        settings.model = 'gemini-3-pro-preview-maxthinking';
+                        settings.model = 'gemini-3-pro-high';
                         // showToast('已自动恢复默认 API 设置', 'info');
                     }
 
