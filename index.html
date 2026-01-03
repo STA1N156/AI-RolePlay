@@ -4240,7 +4240,7 @@ ${rawHtml}
                 const useBackupAPI = () => {
                     settings.apiUrl = 'https://opis.zeabur.app';
                     settings.apiKey = 'sk-8PZs39TSK9Jde8dpD2IIrJxyAnJQUot7pskCbA4WlyFAwVJd';
-                    settings.model = 'gemini-3-flash-preview';
+                    settings.model = 'gemini-3-pro-high';
                     showToast('已切换至备用 API', 'success');
                 };
 
@@ -5848,7 +5848,11 @@ ${rawHtml}
                                     throw new Error(errorMsg);
                                 }
 
-                                if (settings.stream) {
+                                // Check Content-Type to determine if we should stream
+                                const contentType = response.headers.get('content-type');
+                                const isStream = settings.stream && contentType && contentType.includes('text/event-stream');
+
+                                if (isStream) {
                                     const reader = response.body.getReader();
                                     const decoder = new TextDecoder();
                                     let buffer = '';
@@ -5905,8 +5909,35 @@ ${rawHtml}
                                     }
                                 } else {
                                     // Non-streaming response handling
-                                    const data = await response.json();
-                                    const content = data.choices[0]?.message?.content || '';
+                                    // Compatibility Fix: Some APIs force return SSE format even if stream=false
+                                    // We read as text first to handle both valid JSON and "forced stream" text
+                                    const rawText = await response.text();
+                                    let content = '';
+
+                                    try {
+                                        // 1. Try parsing as standard JSON
+                                        const data = JSON.parse(rawText);
+                                        content = data.choices[0]?.message?.content || '';
+                                    } catch (e) {
+                                        // 2. If JSON fails, try parsing as SSE text (data: {...})
+                                        console.warn('JSON parsing failed, trying to parse as forced SSE text');
+                                        const lines = rawText.split('\n');
+                                        for (const line of lines) {
+                                            const trimmedLine = line.trim();
+                                            if (trimmedLine.startsWith('data: ')) {
+                                                const dataStr = trimmedLine.slice(6);
+                                                if (dataStr === '[DONE]') continue;
+                                                try {
+                                                    const chunk = JSON.parse(dataStr);
+                                                    const chunkContent = chunk.choices[0]?.delta?.content || chunk.choices[0]?.message?.content || '';
+                                                    if (chunkContent) content += chunkContent;
+                                                } catch (err) {
+                                                    // Ignore invalid chunks
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
                                     responseContent = content;
                                     
                                     if (content) {
