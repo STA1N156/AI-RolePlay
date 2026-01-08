@@ -2960,21 +2960,17 @@ opacity: 0;
                 const updateCountdown = ref(0);
                 let updateCountdownTimer = null;
                 const latestUpdate = reactive({
-                    id: 10048, // 确保这是一个五位数ID，每次更新内容时增加这个数字
+                    id: 10058, // 确保这是一个五位数ID，每次更新内容时增加这个数字
                     date: new Date().toISOString().split('T')[0],
                     title: '网站更新公告',
                     content: `
-### Roleplay 2.5.0
-### 新增“好友”功能
+### Roleplay 2.5.2
+### 补充了画图额度
 
-- 新增“好友”功能，支持添加好友，一键邀请好友进入房间/分享角色卡
-- 优化了“多人联机（BETA）”功能
-- 大幅度强化了角色卡的设定遵守能力和RolePlay能力
-- 为角色卡新增分析COT展示功能
-- 优化和修复了角色卡工坊的部分UI
-- 强化了角色卡工坊的预设，确保了生成质量
+- 新增“画图接口状态”按钮，可以通过此按钮查看画图接口可用性
+- 搬迁API服务器至日本，优化国内裸连速度
 
-#### 更新时间：1/1/10:51
+#### 更新时间：1/8/20:51
                     `
                 });
 
@@ -2990,7 +2986,7 @@ opacity: 0;
                 };
 
                 const startUpdateCountdown = () => {
-                    updateCountdown.value = 12;
+                    updateCountdown.value = 8;
                     if (updateCountdownTimer) clearInterval(updateCountdownTimer);
                     updateCountdownTimer = setInterval(() => {
                         if (updateCountdown.value > 0) {
