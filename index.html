@@ -3100,9 +3100,10 @@ opacity: 0;
 ### Roleplay 2.5.4
 
 - 新增“个性化记忆”，AI会自动分析并记录您的偏好以延续到其他角色卡
-- 优化了设置UI界面
+- 新增“生图接口状态”按钮，可以通过此按钮查看生图接口可用性
+- 搬迁API服务器至日本，优化国内裸连速度
 
-#### 更新时间：2/8/17:51
+#### 更新时间：2/8/16:51
                     `
                 });
 
@@ -7835,7 +7836,7 @@ ${rawHtml}
 
                     // 1.10 Enforce Default Preset (COT)
                     const cotPresetName = 'COT';
-                    const cotPresetContent = '请在正文输出前，使用markdown格式，以 <cot>...思考内容...<cot> 的方式严密，详细地分析系统规则，角色和世界观背景设定，历史对话，用户输入和偏好等信息，确保符合设定且符合逻辑后再进行正文的输出，规范格式为 <cot>... <cot>，确保开头结尾都有<cot>标签。';
+                    const cotPresetContent = '请在正文输出前，使用markdown格式，以 <cot>...思考内容...<cot> 的方式严密，详细地分析系统规则，角色和世界观背景设定，历史对话，用户输入和bio偏好等信息，确保符合设定且符合逻辑后再进行正文的输出，并注意分析是否需要使用bio工具记录用户偏好，规范格式为 <cot>... <cot>，确保开头结尾都有<cot>标签。';
                     const existingCotPreset = presets.value.find(p => p.name === cotPresetName);
                     
                     if (!existingCotPreset) {
