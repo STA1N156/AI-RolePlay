@@ -166,21 +166,21 @@
                     <!-- 滑动背景块 -->
                     <div
                         class="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-full shadow-md transition-all duration-300 ease-out z-0"
-                        :style="{ transform: api.model === 'gemini-3-flash-preview-maxthinking' ? 'translateX(0)' : 'translateX(100%)', left: '4px' }"
+                        :style="{ transform: api.model === 'gemini-3-flash-preview-high' ? 'translateX(0)' : 'translateX(100%)', left: '4px' }"
                     ></div>
                     
                     <button
                         class="btn btn-sm h-9 min-h-0 flex-1 rounded-full border-0 bg-transparent hover:bg-transparent transition-colors duration-300 z-10 gap-1.5 px-0 active:!scale-100 text-xs md:text-sm"
-                        :class="api.model === 'gemini-3-flash-preview-maxthinking' ? 'text-primary font-extrabold' : 'text-base-content/60 font-medium hover:text-base-content/80'"
-                        @click="api.model = 'gemini-3-flash-preview-maxthinking'; api.stream = true"
+                        :class="api.model === 'gemini-3-flash-preview-high' ? 'text-primary font-extrabold' : 'text-base-content/60 font-medium hover:text-base-content/80'"
+                        @click="api.model = 'gemini-3-flash-preview-high'; api.stream = true"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                         快速
                     </button>
                     <button
                         class="btn btn-sm h-9 min-h-0 flex-1 rounded-full border-0 bg-transparent hover:bg-transparent transition-colors duration-300 z-10 gap-1.5 px-0 active:!scale-100 text-xs md:text-sm"
-                        :class="api.model === 'gemini-3-pro-preview-maxthinking' ? 'text-secondary font-extrabold' : 'text-base-content/60 font-medium hover:text-base-content/80'"
-                        @click="api.model = 'gemini-3-pro-preview-maxthinking'; api.stream = true"
+                        :class="api.model === 'gemini-3-pro-preview-high' ? 'text-secondary font-extrabold' : 'text-base-content/60 font-medium hover:text-base-content/80'"
+                        @click="api.model = 'gemini-3-pro-preview-high'; api.stream = true"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/><path d="M20 2L20.8 4.4L23.2 5.2L20.8 6L20 8.4L19.2 6L16.8 5.2L19.2 4.4L20 2Z"/></svg>
                         质量
@@ -1028,7 +1028,7 @@
             const api = reactive({
                 url: 'https://opis.zeabur.app/v1',
                 key: 'sk-7eXTZgoL3I7apUz2U3Jy8sywgHbRmN42KpMYR7ORtYiJUP83',
-                model: 'gemini-3-pro-preview-maxthinking',
+                model: 'gemini-3-pro-preview-high',
                 stream: true
             });
 
